@@ -90,6 +90,33 @@ const MarketPivot = () => {
   const [showTemplate, setShowTemplate] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [lastImportDate, setLastImportDate] = useState(null);
+  const [dataTooltip, setDataTooltip] = useState(null);
+
+  // ── Data-page tooltip descriptions ──
+  const TOOLTIPS = {
+    fearGreed:    { label: 'Fear & Greed Index', desc: 'CNN Money Index (0–100). Aggregiert 7 Sentiment-Indikatoren. <25 = Extreme Fear (antizyklisch bullisch), >75 = Extreme Greed (Vorsicht).' },
+    equityPC:     { label: 'Equity Put/Call Ratio', desc: 'Verhältnis gekaufter Puts zu Calls auf Einzelaktien. <0,7 = bullische Stimmung, >1,0 = Angst / erhöhte Absicherungsnachfrage.' },
+    totalPC:      { label: 'Total Put/Call Ratio', desc: 'Put/Call inkl. Index-Optionen. Höhere Basis als Equity P/C. >1,2 = deutliche Risikoaversion am Markt.' },
+    y2:           { label: '2Y Treasury Yield', desc: 'US-Staatsanleihe 2 Jahre. Reagiert stark auf Fed-Erwartungen. Steigt bei erwarteten Zinserhöhungen.' },
+    y10:          { label: '10Y Treasury Yield', desc: 'Benchmark für langfristige US-Zinsen. Beeinflusst Hypotheken, Unternehmensanleihen und Aktienbewertungen (DCF-Abzinsungssatz).' },
+    y30:          { label: '30Y Treasury Yield', desc: 'Langfristiger US-Zins. Wichtig für Pensionsfonds und Versicherungen. Zeigt langfristige Inflationserwartungen.' },
+    vix:          { label: 'VIX — CBOE Volatility Index', desc: 'Implizite 30-Tage-Volatilität des S&P 500. „Angstbarometer" des Marktes. Historischer Schnitt ~20. >30 = erhöhter Stress, >40 = Panik.' },
+    rvx:          { label: 'RVX — Russell 2000 Vola', desc: 'Implizite Volatilität des Russell 2000 (Small Caps). Small Caps reagieren stärker auf Rezessionsängste. RVX > VIX = Small-Cap-Stress.' },
+    vxn:          { label: 'VXN — Nasdaq 100 Vola', desc: 'Implizite Volatilität des Nasdaq 100. Technologielastig — reagiert stark auf Zinsänderungen und Wachstumserwartungen.' },
+    vvix:         { label: 'VVIX — Volatility of VIX', desc: 'Misst die Schwankungsgeschwindigkeit des VIX selbst. >100 = VIX-Bewegungen werden erwartet. Früher Indikator für bevorstehende Volatilitätsspikes.' },
+    vixVxv:       { label: 'VIX / VXV Ratio', desc: 'Verhältnis 1-Monats- zu 3-Monats-Volatilität. <1 = normale Termstruktur (Contango). >1 = Inversion / Backwardation — kurzfristiger Stress höher als langfristiger.' },
+    skew:         { label: 'SKEW Index', desc: 'Misst die Nachfrage nach OTM-Puts vs. OTM-Calls auf den S&P 500. >130 = erhöhtes Tail-Risk / Crash-Absicherung. Historisch normal: 100–130.' },
+    move:         { label: 'MOVE Index', desc: 'Anleihe-Äquivalent des VIX (Merrill Lynch Option Volatility Estimate). Misst implizite Volatilität von US-Treasuries. Hohe Werte = Zinsunsicherheit.' },
+    leftTail:     { label: 'Left Tail Volatility', desc: 'Implizite Volatilität tief OTM S&P-Puts (Crash-Schutz). Zeigt, wie teuer Versicherung gegen starke Marktrückgänge ist.' },
+    breadth5:     { label: 'S&P 500 Breadth 5D', desc: '% der S&P-500-Aktien über ihrem 5-Tage-Durchschnitt. Kurzfristiger Momentum-Indikator. <30% = kurzfristig überverkauft.' },
+    breadth20:    { label: 'S&P 500 Breadth 20D', desc: '% der S&P-500-Aktien über ihrem 20-Tage-Durchschnitt. Mittelfristiger Trendindikator. <40% = breite Schwäche im Markt.' },
+    breadth50:    { label: 'S&P 500 Breadth 50D', desc: '% der S&P-500-Aktien über ihrem 50-Tage-Durchschnitt. Zeigt mittelfristige Marktbreite. <50% = mehr als die Hälfte im Abwärtstrend.' },
+    breadth200:   { label: 'S&P 500 Breadth 200D', desc: '% der S&P-500-Aktien über ihrem 200-Tage-Durchschnitt. Langfristiger Trendindikator. <40% = strukturelle Bärenmarkt-Signale.' },
+    termStructure:{ label: 'VIX Term Structure', desc: 'Zeigt die implizite Volatilität über VX-Futures-Laufzeiten. Contango (aufsteigend) = normal. Backwardation (absteigend) = kurzfristiger Stress erhöht.' },
+    vx1spot:      { label: 'VX1 – VIX Spot', desc: 'Spread zwischen erstem VIX-Future und Spot-VIX. Positiv = Markt erwartet steigende Vola. Negativ = Backwardation / akuter Stress.' },
+    vx2vx1:       { label: 'VX2 – VX1', desc: 'Spread zwischen zweitem und erstem VIX-Future. Positiv = normale Kurve. Negativ deutet auf anhaltenden Stress hin.' },
+    vx5vx1:       { label: 'VX5 – VX1', desc: 'Steigung der gesamten VIX-Termstruktur. Stark positiv = ruhiger Markt mit normalem Risikoprofil.' },
+  };
 
   // ── CSV Template (Original 2-column format: Metric;Value) ──
   const templateContent = `Metric;Value
@@ -323,6 +350,33 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
     );
   };
 
+  // ── Tooltip helper ──
+  const TT = ({ id, children }) => {
+    const tip = TOOLTIPS[id];
+    return (
+      <div
+        style={{ position: 'relative', display: 'inline-block', width: '100%' }}
+        onMouseEnter={() => setDataTooltip(id)}
+        onMouseLeave={() => setDataTooltip(null)}
+      >
+        {children}
+        {dataTooltip === id && tip && (
+          <div style={{
+            position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+            marginBottom: '8px', zIndex: 100,
+            background: '#2C2C2E', border: '0.5px solid rgba(255,255,255,0.14)',
+            borderRadius: '10px', padding: '10px 14px',
+            width: '240px', boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+            pointerEvents: 'none',
+          }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#F5F5F7', marginBottom: '5px' }}>{tip.label}</div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{tip.desc}</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // ── DATA TAB ──
   const DataView = () => (
     <>
@@ -330,7 +384,9 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '8px' }}>
         {/* Fear & Greed */}
         <div style={glass}>
-          <div style={sectionLabel}>Fear & Greed</div>
+          <TT id="fearGreed">
+            <div style={sectionLabel}>Fear &amp; Greed</div>
+          </TT>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ fontSize: '42px', fontWeight: 700, color: fearColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{v.fearGreed}</div>
             <div style={{ flex: 1 }}>
@@ -352,18 +408,18 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
         <div style={glass}>
           <div style={sectionLabel}>Put/Call Ratios</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            <div>
+            <TT id="equityPC">
               <div style={metricLabel}>Equity</div>
               <div style={metricValue(v.equityPutCall < 0.7 ? '#30D158' : v.equityPutCall > 1.0 ? '#FF453A' : '#FFCC00')}>
                 {f(v.equityPutCall, 2)}
               </div>
-            </div>
-            <div>
+            </TT>
+            <TT id="totalPC">
               <div style={metricLabel}>Total</div>
               <div style={metricValue(v.totalPutCall < 1.0 ? '#30D158' : '#FF453A')}>
                 {f(v.totalPutCall, 2)}
               </div>
-            </div>
+            </TT>
           </div>
         </div>
 
@@ -372,14 +428,14 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
           <div style={sectionLabel}>US Treasuries</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
             {[
-              { label: '2Y', val: y.y2 },
-              { label: '10Y', val: y.y10 },
-              { label: '30Y', val: y.y30 },
+              { label: '2Y', val: y.y2, id: 'y2' },
+              { label: '10Y', val: y.y10, id: 'y10' },
+              { label: '30Y', val: y.y30, id: 'y30' },
             ].map((item, i) => (
-              <div key={i}>
+              <TT key={i} id={item.id}>
                 <div style={metricLabel}>{item.label}</div>
                 <div style={metricValue('#BF5AF2')}>{f(item.val, 2)}%</div>
-              </div>
+              </TT>
             ))}
           </div>
         </div>
@@ -390,19 +446,21 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
         <div style={sectionLabel}>Volatility Indices</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '4px' }}>
           {[
-            { label: 'VIX', val: f(v.vix) },
-            { label: 'RVX', val: f(v.rvx) },
-            { label: 'VXN', val: f(v.vxn) },
-            { label: 'VVIX', val: f(v.vvix) },
-            { label: 'VIX/VXV', val: f(vixRatio, 3) },
-            { label: 'SKEW', val: f(v.skewIndex) },
-            { label: 'MOVE', val: f(v.moveIndex) },
-            { label: 'Left Tail', val: f(v.leftTailVol) },
+            { label: 'VIX', val: f(v.vix), id: 'vix' },
+            { label: 'RVX', val: f(v.rvx), id: 'rvx' },
+            { label: 'VXN', val: f(v.vxn), id: 'vxn' },
+            { label: 'VVIX', val: f(v.vvix), id: 'vvix' },
+            { label: 'VIX/VXV', val: f(vixRatio, 3), id: 'vixVxv' },
+            { label: 'SKEW', val: f(v.skewIndex), id: 'skew' },
+            { label: 'MOVE', val: f(v.moveIndex), id: 'move' },
+            { label: 'Left Tail', val: f(v.leftTailVol), id: 'leftTail' },
           ].map((item, i) => (
-            <div key={i} style={{ textAlign: 'center', padding: '8px 0' }}>
-              <div style={metricLabel}>{item.label}</div>
-              <div style={metricValue('#F5F5F7')}>{item.val}</div>
-            </div>
+            <TT key={i} id={item.id}>
+              <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                <div style={metricLabel}>{item.label}</div>
+                <div style={metricValue('#F5F5F7')}>{item.val}</div>
+              </div>
+            </TT>
           ))}
         </div>
       </div>
@@ -480,44 +538,50 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '4px' }}>
             {[
-              { label: 'VX1–Spot', val: v.vx1 - v.vix },
-              { label: 'VX2–VX1', val: v.vx2 - v.vx1 },
-              { label: 'VX5–VX1', val: v.vx5 - v.vx1 },
+              { label: 'VX1–Spot', val: v.vx1 - v.vix, id: 'vx1spot' },
+              { label: 'VX2–VX1', val: v.vx2 - v.vx1, id: 'vx2vx1' },
+              { label: 'VX5–VX1', val: v.vx5 - v.vx1, id: 'vx5vx1' },
             ].map((s, i) => (
-              <div key={i} style={{
-                textAlign: 'center', padding: '6px',
-                background: 'rgba(255,255,255,0.02)', borderRadius: '8px',
-              }}>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', marginBottom: '2px' }}>{s.label}</div>
-                <div style={{ fontSize: '14px', fontWeight: 600, color: s.val > 0 ? '#30D158' : '#FF453A', fontVariantNumeric: 'tabular-nums' }}>
-                  {s.val > 0 ? '+' : ''}{f(s.val, 2)}
+              <TT key={i} id={s.id}>
+                <div style={{
+                  textAlign: 'center', padding: '6px',
+                  background: 'rgba(255,255,255,0.02)', borderRadius: '8px',
+                }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', marginBottom: '2px' }}>{s.label}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, color: s.val > 0 ? '#30D158' : '#FF453A', fontVariantNumeric: 'tabular-nums' }}>
+                    {s.val > 0 ? '+' : ''}{f(s.val, 2)}
+                  </div>
                 </div>
-              </div>
+              </TT>
             ))}
           </div>
         </div>
 
         {/* Breadth */}
         <div style={glass}>
-          <div style={sectionLabel}>S&P 500 Breadth</div>
+          <TT id="breadth5">
+            <div style={sectionLabel}>S&amp;P 500 Breadth</div>
+          </TT>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
-              { label: '5D', ticker: 'S5FD', val: b.above5day },
-              { label: '20D', ticker: 'S5TW', val: b.above20day },
-              { label: '50D', ticker: 'S5FI', val: b.above50day },
-              { label: '200D', ticker: 'S5TH', val: b.above200day },
+              { label: '5D',   val: b.above5day,   id: 'breadth5' },
+              { label: '20D',  val: b.above20day,  id: 'breadth20' },
+              { label: '50D',  val: b.above50day,  id: 'breadth50' },
+              { label: '200D', val: b.above200day, id: 'breadth200' },
             ].map((item, i) => {
               const color = item.val > 70 ? '#30D158' : item.val > 50 ? '#FFCC00' : item.val > 30 ? '#FF9F0A' : '#FF453A';
               return (
-                <div key={i}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>{item.label}</span>
-                    <span style={{ fontSize: '15px', fontWeight: 600, color, fontVariantNumeric: 'tabular-nums' }}>{f(item.val)}%</span>
+                <TT key={i} id={item.id}>
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>{item.label}</span>
+                      <span style={{ fontSize: '15px', fontWeight: 600, color, fontVariantNumeric: 'tabular-nums' }}>{f(item.val)}%</span>
+                    </div>
+                    <div style={{ height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: `${item.val}%`, height: '100%', background: color, borderRadius: '2px' }} />
+                    </div>
                   </div>
-                  <div style={{ height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
-                    <div style={{ width: `${item.val}%`, height: '100%', background: color, borderRadius: '2px' }} />
-                  </div>
-                </div>
+                </TT>
               );
             })}
           </div>
@@ -891,22 +955,34 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
               </div>
 
               {/* Column headers */}
-              <div style={{ display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 60px', gap: '6px', marginBottom: '6px', padding: '0 4px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 80px 60px', gap: '6px', marginBottom: '2px', padding: '0 4px' }}>
                 <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Indikator</div>
                 {volaClasses.slice(0, 4).map((vc, i) => (
                   <div key={i} style={{ fontSize: '9px', color: vc.color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     {vc.label}
                   </div>
                 ))}
+                <div style={{ fontSize: '9px', color: volaClasses[4].color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {volaClasses[4].label}
+                </div>
                 <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Richtung</div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 80px 60px', gap: '6px', marginBottom: '8px', padding: '0 4px' }}>
+                <div/>
+                {['Max-Grenzwert', 'Max-Grenzwert', 'Max-Grenzwert', 'Max-Grenzwert'].map((t, i) => (
+                  <div key={i} style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>{t}</div>
+                ))}
+                <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>alles darüber</div>
+                <div/>
               </div>
 
               {/* Rows */}
               {Object.entries(draftThresholds).map(([key, cfg]) => {
                 const err = validationErrors[key];
+                const t4 = cfg.values[3];
                 return (
                   <div key={key} style={{
-                    display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 60px', gap: '6px',
+                    display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 80px 60px', gap: '6px',
                     padding: '8px 4px', borderBottom: `0.5px solid ${err ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`,
                     alignItems: 'center', position: 'relative',
                   }}>
@@ -986,6 +1062,16 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
                         onFocus={e => e.target.style.borderColor = 'rgba(10,132,255,0.5)'}
                       />
                     ))}
+                    {/* Panik — static, everything beyond t4 */}
+                    <div style={{
+                      textAlign: 'center', fontSize: '11px', fontWeight: 600,
+                      color: volaClasses[4].color,
+                      background: `${volaClasses[4].color}10`,
+                      border: `0.5px solid ${volaClasses[4].color}30`,
+                      borderRadius: '8px', padding: '6px 4px',
+                    }}>
+                      {cfg.dir === 'asc' ? `> ${String(t4).replace('.', ',')}` : `< ${String(t4).replace('.', ',')}`}
+                    </div>
                     <div style={{
                       fontSize: '9px', fontWeight: 600, textAlign: 'center',
                       color: 'rgba(255,255,255,0.3)',
