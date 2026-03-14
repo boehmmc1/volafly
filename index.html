@@ -1089,8 +1089,8 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
         {/* ── Hero Card — volle Breite ── */}
         <div style={{ ...glass, marginBottom: '8px', padding: '28px 32px' }}>
 
-          {/* 5-Klassen-Spektrum oben */}
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '28px' }}>
+          {/* 5-Klassen-Spektrum oben — mehr Abstand für Label */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '36px' }}>
             {volaClasses.map((vc, i) => (
               <div key={i} style={{ flex: 1, position: 'relative' }}>
                 <div style={{
@@ -1098,19 +1098,20 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                   background: i < overallLevel ? vc.color : 'rgba(255,255,255,0.08)',
                   transition: 'background 0.4s ease',
                 }} />
-                {i === overallLevel - 1 && (
-                  <div style={{
-                    position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)',
-                    fontSize: '9px', fontWeight: 700, color: vc.color, whiteSpace: 'nowrap',
-                    letterSpacing: '0.04em', textTransform: 'uppercase',
-                  }}>{vc.label}</div>
-                )}
+                {/* Label immer rendern, nur aktive einblenden — verhindert Breitenshift */}
+                <div style={{
+                  position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)',
+                  fontSize: '9px', fontWeight: 700, color: vc.color, whiteSpace: 'nowrap',
+                  letterSpacing: '0.04em', textTransform: 'uppercase',
+                  opacity: i === overallLevel - 1 ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
+                }}>{vc.label}</div>
               </div>
             ))}
           </div>
 
           {/* Hauptinhalt: 3 Spalten */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '0', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center' }}>
 
             {/* Links: Vola-Klasse */}
             <div style={{ textAlign: 'center' }}>
@@ -1140,7 +1141,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
               <div style={{ fontSize: '52px', fontWeight: 700, color: currentClass.color, letterSpacing: '-0.04em', lineHeight: 1 }}>
                 {currentClass.investGrade}
               </div>
-              {/* Investitions-Skala */}
+              {/* Investitions-Skala — nur Prozentzahlen als Labels */}
               <div style={{ marginTop: '16px' }}>
                 <div style={{ display: 'flex', gap: '4px', height: '6px' }}>
                   {volaClasses.map((vc, i) => (
@@ -1151,12 +1152,13 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                     }} />
                   ))}
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '6px' }}>
                   {volaClasses.map((vc, i) => (
                     <span key={i} style={{
                       fontSize: '9px', fontWeight: i === overallLevel - 1 ? 700 : 400,
                       color: i === overallLevel - 1 ? vc.color : 'rgba(255,255,255,0.18)',
-                    }}>{vc.investGrade}</span>
+                      minWidth: '28px', textAlign: 'center',
+                    }}>{vc.investPct}%</span>
                   ))}
                 </div>
               </div>
