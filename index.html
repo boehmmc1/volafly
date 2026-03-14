@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Volafly — Volatilität lesen. On the fly.</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24' stroke='%23F5F5F7' stroke-width='2.5' stroke-linecap='round' fill='none'/><path d='M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18' stroke='%23F5F5F7' stroke-width='2' stroke-linecap='round' fill='none' opacity='0.5'/></svg>">
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js" crossorigin></script>
@@ -25,12 +24,9 @@
     const SUPABASE_URL  = 'https://jiycewpqjcvjbykcxaqi.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppeWNld3BxamN2amJ5a2N4YXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDg0NjgsImV4cCI6MjA4OTA4NDQ2OH0._QGScZNrJ0qJbnXFCpJzG5GC2ZufUWbAa_1i2sGJB5w';
 
-    // ── EmailJS Konfiguration ──────────────────────────────────────────────
-    // Setup: https://emailjs.com → Account → Email Services + Email Templates
-    // Hier die 3 Werte aus dem EmailJS-Dashboard eintragen:
-    const EMAILJS_SERVICE_ID  = 'DEIN_SERVICE_ID';   // z.B. 'service_abc123'
-    const EMAILJS_TEMPLATE_ID = 'DEIN_TEMPLATE_ID';  // z.B. 'template_xyz789'
-    const EMAILJS_PUBLIC_KEY  = 'DEIN_PUBLIC_KEY';   // z.B. 'user_abc...'
+    // ── Web3Forms Konfiguration ───────────────────────────────────────────
+    // Setup: https://web3forms.com → E-Mail eingeben → Access Key kopieren
+    const WEB3FORMS_KEY = 'DEIN_ACCESS_KEY';  // z.B. 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     // ─────────────────────────────────────────────────────────────────────
 
@@ -1278,7 +1274,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
             </div>
           </div>
 
-          {/* Tab pill + Subtitle — mittlere Grid-Spalte, kein absolute mehr */}
+          {/* Tab pill + Subtitle — mittlere Grid-Spalte */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px' }}>
             <div style={{ display: 'flex', padding: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '22px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
               {[{ key: 'data', label: 'Marktlage' }, { key: 'analysis', label: 'Bewertung' }].map((tab) => (
@@ -1291,9 +1287,21 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                 }}>{tab.label}</button>
               ))}
             </div>
-            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)', letterSpacing: '0.05em', fontWeight: 400, whiteSpace: 'nowrap', pointerEvents: 'none', height: '14px', display: 'block' }}>
-              {activeTab === 'data' ? 'Aktuelle Indikatoren & Rohdaten' : 'Klassifikation & Handlungsempfehlung'}
-            </span>
+            {/* Beide Subtitles immer gerendert — nur opacity wechselt, keine Breitenänderung */}
+            <div style={{ position: 'relative', height: '14px', width: '100%', textAlign: 'center' }}>
+              {[
+                { key: 'data',     text: 'Aktuelle Indikatoren & Rohdaten' },
+                { key: 'analysis', text: 'Klassifikation & Handlungsempfehlung' },
+              ].map(s => (
+                <span key={s.key} style={{
+                  position: 'absolute', left: '50%', transform: 'translateX(-50%)',
+                  fontSize: '10px', color: 'rgba(255,255,255,0.22)', letterSpacing: '0.05em',
+                  fontWeight: 400, whiteSpace: 'nowrap', pointerEvents: 'none',
+                  opacity: activeTab === s.key ? 1 : 0,
+                  transition: 'opacity 0.2s ease',
+                }}>{s.text}</span>
+              ))}
+            </div>
           </div>
 
           {/* Rechte Seite — rechte Grid-Spalte */}
@@ -1883,12 +1891,19 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                     setContactSending(true);
                     setContactError('');
                     try {
-                      await window.emailjs.send(
-                        EMAILJS_SERVICE_ID,
-                        EMAILJS_TEMPLATE_ID,
-                        { from_email: contactEmail.trim(), message: contactMsg.trim() },
-                        EMAILJS_PUBLIC_KEY
-                      );
+                      const res = await fetch('https://api.web3forms.com/submit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                        body: JSON.stringify({
+                          access_key: WEB3FORMS_KEY,
+                          subject: 'Volafly Kontakt',
+                          from_name: contactEmail.trim(),
+                          email: contactEmail.trim(),
+                          message: contactMsg.trim(),
+                        }),
+                      });
+                      const json = await res.json();
+                      if (!json.success) throw new Error(json.message || 'Fehler');
                       setContactSent(true);
                       setContactEmail('');
                       setContactMsg('');
