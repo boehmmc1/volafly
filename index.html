@@ -239,7 +239,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       vx1: 16.8, vx2: 17.3, vx3: 17.9, vx4: 18.4, vx5: 18.8
     },
     yieldCurve: { y2: 4.17, y10: 4.165, y30: 4.56 },
-    movingAverages: { breadth: { above5day: 52.4, above20day: 64.6, above50day: 68.2, above200day: 60.0 } }
+    movingAverages: { breadth: { above5day: 52.4, above20day: 64.6, above50day: 68.2, above200day: 60.0 } },
+    riskIndicators: { hySpread: 3.45, dxy: 104.2, goldSP: 0.52 }
   });
   const [csvStatus, setCsvStatus] = useState(null);
   const [showTemplate, setShowTemplate] = useState(false);
@@ -394,6 +395,9 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     vx1spot:      { label: 'VX1 – VIX Spot', desc: 'Spread zwischen erstem VIX-Future und Spot-VIX. Positiv = Markt erwartet steigende Vola. Negativ = Backwardation / akuter Stress.' },
     vx2vx1:       { label: 'VX2 – VX1', desc: 'Spread zwischen zweitem und erstem VIX-Future. Positiv = normale Kurve. Negativ deutet auf anhaltenden Stress hin.' },
     vx5vx1:       { label: 'VX5 – VX1', desc: 'Steigung der gesamten VIX-Termstruktur. Stark positiv = ruhiger Markt mit normalem Risikoprofil.' },
+    hySpread:     { label: 'HY Credit Spread (ICE BofA)', desc: 'Zinsdifferenz zwischen US-High-Yield-Anleihen und Staatsanleihen in Basispunkten. Frühindikator für systemischen Stress — weitet sich oft Wochen vor dem VIX aus. <300 bp = entspannt, 300–500 bp = erhöht, >500 bp = Stress, >800 bp = Krise (2008: 2000 bp).' },
+    dxy:          { label: 'US Dollar Index (DXY)', desc: 'Misst die Stärke des USD gegenüber einem Währungskorb (EUR, JPY, GBP, CAD, SEK, CHF). In Risk-Off-Phasen steigt der Dollar typischerweise. Ein steigender DXY bei gleichzeitig fallenden Aktien bestätigt echte Flucht in sichere Häfen. Historischer Bereich: 90–115.' },
+    goldSP:       { label: 'Gold / S&P 500 Ratio', desc: 'Verhältnis des Goldpreises zum S&P 500 Indexstand. Zeigt Flucht in Safe Haven in Echtzeit. Wenn Gold relativ zum S&P steigt, erhöht sich die Risikoaversion — Kapital rotiert aus Aktien in Edelmetalle. Steigendes Ratio = Risk-Off.' },
   };
 
   // ── CSV Template (Original 2-column format: Metric;Value) ──
@@ -420,8 +424,10 @@ Yield_30Y;${String(marketData.yieldCurve.y30).replace('.', ',')}
 S5FD_Above_5Day_MA;${String(marketData.movingAverages.breadth.above5day).replace('.', ',')}
 S5TW_Above_20Day_MA;${String(marketData.movingAverages.breadth.above20day).replace('.', ',')}
 S5FI_Above_50Day_MA;${String(marketData.movingAverages.breadth.above50day).replace('.', ',')}
-S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).replace('.', ',')}`;
-
+S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).replace('.', ',')}
+HY_Spread;${String(marketData.riskIndicators.hySpread).replace('.', ',')}
+DXY;${String(marketData.riskIndicators.dxy).replace('.', ',')}
+Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`);
   const copyToClipboard = async () => {
     if (navigator.clipboard && window.isSecureContext) {
       try {
@@ -494,7 +500,8 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
         const knownFields = ['VIX','RVX','VXN','VVIX','VXV','Fear_Greed_Index','Equity_Put_Call_Ratio',
           'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
           'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
-          'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA'];
+          'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
+          'HY_Spread','DXY','Gold_SP_Ratio'];
         const foundFields = knownFields.filter(k => data[k] !== undefined);
         if (foundFields.length === 0) {
           setCsvStatus({ type: 'error', msg: 'Keine bekannten Felder gefunden — bitte das Template als Vorlage verwenden' });
@@ -532,6 +539,11 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
             above50day: data.S5FI_Above_50Day_MA ?? marketData.movingAverages.breadth.above50day,
             above200day: data.S5TH_Above_200Day_MA ?? marketData.movingAverages.breadth.above200day,
           }},
+          riskIndicators: {
+            hySpread: data.HY_Spread ?? marketData.riskIndicators.hySpread,
+            dxy:      data.DXY      ?? marketData.riskIndicators.dxy,
+            goldSP:   data.Gold_SP_Ratio ?? marketData.riskIndicators.goldSP,
+          },
         };
         setMarketData(newData);
         setLastImportDate(new Date());
@@ -554,6 +566,7 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
   const v = marketData.volatilityMetrics;
   const y = marketData.yieldCurve;
   const b = marketData.movingAverages.breadth;
+  const ri = marketData.riskIndicators;
 
   const fearColor = v.fearGreed < 25 ? '#FF3B30' : v.fearGreed < 45 ? '#FF9500' : v.fearGreed < 55 ? '#FFCC00' : v.fearGreed < 75 ? '#34C759' : '#30D158';
   const contango = v.vx5 > v.vx1;
@@ -905,6 +918,109 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
             })}
           </div>
         </div>
+      </div>
+
+      {/* Market Sentiment Row — HY Spread, DXY, Gold/SP */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginTop: '8px' }}>
+
+        {/* HY Credit Spread */}
+        <div style={glass}>
+          <TT id="hySpread">
+            <div style={sectionLabel}>HY Credit Spread</div>
+          </TT>
+          {(() => {
+            const val = ri.hySpread;
+            const color = val < 3 ? '#30D158' : val < 5 ? '#FFCC00' : val < 8 ? '#FF9F0A' : '#FF453A';
+            const label = val < 3 ? 'Entspannt' : val < 5 ? 'Erhöht' : val < 8 ? 'Stress' : 'Krise';
+            const pct = Math.min(100, (val / 12) * 100);
+            return (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '36px', fontWeight: 700, color, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                    {f(val, 2)}
+                  </div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}>%</div>
+                  <div style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: `${color}15`, color }}>{label}</div>
+                </div>
+                <div style={{ height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', background: `linear-gradient(90deg, #30D158, ${color})`, borderRadius: '2px', transition: 'width 0.5s ease' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                  {['<3%', '5%', '8%', '>8%'].map((t, i) => (
+                    <span key={i} style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)' }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Dollar Index */}
+        <div style={glass}>
+          <TT id="dxy">
+            <div style={sectionLabel}>US Dollar Index (DXY)</div>
+          </TT>
+          {(() => {
+            const val = ri.dxy;
+            // DXY: <95 = schwach, 95-100 = neutral, 100-106 = stark, >106 = sehr stark (Risk-Off Signal)
+            const color = val > 106 ? '#FF9F0A' : val > 100 ? '#FFCC00' : val > 95 ? '#30D158' : '#0A84FF';
+            const label = val > 106 ? 'Risk-Off' : val > 100 ? 'Stark' : val > 95 ? 'Neutral' : 'Schwach';
+            // Skala 85–120
+            const pct = Math.min(100, Math.max(0, ((val - 85) / 35) * 100));
+            return (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '36px', fontWeight: 700, color, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                    {f(val, 1)}
+                  </div>
+                  <div style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: `${color}15`, color }}>{label}</div>
+                </div>
+                <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', background: `linear-gradient(90deg, #0A84FF, ${color})`, borderRadius: '2px', transition: 'width 0.5s ease' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                  {['85', '95', '100', '106', '120'].map((t, i) => (
+                    <span key={i} style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)' }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Gold / S&P Ratio */}
+        <div style={glass}>
+          <TT id="goldSP">
+            <div style={sectionLabel}>Gold / S&amp;P 500 Ratio</div>
+          </TT>
+          {(() => {
+            const val = ri.goldSP;
+            // Ratio Gold/SPX: steigt = Risk-Off. Historisch 0,3–0,8
+            // 52W Kontext schwer ohne History — zeigen wir den Wert + Trend-Indikator
+            const color = val > 0.65 ? '#FF9F0A' : val > 0.5 ? '#FFCC00' : '#30D158';
+            const label = val > 0.65 ? 'Risk-Off' : val > 0.5 ? 'Erhöht' : 'Normal';
+            const pct = Math.min(100, Math.max(0, ((val - 0.25) / 0.65) * 100));
+            return (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '10px' }}>
+                  <div style={{ fontSize: '36px', fontWeight: 700, color, letterSpacing: '-0.04em', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+                    {f(val, 3)}
+                  </div>
+                  <div style={{ marginLeft: 'auto', fontSize: '10px', fontWeight: 600, padding: '2px 8px', borderRadius: '6px', background: `${color}15`, color }}>{label}</div>
+                </div>
+                <div style={{ height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div style={{ width: `${pct}%`, height: '100%', background: `linear-gradient(90deg, #30D158, ${color})`, borderRadius: '2px', transition: 'width 0.5s ease' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                  {['0,25', '0,40', '0,55', '0,65', '0,90'].map((t, i) => (
+                    <span key={i} style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)' }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
       </div>
     </>
   );
