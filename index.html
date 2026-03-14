@@ -258,6 +258,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [lastImportDate, setLastImportDate] = useState(null);
   const [dataTooltip, setDataTooltip] = useState(null);
   const [fetchLoading, setFetchLoading] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   // ── Profil-Management ──
   const [profiles, setProfiles]             = useState([]);
@@ -1251,9 +1252,9 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
       <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
 
         {/* Header with Floating Pill */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', padding: '0 4px', position: 'relative' }}>
-          {/* Volafly logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', padding: '0 4px', position: 'relative', minHeight: '52px' }}>
+          {/* Volafly logo — feste Breite damit rechte Seite nicht springt */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '180px' }}>
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" stroke-width="2.5" stroke-linecap="round" fill="none"/>
               <path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.45"/>
@@ -1277,13 +1278,13 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                 }}>{tab.label}</button>
               ))}
             </div>
-            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)', letterSpacing: '0.05em', fontWeight: 400, whiteSpace: 'nowrap', pointerEvents: 'none' }}>
+            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)', letterSpacing: '0.05em', fontWeight: 400, whiteSpace: 'nowrap', pointerEvents: 'none', height: '14px', display: 'block' }}>
               {activeTab === 'data' ? 'Aktuelle Indikatoren & Rohdaten' : 'Klassifikation & Handlungsempfehlung'}
             </span>
           </div>
 
-          {/* Rechte Seite — immer gleich breit, kein Layout-Shift */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Rechte Seite — feste min-width, kein Layout-Shift */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '180px', justifyContent: 'flex-end' }}>
 
             {lastImportDate ? (
               <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
@@ -1358,6 +1359,15 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                         <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '2px' }}>Eingeloggt als</div>
                         <div style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F7', wordBreak: 'break-all' }}>{user?.email}</div>
                       </div>
+                      {/* Kontakt */}
+                      <button
+                        onClick={() => { setMenuOpen(false); setShowContact(true); }}
+                        style={{ width: '100%', padding: '9px 10px', borderRadius: '10px', border: 'none', background: 'transparent', color: '#F5F5F7', fontSize: '13px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'left', fontFamily: 'inherit' }}
+                        onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.06)'}
+                        onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        Kontakt
+                      </button>
                       {/* Profile */}
                       <button
                         onClick={() => { setMenuOpen(false); setShowProfilePanel(true); }}
@@ -1817,6 +1827,70 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
         )}
 
       </div>
+
+      {/* Kontakt Modal */}
+      {showContact && (() => {
+        const [cEmail, setCEmail] = React.useState('');
+        const [cMsg, setCMsg]     = React.useState('');
+        const [cSent, setCSent]   = React.useState(false);
+        const send = () => {
+          if (!cEmail.trim() || !cMsg.trim()) return;
+          window.location.href = `mailto:info@volafly.net?subject=Nachricht von ${encodeURIComponent(cEmail)}&body=${encodeURIComponent(cMsg)}`;
+          setCSent(true);
+          setTimeout(() => { setCSent(false); setShowContact(false); }, 1500);
+        };
+        return (
+          <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            <div style={{ background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '28px', width: '100%', maxWidth: '420px' }}>
+              {/* Header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <div>
+                  <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Kontakt</h3>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '3px' }}>Wir freuen uns über dein Feedback</div>
+                </div>
+                <button onClick={() => setShowContact(false)} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+              </div>
+
+              {cSent ? (
+                <div style={{ textAlign: 'center', padding: '20px 0', color: '#30D158', fontSize: '14px', fontWeight: 600 }}>
+                  ✓ Mail-Client geöffnet
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '12px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>Deine E-Mail</div>
+                    <input
+                      type="email" value={cEmail} onChange={e => setCEmail(e.target.value)}
+                      placeholder="du@beispiel.de"
+                      style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#F5F5F7', fontSize: '13px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                      onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
+                      onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'}
+                    />
+                  </div>
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>Nachricht</div>
+                    <textarea
+                      value={cMsg} onChange={e => setCMsg(e.target.value)}
+                      placeholder="Deine Nachricht…"
+                      rows={5}
+                      style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#F5F5F7', fontSize: '13px', outline: 'none', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
+                      onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
+                      onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'}
+                    />
+                  </div>
+                  <button
+                    onClick={send}
+                    disabled={!cEmail.trim() || !cMsg.trim()}
+                    style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', cursor: (!cEmail.trim() || !cMsg.trim()) ? 'default' : 'pointer', background: (!cEmail.trim() || !cMsg.trim()) ? 'rgba(255,255,255,0.06)' : '#0A84FF', color: (!cEmail.trim() || !cMsg.trim()) ? 'rgba(255,255,255,0.25)' : '#fff', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit', transition: 'all 0.2s ease' }}>
+                    Nachricht senden
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
     </div>
   );
 };
