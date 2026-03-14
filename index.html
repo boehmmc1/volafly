@@ -254,6 +254,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [newProfileName, setNewProfileName] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileMsg, setProfileMsg]         = useState(null);
+  const [editingProfileId, setEditingProfileId] = useState(null);
 
   // Profile laden beim Mount
   useEffect(() => {
@@ -268,7 +269,6 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       .order('created_at', { ascending: false });
     if (!error && data && data.length > 0) {
       setProfiles(data);
-      // Zuletzt gespeichertes Profil automatisch anwenden
       const defaultProfile = data.find(p => p.is_default) || data[0];
       setThresholds(JSON.parse(JSON.stringify(defaultProfile.thresholds)));
       setActiveProfileId(defaultProfile.id);
@@ -278,25 +278,47 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const saveProfile = async () => {
     if (!newProfileName.trim()) return;
     setProfileLoading(true);
-    const { data, error } = await sbClient
-      .from('threshold_profiles')
-      .insert({ user_id: user.id, name: newProfileName.trim(), thresholds, is_default: profiles.length === 0 })
-      .select()
-      .single();
-    if (!error && data) {
-      setProfiles(prev => [data, ...prev]);
-      setActiveProfileId(data.id);
-      setNewProfileName('');
-      setProfileMsg({ type: 'success', text: `„${data.name}" gespeichert` });
+    // Wenn wir ein bestehendes Profil aktualisieren
+    if (editingProfileId) {
+      const { data, error } = await sbClient
+        .from('threshold_profiles')
+        .update({ name: newProfileName.trim(), thresholds })
+        .eq('id', editingProfileId)
+        .select()
+        .single();
+      if (!error && data) {
+        setProfiles(prev => prev.map(p => p.id === editingProfileId ? data : p));
+        setActiveProfileId(data.id);
+        setEditingProfileId(null);
+        setNewProfileName('');
+        setProfileMsg({ type: 'success', text: `„${data.name}" aktualisiert` });
+      } else {
+        setProfileMsg({ type: 'error', text: 'Fehler beim Aktualisieren' });
+      }
     } else {
-      setProfileMsg({ type: 'error', text: 'Fehler beim Speichern' });
+      // Neues Profil anlegen — erstes Profil wird automatisch Standard
+      const isFirst = profiles.length === 0;
+      const { data, error } = await sbClient
+        .from('threshold_profiles')
+        .insert({ user_id: user.id, name: newProfileName.trim(), thresholds, is_default: isFirst })
+        .select()
+        .single();
+      if (!error && data) {
+        setProfiles(prev => [data, ...prev]);
+        setActiveProfileId(data.id);
+        setNewProfileName('');
+        setProfileMsg({ type: 'success', text: `„${data.name}" gespeichert` });
+      } else {
+        setProfileMsg({ type: 'error', text: 'Fehler beim Speichern' });
+      }
     }
     setProfileLoading(false);
     setTimeout(() => setProfileMsg(null), 3000);
   };
 
   const setDefaultProfile = async (id) => {
-    // Alle auf false, dann das gewählte auf true
+    // Erst alle auf false setzen, dann nur das gewählte auf true — atomar über RPC vermieden,
+    // aber sequenziell sicher da wir danach den State komplett neu setzen
     await sbClient.from('threshold_profiles')
       .update({ is_default: false })
       .eq('user_id', user.id);
@@ -304,17 +326,27 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       .update({ is_default: true })
       .eq('id', id);
     if (!error) {
-      setProfiles(prev => prev.map(p => ({ ...p, is_default: p.id === id })));
+      // State komplett neu laden — kein partielles Update das zu doppeltem Standard führt
+      await loadProfiles();
       setProfileMsg({ type: 'success', text: 'Standard-Profil gesetzt' });
       setTimeout(() => setProfileMsg(null), 3000);
     }
   };
 
-  const loadProfile = async (profile) => {
+  const loadProfile = (profile) => {
     setThresholds(JSON.parse(JSON.stringify(profile.thresholds)));
     setActiveProfileId(profile.id);
-    setProfileMsg({ type: 'success', text: `„${profile.name}" geladen` });
-    setTimeout(() => setProfileMsg(null), 3000);
+    setShowProfilePanel(false); // Panel automatisch schließen
+  };
+
+  const startEditProfile = (p) => {
+    setEditingProfileId(p.id);
+    setNewProfileName(p.name);
+  };
+
+  const cancelEdit = () => {
+    setEditingProfileId(null);
+    setNewProfileName('');
   };
 
   const deleteProfile = async (id, name) => {
@@ -322,6 +354,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     if (!error) {
       setProfiles(prev => prev.filter(p => p.id !== id));
       if (activeProfileId === id) setActiveProfileId(null);
+      if (editingProfileId === id) { setEditingProfileId(null); setNewProfileName(''); }
       setProfileMsg({ type: 'success', text: `„${name}" gelöscht` });
       setTimeout(() => setProfileMsg(null), 3000);
     }
@@ -1038,35 +1071,61 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
               </div>
             )}
 
-            {/* Config + Profile buttons — Analysis tab */}
+            {/* Config button — Analysis tab only */}
             {activeTab === 'analysis' && (
-              <div style={{ display: 'flex', gap: '4px' }}>
-                <button onClick={() => { setDraftThresholds(JSON.parse(JSON.stringify(thresholds))); setValidationErrors({}); setInputTexts({}); setShowConfig(true); }}
-                  style={{ padding: '5px 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                    <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-                  </svg>
-                  Grenzwerte
-                </button>
-                <button onClick={() => setShowProfilePanel(true)}
-                  style={{ padding: '5px 10px', borderRadius: '14px', border: '0.5px solid rgba(191,90,242,0.3)', background: 'rgba(191,90,242,0.08)', color: '#BF5AF2', fontSize: '10px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '4px' }}
-                  onMouseEnter={e => { e.currentTarget.style.background='rgba(191,90,242,0.15)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background='rgba(191,90,242,0.08)'; }}>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                  Profile {profiles.length > 0 && `(${profiles.length})`}
-                </button>
-              </div>
+              <button onClick={() => { setDraftThresholds(JSON.parse(JSON.stringify(thresholds))); setValidationErrors({}); setInputTexts({}); setShowConfig(true); }}
+                style={{ padding: '5px 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '4px' }}
+                onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
+                onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                </svg>
+                Grenzwerte
+              </button>
             )}
 
-            {/* User avatar + logout */}
-            <div style={{ position: 'relative' }}>
-              <button onClick={signOut} title={`Abmelden (${user?.email})`}
-                style={{ width: '30px', height: '30px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '11px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {(user?.email?.[0] || '?').toUpperCase()}
-              </button>
-            </div>
+            {/* User menu — Avatar mit Dropdown */}
+            {(() => {
+              const [menuOpen, setMenuOpen] = React.useState(false);
+              return (
+                <div style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => setMenuOpen(o => !o)}
+                    title={user?.email}
+                    style={{ width: '30px', height: '30px', borderRadius: '50%', border: `0.5px solid ${menuOpen ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.1)'}`, background: menuOpen ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.06)', color: '#F5F5F7', cursor: 'pointer', fontSize: '11px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {(user?.email?.[0] || '?').toUpperCase()}
+                  </button>
+                  {menuOpen && (
+                    <div style={{ position: 'absolute', top: '38px', right: 0, background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '14px', padding: '6px', minWidth: '200px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 100 }}>
+                      {/* E-Mail */}
+                      <div style={{ padding: '8px 10px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
+                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '2px' }}>Eingeloggt als</div>
+                        <div style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F7', wordBreak: 'break-all' }}>{user?.email}</div>
+                      </div>
+                      {/* Profile */}
+                      <button
+                        onClick={() => { setMenuOpen(false); setShowProfilePanel(true); }}
+                        style={{ width: '100%', padding: '9px 10px', borderRadius: '10px', border: 'none', background: 'transparent', color: '#F5F5F7', fontSize: '13px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'left', fontFamily: 'inherit' }}
+                        onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.06)'}
+                        onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Grenzwert-Profile
+                        {profiles.length > 0 && <span style={{ marginLeft: 'auto', fontSize: '10px', background: 'rgba(191,90,242,0.15)', color: '#BF5AF2', padding: '1px 6px', borderRadius: '6px', fontWeight: 600 }}>{profiles.length}</span>}
+                      </button>
+                      {/* Abmelden */}
+                      <button
+                        onClick={signOut}
+                        style={{ width: '100%', padding: '9px 10px', borderRadius: '10px', border: 'none', background: 'transparent', color: '#FF453A', fontSize: '13px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'left', fontFamily: 'inherit' }}
+                        onMouseEnter={e => e.currentTarget.style.background='rgba(255,69,58,0.08)'}
+                        onMouseLeave={e => e.currentTarget.style.background='transparent'}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Abmelden
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
         </div>
 
@@ -1079,9 +1138,11 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
                 <button onClick={() => setShowProfilePanel(false)} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
               </div>
 
-              {/* Aktuelles Profil speichern */}
+              {/* Profil speichern / aktualisieren */}
               <div style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>Aktuellen Grenzwerte speichern als</div>
+                <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
+                  {editingProfileId ? 'Profil aktualisieren' : 'Aktuelle Grenzwerte speichern als'}
+                </div>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <input
                     type="text"
@@ -1089,13 +1150,19 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
                     onChange={e => setNewProfileName(e.target.value)}
                     onKeyDown={e => e.key === 'Enter' && saveProfile()}
                     placeholder="z.B. Konservativ, Mein Setup…"
-                    style={{ flex: 1, padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#F5F5F7', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
+                    style={{ flex: 1, padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: `0.5px solid ${editingProfileId ? 'rgba(191,90,242,0.35)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', color: '#F5F5F7', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
                     onFocus={e => e.target.style.borderColor='rgba(191,90,242,0.5)'}
-                    onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'}
+                    onBlur={e => e.target.style.borderColor= editingProfileId ? 'rgba(191,90,242,0.35)' : 'rgba(255,255,255,0.1)'}
                   />
+                  {editingProfileId && (
+                    <button onClick={cancelEdit}
+                      style={{ padding: '9px 12px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontFamily: 'inherit' }}>
+                      ✕
+                    </button>
+                  )}
                   <button onClick={saveProfile} disabled={profileLoading || !newProfileName.trim()}
-                    style={{ padding: '9px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: '#BF5AF2', color: '#fff', fontSize: '13px', fontWeight: 600, opacity: (!newProfileName.trim() || profileLoading) ? 0.4 : 1, fontFamily: 'inherit' }}>
-                    {profileLoading ? '…' : 'Speichern'}
+                    style={{ padding: '9px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: '#BF5AF2', color: '#fff', fontSize: '13px', fontWeight: 600, opacity: (!newProfileName.trim() || profileLoading) ? 0.4 : 1, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                    {profileLoading ? '…' : editingProfileId ? 'Aktualisieren' : 'Speichern'}
                   </button>
                 </div>
               </div>
@@ -1137,6 +1204,11 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
                           ★ Standard
                         </button>
                       )}
+                      <button onClick={() => startEditProfile(p)}
+                        style={{ padding: '5px 8px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }}
+                        title="Umbenennen oder Grenzwerte aktualisieren">
+                        ✎
+                      </button>
                       <button onClick={() => loadProfile(p)}
                         style={{ padding: '5px 12px', borderRadius: '8px', border: '0.5px solid rgba(191,90,242,0.3)', background: 'rgba(191,90,242,0.08)', color: '#BF5AF2', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
                         Laden
