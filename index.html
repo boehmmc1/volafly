@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Volafly — Volatilität lesen. On the fly.</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24' stroke='%23F5F5F7' stroke-width='2.5' stroke-linecap='round' fill='none'/><path d='M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18' stroke='%23F5F5F7' stroke-width='2' stroke-linecap='round' fill='none' opacity='0.5'/></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js" crossorigin></script>
@@ -23,6 +24,13 @@
     // 👉 HIER deine Supabase-Werte eintragen:
     const SUPABASE_URL  = 'https://jiycewpqjcvjbykcxaqi.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppeWNld3BxamN2amJ5a2N4YXFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1MDg0NjgsImV4cCI6MjA4OTA4NDQ2OH0._QGScZNrJ0qJbnXFCpJzG5GC2ZufUWbAa_1i2sGJB5w';
+
+    // ── EmailJS Konfiguration ──────────────────────────────────────────────
+    // Setup: https://emailjs.com → Account → Email Services + Email Templates
+    // Hier die 3 Werte aus dem EmailJS-Dashboard eintragen:
+    const EMAILJS_SERVICE_ID  = 'DEIN_SERVICE_ID';   // z.B. 'service_abc123'
+    const EMAILJS_TEMPLATE_ID = 'DEIN_TEMPLATE_ID';  // z.B. 'template_xyz789'
+    const EMAILJS_PUBLIC_KEY  = 'DEIN_PUBLIC_KEY';   // z.B. 'user_abc...'
     const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     // ─────────────────────────────────────────────────────────────────────
 
@@ -261,6 +269,9 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [showContact, setShowContact] = useState(false);
   const [contactEmail, setContactEmail] = useState('');
   const [contactMsg, setContactMsg]     = useState('');
+  const [contactSending, setContactSending] = useState(false);
+  const [contactSent, setContactSent]   = useState(false);
+  const [contactError, setContactError] = useState('');
 
   // ── Profil-Management ──
   const [profiles, setProfiles]             = useState([]);
@@ -1299,36 +1310,30 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
               </span>
             )}
 
-            {/* Sheets refresh — immer gerendert, nur sichtbar auf Marktlage */}
-            <div style={{ display: 'flex', gap: '4px', visibility: activeTab === 'data' ? 'visible' : 'hidden' }}>
+            {/* Tab-spezifische Buttons — feste Breite, kein Layout-Shift */}
+            <div style={{ position: 'relative', width: '108px', height: '28px', flexShrink: 0 }}>
+              {/* Sheets refresh — nur auf Marktlage */}
               <button
                 onClick={fetchFromSheets}
                 disabled={fetchLoading}
-                style={{ padding: '5px 12px', borderRadius: '14px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: fetchLoading ? 'rgba(255,255,255,0.25)' : '#0A84FF', fontSize: '10px', fontWeight: 600, cursor: fetchLoading ? 'default' : 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'inherit' }}
-                onMouseEnter={e => { if (!fetchLoading) e.currentTarget.style.background='rgba(10,132,255,0.15)'; }}
+                style={{ position: 'absolute', inset: 0, padding: '0 10px', borderRadius: '14px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: fetchLoading ? 'rgba(255,255,255,0.25)' : '#0A84FF', fontSize: '10px', fontWeight: 600, cursor: fetchLoading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px', fontFamily: 'inherit', transition: 'opacity 0.15s ease', opacity: activeTab === 'data' ? 1 : 0, pointerEvents: activeTab === 'data' ? 'auto' : 'none' }}
+                onMouseEnter={e => { if (!fetchLoading && activeTab === 'data') e.currentTarget.style.background='rgba(10,132,255,0.15)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background='rgba(10,132,255,0.08)'; }}>
-                {fetchLoading ? (
-                  <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '1.5px solid rgba(10,132,255,0.3)', borderTopColor: '#0A84FF', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                ) : (
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                    <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
-                  </svg>
-                )}
+                {fetchLoading
+                  ? <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '1.5px solid rgba(10,132,255,0.3)', borderTopColor: '#0A84FF', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  : <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>}
                 {fetchLoading ? 'Lädt…' : 'Aktualisieren'}
               </button>
+              {/* Grenzwerte — nur auf Bewertung */}
+              <button
+                onClick={() => { setDraftThresholds(JSON.parse(JSON.stringify(thresholds))); setValidationErrors({}); setInputTexts({}); setShowConfig(true); }}
+                style={{ position: 'absolute', inset: 0, padding: '0 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontFamily: 'inherit', transition: 'opacity 0.15s ease', opacity: activeTab === 'analysis' ? 1 : 0, pointerEvents: activeTab === 'analysis' ? 'auto' : 'none' }}
+                onMouseEnter={e => { if (activeTab === 'analysis') { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}}
+                onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                Grenzwerte
+              </button>
             </div>
-
-            {/* Grenzwerte — immer gerendert, nur sichtbar auf Bewertung */}
-            <button
-              onClick={() => { setDraftThresholds(JSON.parse(JSON.stringify(thresholds))); setValidationErrors({}); setInputTexts({}); setShowConfig(true); }}
-              style={{ padding: '5px 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '4px', visibility: activeTab === 'analysis' ? 'visible' : 'hidden' }}
-              onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
-              onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
-              </svg>
-              Grenzwerte
-            </button>
 
             {/* User menu — Avatar mit Dropdown */}
             {(() => {
@@ -1839,41 +1844,66 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                 <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Kontakt</h3>
                 <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '3px' }}>Wir freuen uns über dein Feedback</div>
               </div>
-              <button onClick={() => { setShowContact(false); setContactEmail(''); setContactMsg(''); }}
+              <button onClick={() => { setShowContact(false); setContactEmail(''); setContactMsg(''); setContactError(''); setContactSent(false); }}
                 style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
             </div>
 
-            <div style={{ marginBottom: '12px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>Deine E-Mail</div>
-              <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)}
-                placeholder="du@beispiel.de"
-                style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#F5F5F7', fontSize: '13px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
-                onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
-                onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'} />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>Nachricht</div>
-              <textarea value={contactMsg} onChange={e => setContactMsg(e.target.value)}
-                placeholder="Deine Nachricht…" rows={5}
-                style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#F5F5F7', fontSize: '13px', outline: 'none', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
-                onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
-                onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'} />
-            </div>
-
-            <button
-              onClick={() => {
-                if (!contactEmail.trim() || !contactMsg.trim()) return;
-                window.open(`mailto:info@volafly.net?subject=${encodeURIComponent('Nachricht von ' + contactEmail)}&body=${encodeURIComponent(contactMsg)}`, '_self');
-                setShowContact(false); setContactEmail(''); setContactMsg('');
-              }}
-              disabled={!contactEmail.trim() || !contactMsg.trim()}
-              style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', fontFamily: 'inherit', fontSize: '14px', fontWeight: 600, transition: 'all 0.2s ease', cursor: (!contactEmail.trim() || !contactMsg.trim()) ? 'default' : 'pointer', background: (!contactEmail.trim() || !contactMsg.trim()) ? 'rgba(255,255,255,0.06)' : '#0A84FF', color: (!contactEmail.trim() || !contactMsg.trim()) ? 'rgba(255,255,255,0.25)' : '#fff' }}>
-              Mail-Client öffnen
-            </button>
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', marginTop: '10px' }}>
-              Öffnet deinen Standard-Mail-Client mit vorausgefüllter Nachricht
-            </div>
+            {contactSent ? (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <div style={{ fontSize: '32px', marginBottom: '12px' }}>✓</div>
+                <div style={{ fontSize: '16px', fontWeight: 600, color: '#30D158', marginBottom: '6px' }}>Nachricht gesendet</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)' }}>Wir melden uns so schnell wie möglich.</div>
+              </div>
+            ) : (
+              <>
+                <div style={{ marginBottom: '12px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>Deine E-Mail</div>
+                  <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)}
+                    placeholder="du@beispiel.de"
+                    style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#F5F5F7', fontSize: '13px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                    onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
+                    onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'} />
+                </div>
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }}>Nachricht</div>
+                  <textarea value={contactMsg} onChange={e => setContactMsg(e.target.value)}
+                    placeholder="Deine Nachricht…" rows={5}
+                    style={{ width: '100%', padding: '10px 12px', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '10px', color: '#F5F5F7', fontSize: '13px', outline: 'none', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }}
+                    onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
+                    onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'} />
+                </div>
+                {contactError && (
+                  <div style={{ marginBottom: '12px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.2)', fontSize: '12px', color: '#FF453A' }}>
+                    ⚠ {contactError}
+                  </div>
+                )}
+                <button
+                  onClick={async () => {
+                    if (!contactEmail.trim() || !contactMsg.trim()) return;
+                    setContactSending(true);
+                    setContactError('');
+                    try {
+                      await window.emailjs.send(
+                        EMAILJS_SERVICE_ID,
+                        EMAILJS_TEMPLATE_ID,
+                        { from_email: contactEmail.trim(), message: contactMsg.trim() },
+                        EMAILJS_PUBLIC_KEY
+                      );
+                      setContactSent(true);
+                      setContactEmail('');
+                      setContactMsg('');
+                    } catch(err) {
+                      setContactError('Versand fehlgeschlagen — bitte später erneut versuchen.');
+                    }
+                    setContactSending(false);
+                  }}
+                  disabled={!contactEmail.trim() || !contactMsg.trim() || contactSending}
+                  style={{ width: '100%', padding: '12px', borderRadius: '12px', border: 'none', fontFamily: 'inherit', fontSize: '14px', fontWeight: 600, transition: 'all 0.2s ease', cursor: (!contactEmail.trim() || !contactMsg.trim() || contactSending) ? 'default' : 'pointer', background: (!contactEmail.trim() || !contactMsg.trim() || contactSending) ? 'rgba(255,255,255,0.06)' : '#0A84FF', color: (!contactEmail.trim() || !contactMsg.trim() || contactSending) ? 'rgba(255,255,255,0.25)' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  {contactSending && <span style={{ display: 'inline-block', width: '12px', height: '12px', border: '1.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />}
+                  {contactSending ? 'Wird gesendet…' : 'Nachricht senden'}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
