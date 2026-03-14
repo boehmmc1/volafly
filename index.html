@@ -427,7 +427,8 @@ S5FI_Above_50Day_MA;${String(marketData.movingAverages.breadth.above50day).repla
 S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).replace('.', ',')}
 HY_Spread;${String(marketData.riskIndicators.hySpread).replace('.', ',')}
 DXY;${String(marketData.riskIndicators.dxy).replace('.', ',')}
-Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`);
+Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
+
   const copyToClipboard = async () => {
     if (navigator.clipboard && window.isSecureContext) {
       try {
