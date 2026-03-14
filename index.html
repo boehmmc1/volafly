@@ -383,31 +383,31 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
 
   // ── Data-page tooltip descriptions ──
   const TOOLTIPS = {
-    fearGreed:    { label: 'Fear & Greed Index', desc: 'CNN Money Index (0–100). Aggregiert 7 Sentiment-Indikatoren. <25 = Extreme Fear (antizyklisch bullisch), >75 = Extreme Greed (Vorsicht).' },
-    equityPC:     { label: 'Equity Put/Call Ratio', desc: 'Verhältnis gekaufter Puts zu Calls auf Einzelaktien. <0,7 = bullische Stimmung, >1,0 = Angst / erhöhte Absicherungsnachfrage.' },
-    totalPC:      { label: 'Total Put/Call Ratio', desc: 'Put/Call inkl. Index-Optionen. Höhere Basis als Equity P/C. >1,2 = deutliche Risikoaversion am Markt.' },
-    y2:           { label: '2Y Treasury Yield', desc: 'US-Staatsanleihe 2 Jahre. Reagiert stark auf Fed-Erwartungen. Steigt bei erwarteten Zinserhöhungen.' },
-    y10:          { label: '10Y Treasury Yield', desc: 'Benchmark für langfristige US-Zinsen. Beeinflusst Hypotheken, Unternehmensanleihen und Aktienbewertungen (DCF-Abzinsungssatz).' },
-    y30:          { label: '30Y Treasury Yield', desc: 'Langfristiger US-Zins. Wichtig für Pensionsfonds und Versicherungen. Zeigt langfristige Inflationserwartungen.' },
-    vix:          { label: 'VIX — CBOE Volatility Index', desc: 'Implizite 30-Tage-Volatilität des S&P 500. „Angstbarometer" des Marktes. Historischer Schnitt ~20. >30 = erhöhter Stress, >40 = Panik.' },
-    rvx:          { label: 'RVX — Russell 2000 Vola', desc: 'Implizite Volatilität des Russell 2000 (Small Caps). Small Caps reagieren stärker auf Rezessionsängste. RVX > VIX = Small-Cap-Stress.' },
-    vxn:          { label: 'VXN — Nasdaq 100 Vola', desc: 'Implizite Volatilität des Nasdaq 100. Technologielastig — reagiert stark auf Zinsänderungen und Wachstumserwartungen.' },
-    vvix:         { label: 'VVIX — Volatility of VIX', desc: 'Misst die Schwankungsgeschwindigkeit des VIX selbst. >100 = VIX-Bewegungen werden erwartet. Früher Indikator für bevorstehende Volatilitätsspikes.' },
-    vixVxv:       { label: 'VIX / VXV Ratio', desc: 'Verhältnis 1-Monats- zu 3-Monats-Volatilität. <1 = normale Termstruktur (Contango). >1 = Inversion / Backwardation — kurzfristiger Stress höher als langfristiger.' },
-    skew:         { label: 'SKEW Index', desc: 'Misst die Nachfrage nach OTM-Puts vs. OTM-Calls auf den S&P 500. >130 = erhöhtes Tail-Risk / Crash-Absicherung. Historisch normal: 100–130.' },
-    move:         { label: 'MOVE Index', desc: 'Anleihe-Äquivalent des VIX (Merrill Lynch Option Volatility Estimate). Misst implizite Volatilität von US-Treasuries. Hohe Werte = Zinsunsicherheit.' },
-    leftTail:     { label: 'Left Tail Volatility', desc: 'Implizite Volatilität tief OTM S&P-Puts (Crash-Schutz). Zeigt, wie teuer Versicherung gegen starke Marktrückgänge ist.' },
-    breadth5:     { label: 'S&P 500 Breadth 5D', desc: '% der S&P-500-Aktien über ihrem 5-Tage-Durchschnitt. Kurzfristiger Momentum-Indikator. <30% = kurzfristig überverkauft.' },
-    breadth20:    { label: 'S&P 500 Breadth 20D', desc: '% der S&P-500-Aktien über ihrem 20-Tage-Durchschnitt. Mittelfristiger Trendindikator. <40% = breite Schwäche im Markt.' },
-    breadth50:    { label: 'S&P 500 Breadth 50D', desc: '% der S&P-500-Aktien über ihrem 50-Tage-Durchschnitt. Zeigt mittelfristige Marktbreite. <50% = mehr als die Hälfte im Abwärtstrend.' },
-    breadth200:   { label: 'S&P 500 Breadth 200D', desc: '% der S&P-500-Aktien über ihrem 200-Tage-Durchschnitt. Langfristiger Trendindikator. <40% = strukturelle Bärenmarkt-Signale.' },
-    termStructure:{ label: 'VIX Term Structure', desc: 'Zeigt die implizite Volatilität über VX-Futures-Laufzeiten. Contango (aufsteigend) = normal. Backwardation (absteigend) = kurzfristiger Stress erhöht.' },
-    vx1spot:      { label: 'VX1 – VIX Spot', desc: 'Spread zwischen erstem VIX-Future und Spot-VIX. Positiv = Markt erwartet steigende Vola. Negativ = Backwardation / akuter Stress.' },
-    vx2vx1:       { label: 'VX2 – VX1', desc: 'Spread zwischen zweitem und erstem VIX-Future. Positiv = normale Kurve. Negativ deutet auf anhaltenden Stress hin.' },
-    vx5vx1:       { label: 'VX5 – VX1', desc: 'Steigung der gesamten VIX-Termstruktur. Stark positiv = ruhiger Markt mit normalem Risikoprofil.' },
-    hySpread:     { label: 'HY Credit Spread (ICE BofA)', desc: 'Zinsdifferenz zwischen US-High-Yield-Anleihen und Staatsanleihen in Basispunkten. Frühindikator für systemischen Stress — weitet sich oft Wochen vor dem VIX aus. <300 bp = entspannt, 300–500 bp = erhöht, >500 bp = Stress, >800 bp = Krise (2008: 2000 bp).' },
-    dxy:          { label: 'US Dollar Index (DXY)', desc: 'Misst die Stärke des USD gegenüber einem Währungskorb (EUR, JPY, GBP, CAD, SEK, CHF). In Risk-Off-Phasen steigt der Dollar typischerweise. Ein steigender DXY bei gleichzeitig fallenden Aktien bestätigt echte Flucht in sichere Häfen. Historischer Bereich: 90–115.' },
-    goldSP:       { label: 'Gold / S&P 500 Ratio', desc: 'Verhältnis des Goldpreises zum S&P 500 Indexstand. Zeigt Flucht in Safe Haven in Echtzeit. Wenn Gold relativ zum S&P steigt, erhöht sich die Risikoaversion — Kapital rotiert aus Aktien in Edelmetalle. Steigendes Ratio = Risk-Off.' },
+    fearGreed:    { label: 'Fear & Greed Index', desc: 'Wie ängstlich oder gierig der Markt gerade ist. Unter 25 = Extreme Angst (antizyklisch bullisch). Über 75 = Gier (Vorsicht).' },
+    equityPC:     { label: 'Equity Put/Call', desc: 'Wie stark Anleger auf Einzelaktien absichern. Über 1,0 = erhöhte Angst im Markt.' },
+    totalPC:      { label: 'Total Put/Call', desc: 'Wie stark Anleger insgesamt absichern — inkl. Indizes. Über 1,2 = deutliche Risikoaversion.' },
+    y2:           { label: '2Y Treasury', desc: 'Kurzfristiger US-Zins. Spiegelt Fed-Erwartungen wider — steigt wenn Zinserhöhungen erwartet werden.' },
+    y10:          { label: '10Y Treasury', desc: 'Der wichtigste Langfristzins weltweit. Beeinflusst Aktienbewertungen, Hypotheken und Unternehmenskredite.' },
+    y30:          { label: '30Y Treasury', desc: 'Langfristige Inflationserwartung des Marktes. Relevant für Pensionsfonds und Versicherungen.' },
+    vix:          { label: 'VIX', desc: 'Das Angstbarometer. Misst erwartete S&P-Schwankung der nächsten 30 Tage. Schnitt ~20 — über 30 = Stress, über 40 = Panik.' },
+    rvx:          { label: 'RVX', desc: 'VIX-Äquivalent für Small Caps (Russell 2000). RVX > VIX signalisiert, dass kleine Unternehmen stärker unter Druck stehen.' },
+    vxn:          { label: 'VXN', desc: 'VIX-Äquivalent für den Nasdaq 100. Reagiert besonders stark auf Zinsänderungen und Tech-Stimmung.' },
+    vvix:         { label: 'VVIX', desc: 'Volatilität der Volatilität — wie schnell der VIX selbst schwankt. Über 100 = Vola-Spike wahrscheinlich.' },
+    vixVxv:       { label: 'VIX / VXV', desc: 'Verhältnis kurz- zu mittelfristiger Vola. Unter 1 = normal (Contango). Über 1 = kurzfristiger Stress höher als langfristiger.' },
+    skew:         { label: 'SKEW Index', desc: 'Nachfrage nach Crash-Absicherung (OTM-Puts). Über 130 = Markt fürchtet einen seltenen, starken Einbruch.' },
+    move:         { label: 'MOVE Index', desc: 'Der VIX für US-Staatsanleihen. Hohe Werte = Unsicherheit über künftige Zinsentwicklung.' },
+    leftTail:     { label: 'Left Tail Vola', desc: 'Wie teuer Crash-Schutz gerade ist. Steigt stark wenn Profis echte Absicherung suchen.' },
+    breadth5:     { label: 'Breadth 5D', desc: '% der S&P-Aktien über ihrem 5-Tage-Schnitt. Unter 30% = kurzfristig überverkauft.' },
+    breadth20:    { label: 'Breadth 20D', desc: '% der S&P-Aktien über ihrem 20-Tage-Schnitt. Unter 40% = breite mittelfristige Schwäche.' },
+    breadth50:    { label: 'Breadth 50D', desc: '% der S&P-Aktien über ihrem 50-Tage-Schnitt. Unter 50% = mehr als die Hälfte im Abwärtstrend.' },
+    breadth200:   { label: 'Breadth 200D', desc: '% der S&P-Aktien über ihrem 200-Tage-Schnitt. Unter 40% = strukturelle Bärenmarktsignale.' },
+    termStructure:{ label: 'VIX Termstruktur', desc: 'Verlauf der VIX-Futures nach Laufzeit. Aufsteigend = normal. Fallend (Backwardation) = akuter Stress.' },
+    vx1spot:      { label: 'VX1 – VIX Spot', desc: 'Abstand erster Future zum Spot-VIX. Negativ = Backwardation — Markt rechnet mit sofortiger Entspannung.' },
+    vx2vx1:       { label: 'VX2 – VX1', desc: 'Steigung zwischen zweitem und erstem Future. Negativ = anhaltender Stress wird eingepreist.' },
+    vx5vx1:       { label: 'VX5 – VX1', desc: 'Gesamtsteigung der Kurve. Stark positiv = Markt erwartet Normalisierung.' },
+    hySpread:     { label: 'HY Credit Spread', desc: 'Risikoaufschlag für Hochzinsanleihen vs. Staatsanleihen. Frühindikator — weitet sich oft Wochen vor dem VIX aus. Über 5% = Stress.' },
+    dxy:          { label: 'US Dollar (DXY)', desc: 'Stärke des USD gegenüber 6 Währungen. Steigt in Risk-Off-Phasen — bestätigt echte Flucht in sichere Häfen.' },
+    goldSP:       { label: 'Gold / S&P Ratio', desc: 'Gold geteilt durch S&P 500. Steigt das Ratio, flieht Kapital aus Aktien in Gold — ein klares Risk-Off-Signal.' },
   };
 
   // ── CSV Template (Original 2-column format: Metric;Value) ──
@@ -1148,7 +1148,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {/* Tab pill */}
             <div style={{ display: 'flex', padding: '2px', background: 'rgba(255,255,255,0.06)', borderRadius: '20px', border: '0.5px solid rgba(255,255,255,0.08)' }}>
-              {[{ key: 'data', label: 'Data' }, { key: 'analysis', label: 'Analysis' }].map((tab) => (
+              {[{ key: 'data', label: 'Marktlage' }, { key: 'analysis', label: 'Bewertung' }].map((tab) => (
                 <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
                   padding: '5px 16px', borderRadius: '18px', border: 'none', cursor: 'pointer',
                   fontSize: '12px', fontWeight: 600, letterSpacing: '-0.01em', transition: 'all 0.25s ease',
@@ -1205,8 +1205,21 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
             {/* User menu — Avatar mit Dropdown */}
             {(() => {
               const [menuOpen, setMenuOpen] = React.useState(false);
+              const menuRef = React.useRef(null);
+
+              React.useEffect(() => {
+                if (!menuOpen) return;
+                const handler = (e) => {
+                  if (menuRef.current && !menuRef.current.contains(e.target)) {
+                    setMenuOpen(false);
+                  }
+                };
+                document.addEventListener('mousedown', handler);
+                return () => document.removeEventListener('mousedown', handler);
+              }, [menuOpen]);
+
               return (
-                <div style={{ position: 'relative' }}>
+                <div ref={menuRef} style={{ position: 'relative' }}>
                   <button
                     onClick={() => setMenuOpen(o => !o)}
                     title={user?.email}
