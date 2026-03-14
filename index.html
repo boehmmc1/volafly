@@ -1089,25 +1089,32 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
         {/* ── Hero Card — volle Breite ── */}
         <div style={{ ...glass, marginBottom: '8px', padding: '28px 32px' }}>
 
-          {/* 5-Klassen-Spektrum oben — mehr Abstand für Label */}
-          <div style={{ display: 'flex', gap: '6px', marginBottom: '36px' }}>
-            {volaClasses.map((vc, i) => (
-              <div key={i} style={{ flex: 1, position: 'relative' }}>
-                <div style={{
-                  height: '4px', borderRadius: '2px',
+          {/* 5-Klassen-Spektrum — Balken + Label darunter, kein Overflow */}
+          <div style={{ marginBottom: '28px' }}>
+            {/* Balken-Reihe */}
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '8px' }}>
+              {volaClasses.map((vc, i) => (
+                <div key={i} style={{
+                  flex: 1, height: '4px', borderRadius: '2px',
                   background: i < overallLevel ? vc.color : 'rgba(255,255,255,0.08)',
                   transition: 'background 0.4s ease',
                 }} />
-                {/* Label immer rendern, nur aktive einblenden — verhindert Breitenshift */}
-                <div style={{
-                  position: 'absolute', top: '10px', left: '50%', transform: 'translateX(-50%)',
-                  fontSize: '9px', fontWeight: 700, color: vc.color, whiteSpace: 'nowrap',
+              ))}
+            </div>
+            {/* Label-Reihe — jedes Label in seinem eigenen flex-Segment */}
+            <div style={{ display: 'flex', gap: '6px' }}>
+              {volaClasses.map((vc, i) => (
+                <div key={i} style={{
+                  flex: 1,
+                  fontSize: '9px', fontWeight: 700, color: vc.color,
                   letterSpacing: '0.04em', textTransform: 'uppercase',
                   opacity: i === overallLevel - 1 ? 1 : 0,
                   transition: 'opacity 0.3s ease',
+                  whiteSpace: 'nowrap', overflow: 'visible',
+                  textAlign: i === 0 ? 'left' : i === 4 ? 'right' : 'center',
                 }}>{vc.label}</div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Hauptinhalt: 3 Spalten */}
