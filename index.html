@@ -250,11 +250,14 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     movingAverages: { breadth: { above5day: 52.4, above20day: 64.6, above50day: 68.2, above200day: 60.0 } },
     riskIndicators: { hySpread: 3.45, dxy: 104.2, goldSP: 0.52 }
   });
+  const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsmLGq2ejgt-yg-ER16AuBC2cjPmHJLa4voisbpgmo3qpNMo7LMNus01PLp6etdn2CJb9724Bp6y-d/pub?gid=0&single=true&output=csv';
+
   const [csvStatus, setCsvStatus] = useState(null);
   const [showTemplate, setShowTemplate] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [lastImportDate, setLastImportDate] = useState(null);
   const [dataTooltip, setDataTooltip] = useState(null);
+  const [fetchLoading, setFetchLoading] = useState(false);
 
   // ── Profil-Management ──
   const [profiles, setProfiles]             = useState([]);
@@ -270,6 +273,90 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     if (!sbClient || !user) return;
     loadProfiles();
   }, []);
+
+  // Google Sheets automatisch laden beim Mount
+  useEffect(() => {
+    fetchFromSheets();
+  }, []);
+
+  const parseSheetsCsv = (text) => {
+    const lines = text.split(/\r?\n/);
+    const data = {};
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim().replace(/^["']|["']$/g, '');
+      if (!line) continue;
+      const parts = line.split(';');
+      if (parts.length < 2) continue;
+      const metric = parts[0].trim().replace(/^["']|["']$/g, '');
+      const valueStr = parts[1].trim().replace(/^["']|["']$/g, '').replace(',', '.');
+      const value = parseFloat(valueStr);
+      if (!isNaN(value)) data[metric] = value;
+    }
+    return data;
+  };
+
+  const applySheetData = (data) => {
+    setMarketData({
+      volatilityMetrics: {
+        rvx:          data.RVX                  ?? marketData.volatilityMetrics.rvx,
+        vxn:          data.VXN                  ?? marketData.volatilityMetrics.vxn,
+        vix:          data.VIX                  ?? marketData.volatilityMetrics.vix,
+        vvix:         data.VVIX                 ?? marketData.volatilityMetrics.vvix,
+        vxv:          data.VXV                  ?? marketData.volatilityMetrics.vxv,
+        fearGreed:    data.Fear_Greed_Index      ?? marketData.volatilityMetrics.fearGreed,
+        equityPutCall:data.Equity_Put_Call_Ratio ?? marketData.volatilityMetrics.equityPutCall,
+        totalPutCall: data.Total_Put_Call_Ratio  ?? marketData.volatilityMetrics.totalPutCall,
+        skewIndex:    data.SKEW_Index            ?? marketData.volatilityMetrics.skewIndex,
+        moveIndex:    data.MOVE_Index            ?? marketData.volatilityMetrics.moveIndex,
+        leftTailVol:  data.Left_Tail_Volatility  ?? marketData.volatilityMetrics.leftTailVol,
+        vx1:          data.VX1                  ?? marketData.volatilityMetrics.vx1,
+        vx2:          data.VX2                  ?? marketData.volatilityMetrics.vx2,
+        vx3:          data.VX3                  ?? marketData.volatilityMetrics.vx3,
+        vx4:          data.VX4                  ?? marketData.volatilityMetrics.vx4,
+        vx5:          data.VX5                  ?? marketData.volatilityMetrics.vx5,
+      },
+      yieldCurve: {
+        y2:  data.Yield_2Y  ?? marketData.yieldCurve.y2,
+        y10: data.Yield_10Y ?? marketData.yieldCurve.y10,
+        y30: data.Yield_30Y ?? marketData.yieldCurve.y30,
+      },
+      movingAverages: { breadth: {
+        above5day:   data.S5FD_Above_5Day_MA   ?? marketData.movingAverages.breadth.above5day,
+        above20day:  data.S5TW_Above_20Day_MA  ?? marketData.movingAverages.breadth.above20day,
+        above50day:  data.S5FI_Above_50Day_MA  ?? marketData.movingAverages.breadth.above50day,
+        above200day: data.S5TH_Above_200Day_MA ?? marketData.movingAverages.breadth.above200day,
+      }},
+      riskIndicators: {
+        hySpread: data.HY_Spread      ?? marketData.riskIndicators.hySpread,
+        dxy:      data.DXY            ?? marketData.riskIndicators.dxy,
+        goldSP:   data.Gold_SP_Ratio  ?? marketData.riskIndicators.goldSP,
+      },
+    });
+  };
+
+  const fetchFromSheets = async () => {
+    setFetchLoading(true);
+    try {
+      const res = await fetch(SHEETS_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      const data = parseSheetsCsv(text);
+      const known = ['VIX','RVX','VXN','VVIX','VXV','Fear_Greed_Index','Equity_Put_Call_Ratio',
+        'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
+        'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
+        'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
+        'HY_Spread','DXY','Gold_SP_Ratio'];
+      const found = known.filter(k => data[k] !== undefined);
+      if (found.length === 0) throw new Error('Keine bekannten Felder im Sheet gefunden');
+      applySheetData(data);
+      setLastImportDate(new Date());
+      setCsvStatus({ type: 'success', msg: `${found.length} Felder aus Google Sheets geladen` });
+    } catch (err) {
+      setCsvStatus({ type: 'error', msg: `Google Sheets: ${err.message}` });
+    }
+    setFetchLoading(false);
+    setTimeout(() => setCsvStatus(null), 4000);
+  };
 
   const loadProfiles = async () => {
     const { data, error } = await sbClient
@@ -1172,21 +1259,23 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
               </span>
             )}
 
-            {/* CSV buttons — immer gerendert, nur sichtbar auf Marktlage */}
+            {/* Sheets refresh — immer gerendert, nur sichtbar auf Marktlage */}
             <div style={{ display: 'flex', gap: '4px', visibility: activeTab === 'data' ? 'visible' : 'hidden' }}>
-              <button onClick={() => setShowTemplate(true)} style={{ padding: '5px 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '4px' }}
-                onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
-                onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                Template
-              </button>
-              <label style={{ padding: '5px 10px', borderRadius: '14px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: '#0A84FF', fontSize: '10px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '4px' }}
-                onMouseEnter={e => { e.currentTarget.style.background='rgba(10,132,255,0.15)'; }}
+              <button
+                onClick={fetchFromSheets}
+                disabled={fetchLoading}
+                style={{ padding: '5px 12px', borderRadius: '14px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: fetchLoading ? 'rgba(255,255,255,0.25)' : '#0A84FF', fontSize: '10px', fontWeight: 600, cursor: fetchLoading ? 'default' : 'pointer', transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '5px', fontFamily: 'inherit' }}
+                onMouseEnter={e => { if (!fetchLoading) e.currentTarget.style.background='rgba(10,132,255,0.15)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background='rgba(10,132,255,0.08)'; }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                CSV Import
-                <input type="file" accept=".csv,.txt" onChange={handleFileUpload} style={{ display: 'none' }} />
-              </label>
+                {fetchLoading ? (
+                  <span style={{ display: 'inline-block', width: '10px', height: '10px', border: '1.5px solid rgba(10,132,255,0.3)', borderTopColor: '#0A84FF', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                ) : (
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                    <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+                  </svg>
+                )}
+                {fetchLoading ? 'Lädt…' : 'Aktualisieren'}
+              </button>
             </div>
 
             {/* Grenzwerte — immer gerendert, nur sichtbar auf Bewertung */}
