@@ -278,7 +278,9 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     if (!error && data && data.length > 0) {
       setProfiles(data);
       const defaultProfile = data.find(p => p.is_default) || data[0];
-      setThresholds(JSON.parse(JSON.stringify(defaultProfile.thresholds)));
+      // Merge: alte Profile haben neue Keys noch nicht — mit defaultThresholds auffüllen
+      const merged = { ...defaultThresholds, ...defaultProfile.thresholds };
+      setThresholds(merged);
       setActiveProfileId(defaultProfile.id);
     }
   };
@@ -342,9 +344,10 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   };
 
   const loadProfile = (profile) => {
-    setThresholds(JSON.parse(JSON.stringify(profile.thresholds)));
+    const merged = { ...defaultThresholds, ...profile.thresholds };
+    setThresholds(merged);
     setActiveProfileId(profile.id);
-    closeProfilePanel(); // Panel automatisch schließen
+    closeProfilePanel();
   };
 
   const startEditProfile = (p) => {
@@ -615,7 +618,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
 
   // Classify using config thresholds
   const classifyFromConfig = (key, value) => {
-    const cfg = thresholds[key];
+    const cfg = thresholds[key] ?? defaultThresholds[key];
     if (!cfg) return null;
     const [t1, t2, t3, t4] = cfg.values;
     if (cfg.dir === 'asc') {
