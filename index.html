@@ -150,12 +150,12 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
         const lines = text.split(/\r?\n/);
         const data = {};
         for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
+          const line = lines[i].trim().replace(/^["']|["']$/g, '');
           if (!line) continue;
           const parts = line.split(';');
           if (parts.length >= 2) {
-            const metric = parts[0].trim();
-            const valueStr = parts[1].trim().replace(',', '.');
+            const metric = parts[0].trim().replace(/^["']|["']$/g, '');
+            const valueStr = parts[1].trim().replace(/^["']|["']$/g, '').replace(',', '.');
             const value = parseFloat(valueStr);
             if (!isNaN(value)) data[metric] = value;
           }
