@@ -1,0 +1,1008 @@
+import React, { useState } from 'react';
+
+const MarketPivot = () => {
+  const [activeTab, setActiveTab] = useState('data');
+  const [showConfig, setShowConfig] = useState(false);
+
+  // ── Editable Thresholds Config ──
+  // range: [min, max] allowed for each indicator's thresholds
+  const defaultThresholds = {
+    vix:          { label: 'VIX',             values: [15, 20, 30, 40],         dir: 'asc',  range: [0, 100] },
+    vvix:         { label: 'VVIX',            values: [85, 100, 120, 140],      dir: 'asc',  range: [0, 250] },
+    vixVxv:       { label: 'VIX/VXV',         values: [0.85, 0.95, 1.00, 1.10], dir: 'asc',  range: [0.3, 2.0] },
+    vxn:          { label: 'VXN',             values: [18, 23, 33, 43],         dir: 'asc',  range: [0, 100] },
+    rvx:          { label: 'RVX',             values: [18, 23, 30, 40],         dir: 'asc',  range: [0, 100] },
+    fearGreed:    { label: 'Fear & Greed',    values: [75, 55, 35, 20],         dir: 'desc', range: [0, 100] },
+    equityPutCall:{ label: 'Equity P/C',      values: [0.60, 0.75, 0.95, 1.10], dir: 'asc',  range: [0, 3.0] },
+    vx1Spread:    { label: 'VX1 – VIX Spot',  values: [2.0, 0.5, -0.5, -2.0],  dir: 'desc', range: [-15, 15] },
+    vx2Spread:    { label: 'VX2 – VX1',       values: [1.0, 0.3, -0.3, -1.0],  dir: 'desc', range: [-10, 10] },
+  };
+  const [thresholds, setThresholds] = useState(defaultThresholds);
+  const [draftThresholds, setDraftThresholds] = useState(defaultThresholds);
+  const [tooltipKey, setTooltipKey] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
+  // Raw text per input cell so users can freely type commas
+  const [inputTexts, setInputTexts] = useState({});
+
+  const getInputText = (key, vi, fallback) => {
+    const k = `${key}-${vi}`;
+    return k in inputTexts ? inputTexts[k] : String(fallback).replace('.', ',');
+  };
+
+  // Validate a single indicator row
+  const validateRow = (key, cfg) => {
+    const vals = cfg.values;
+    const [min, max] = cfg.range;
+    if (vals.some(v2 => v2 < min || v2 > max)) {
+      return `${cfg.label}: Werte müssen zwischen ${String(min).replace('.', ',')} und ${String(max).replace('.', ',')} liegen`;
+    }
+    if (cfg.dir === 'asc') {
+      for (let i = 1; i < vals.length; i++) {
+        if (vals[i] <= vals[i - 1]) return `${cfg.label}: Werte müssen strikt aufsteigend sein`;
+      }
+    } else {
+      for (let i = 1; i < vals.length; i++) {
+        if (vals[i] >= vals[i - 1]) return `${cfg.label}: Werte müssen strikt absteigend sein`;
+      }
+    }
+    return null;
+  };
+
+  // Validate all rows and update errors state
+  const validateAll = (draft) => {
+    const errors = {};
+    Object.entries(draft).forEach(([key, cfg]) => {
+      const err = validateRow(key, cfg);
+      if (err) errors[key] = err;
+    });
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  const [marketData, setMarketData] = useState({
+    volatilityMetrics: {
+      rvx: 19.8, vxn: 19.49, vix: 15.06, vvix: 102.15, vxv: 18.02,
+      fearGreed: 45, equityPutCall: 0.68, totalPutCall: 0.92,
+      skewIndex: 143.78, moveIndex: 61.35, leftTailVol: 22.1,
+      vx1: 16.8, vx2: 17.3, vx3: 17.9, vx4: 18.4, vx5: 18.8
+    },
+    yieldCurve: { y2: 4.17, y10: 4.165, y30: 4.56 },
+    movingAverages: { breadth: { above5day: 52.4, above20day: 64.6, above50day: 68.2, above200day: 60.0 } }
+  });
+  const [csvStatus, setCsvStatus] = useState(null);
+  const [showTemplate, setShowTemplate] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  // ── CSV Template (Original 2-column format: Metric;Value) ──
+  const templateContent = `Metric;Value
+RVX;${String(marketData.volatilityMetrics.rvx).replace('.', ',')}
+VXN;${String(marketData.volatilityMetrics.vxn).replace('.', ',')}
+VIX;${String(marketData.volatilityMetrics.vix).replace('.', ',')}
+VVIX;${String(marketData.volatilityMetrics.vvix).replace('.', ',')}
+VXV;${String(marketData.volatilityMetrics.vxv).replace('.', ',')}
+Fear_Greed_Index;${marketData.volatilityMetrics.fearGreed}
+Equity_Put_Call_Ratio;${String(marketData.volatilityMetrics.equityPutCall).replace('.', ',')}
+Total_Put_Call_Ratio;${String(marketData.volatilityMetrics.totalPutCall).replace('.', ',')}
+SKEW_Index;${String(marketData.volatilityMetrics.skewIndex).replace('.', ',')}
+MOVE_Index;${String(marketData.volatilityMetrics.moveIndex).replace('.', ',')}
+Left_Tail_Volatility;${String(marketData.volatilityMetrics.leftTailVol).replace('.', ',')}
+VX1;${String(marketData.volatilityMetrics.vx1).replace('.', ',')}
+VX2;${String(marketData.volatilityMetrics.vx2).replace('.', ',')}
+VX3;${String(marketData.volatilityMetrics.vx3).replace('.', ',')}
+VX4;${String(marketData.volatilityMetrics.vx4).replace('.', ',')}
+VX5;${String(marketData.volatilityMetrics.vx5).replace('.', ',')}
+Yield_2Y;${String(marketData.yieldCurve.y2).replace('.', ',')}
+Yield_10Y;${String(marketData.yieldCurve.y10).replace('.', ',')}
+Yield_30Y;${String(marketData.yieldCurve.y30).replace('.', ',')}
+S5FD_Above_5Day_MA;${String(marketData.movingAverages.breadth.above5day).replace('.', ',')}
+S5TW_Above_20Day_MA;${String(marketData.movingAverages.breadth.above20day).replace('.', ',')}
+S5FI_Above_50Day_MA;${String(marketData.movingAverages.breadth.above50day).replace('.', ',')}
+S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).replace('.', ',')}`;
+
+  const copyToClipboard = async () => {
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(templateContent);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 3000);
+        return;
+      } catch (err) { /* fallback below */ }
+    }
+    const textArea = document.createElement('textarea');
+    textArea.value = templateContent;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    try {
+      const successful = document.execCommand('copy');
+      textArea.remove();
+      if (successful) { setCopySuccess(true); setTimeout(() => setCopySuccess(false), 3000); }
+    } catch (err) { textArea.remove(); }
+  };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const text = e.target.result;
+        const lines = text.split(/\r?\n/);
+        const data = {};
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+          const parts = line.split(';');
+          if (parts.length >= 2) {
+            const metric = parts[0].trim();
+            const valueStr = parts[1].trim().replace(',', '.');
+            const value = parseFloat(valueStr);
+            if (!isNaN(value)) data[metric] = value;
+          }
+        }
+        const newData = {
+          volatilityMetrics: {
+            rvx: data.RVX ?? marketData.volatilityMetrics.rvx,
+            vxn: data.VXN ?? marketData.volatilityMetrics.vxn,
+            vix: data.VIX ?? marketData.volatilityMetrics.vix,
+            vvix: data.VVIX ?? marketData.volatilityMetrics.vvix,
+            vxv: data.VXV ?? marketData.volatilityMetrics.vxv,
+            fearGreed: data.Fear_Greed_Index ?? marketData.volatilityMetrics.fearGreed,
+            equityPutCall: data.Equity_Put_Call_Ratio ?? marketData.volatilityMetrics.equityPutCall,
+            totalPutCall: data.Total_Put_Call_Ratio ?? marketData.volatilityMetrics.totalPutCall,
+            skewIndex: data.SKEW_Index ?? marketData.volatilityMetrics.skewIndex,
+            moveIndex: data.MOVE_Index ?? marketData.volatilityMetrics.moveIndex,
+            leftTailVol: data.Left_Tail_Volatility ?? marketData.volatilityMetrics.leftTailVol,
+            vx1: data.VX1 ?? marketData.volatilityMetrics.vx1,
+            vx2: data.VX2 ?? marketData.volatilityMetrics.vx2,
+            vx3: data.VX3 ?? marketData.volatilityMetrics.vx3,
+            vx4: data.VX4 ?? marketData.volatilityMetrics.vx4,
+            vx5: data.VX5 ?? marketData.volatilityMetrics.vx5,
+          },
+          yieldCurve: {
+            y2: data.Yield_2Y ?? marketData.yieldCurve.y2,
+            y10: data.Yield_10Y ?? marketData.yieldCurve.y10,
+            y30: data.Yield_30Y ?? marketData.yieldCurve.y30,
+          },
+          movingAverages: { breadth: {
+            above5day: data.S5FD_Above_5Day_MA ?? marketData.movingAverages.breadth.above5day,
+            above20day: data.S5TW_Above_20Day_MA ?? marketData.movingAverages.breadth.above20day,
+            above50day: data.S5FI_Above_50Day_MA ?? marketData.movingAverages.breadth.above50day,
+            above200day: data.S5TH_Above_200Day_MA ?? marketData.movingAverages.breadth.above200day,
+          }},
+        };
+        setMarketData(newData);
+        setCsvStatus({ type: 'success', msg: 'CSV erfolgreich importiert' });
+        setTimeout(() => setCsvStatus(null), 3000);
+        event.target.value = '';
+      } catch (error) {
+        setCsvStatus({ type: 'error', msg: 'Fehler beim Verarbeiten der CSV-Datei' });
+        setTimeout(() => setCsvStatus(null), 3000);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const f = (n, d = 1) => n.toFixed(d).replace('.', ',');
+  const v = marketData.volatilityMetrics;
+  const y = marketData.yieldCurve;
+  const b = marketData.movingAverages.breadth;
+
+  const fearColor = v.fearGreed < 25 ? '#FF3B30' : v.fearGreed < 45 ? '#FF9500' : v.fearGreed < 55 ? '#FFCC00' : v.fearGreed < 75 ? '#34C759' : '#30D158';
+  const contango = v.vx5 > v.vx1;
+  const vixRatio = v.vix / v.vxv;
+
+  const formatTime = (date) => {
+    if (!date) return '–';
+    return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' · ' +
+      date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const glass = {
+    background: 'rgba(255,255,255,0.04)',
+    backdropFilter: 'blur(40px) saturate(150%)',
+    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+    border: '0.5px solid rgba(255,255,255,0.08)',
+    borderRadius: '16px',
+    padding: '16px',
+  };
+
+  const sectionLabel = {
+    fontSize: '11px', fontWeight: 600, textTransform: 'uppercase',
+    letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: '12px',
+  };
+
+  const metricLabel = { fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: '2px' };
+  const metricValue = (color = '#F5F5F7') => ({ fontSize: '18px', fontWeight: 600, color, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' });
+
+  // ── Anticyclical Volatility Classification ──
+  // 5 classes: higher vola class = more fear = higher investment grade (anticyclical)
+  const volaClasses = [
+    { level: 1, label: 'Stille', color: '#8E8E93', investGrade: 'bis zu 40%', investPct: 40, investDesc: 'Markt zu ruhig — Complacency-Risiko' },
+    { level: 2, label: 'Ruhe', color: '#30D158', investGrade: 'bis zu 60%', investPct: 60, investDesc: 'Geringes Stressniveau — Basis-Exposure' },
+    { level: 3, label: 'Spannung', color: '#FFCC00', investGrade: 'bis zu 80%', investPct: 80, investDesc: 'Erhöhte Unsicherheit — selektiv aufbauen' },
+    { level: 4, label: 'Stress', color: '#FF9F0A', investGrade: 'bis zu 90%', investPct: 90, investDesc: 'Deutlicher Stress — antizyklisch erhöhen' },
+    { level: 5, label: 'Panik', color: '#FF453A', investGrade: 'bis zu 110%', investPct: 110, investDesc: 'Kapitulation — aggressiv investieren' },
+  ];
+
+  // Classify using config thresholds
+  const classifyFromConfig = (key, value) => {
+    const cfg = thresholds[key];
+    if (!cfg) return null;
+    const [t1, t2, t3, t4] = cfg.values;
+    if (cfg.dir === 'asc') {
+      // ascending: value ≤ t1 → 1, ≤ t2 → 2, etc.
+      return value <= t1 ? 1 : value <= t2 ? 2 : value <= t3 ? 3 : value <= t4 ? 4 : 5;
+    } else {
+      // descending: value ≥ t1 → 1, ≥ t2 → 2, etc.
+      return value >= t1 ? 1 : value >= t2 ? 2 : value >= t3 ? 3 : value >= t4 ? 4 : 5;
+    }
+  };
+
+  // Computed spreads
+  const vx1Spread = v.vx1 - v.vix;
+  const vx2Spread = v.vx2 - v.vx1;
+
+  // Individual indicator assessments
+  const indicators = [
+    { group: 'Volatilität', label: 'VIX', level: classifyFromConfig('vix', v.vix), value: f(v.vix) },
+    { group: 'Volatilität', label: 'RVX', level: classifyFromConfig('rvx', v.rvx), value: f(v.rvx) },
+    { group: 'Volatilität', label: 'VXN', level: classifyFromConfig('vxn', v.vxn), value: f(v.vxn) },
+    { group: 'Volatilität', label: 'VVIX', level: classifyFromConfig('vvix', v.vvix), value: f(v.vvix) },
+    { group: 'Struktur', label: 'VIX/VXV', level: classifyFromConfig('vixVxv', vixRatio), value: f(vixRatio, 3) },
+    { group: 'Struktur', label: 'VX1 – VIX Spot', level: classifyFromConfig('vx1Spread', vx1Spread), value: (vx1Spread >= 0 ? '+' : '') + f(vx1Spread, 2) },
+    { group: 'Struktur', label: 'VX2 – VX1', level: classifyFromConfig('vx2Spread', vx2Spread), value: (vx2Spread >= 0 ? '+' : '') + f(vx2Spread, 2) },
+    { group: 'Sentiment', label: 'Fear & Greed', level: classifyFromConfig('fearGreed', v.fearGreed), value: String(v.fearGreed) },
+    { group: 'Sentiment', label: 'Equity P/C', level: classifyFromConfig('equityPutCall', v.equityPutCall), value: f(v.equityPutCall, 2) },
+  ].filter(ind => ind.level !== null);
+
+  // Weighted average → overall vola class
+  const avgLevel = indicators.length > 0 ? indicators.reduce((sum, ind) => sum + ind.level, 0) / indicators.length : 1;
+  const overallLevel = Math.min(5, Math.max(1, Math.round(avgLevel)));
+  const currentClass = volaClasses[overallLevel - 1];
+
+  // Distribution
+  const levelDistribution = [1, 2, 3, 4, 5].map(l => indicators.filter(ind => ind.level === l).length);
+
+  const AssessmentRow = ({ label, level, value }) => {
+    const cls = volaClasses[level - 1];
+    const indInvestGrade = volaClasses[level - 1].investGrade;
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '10px',
+        padding: '8px 0',
+        borderBottom: '0.5px solid rgba(255,255,255,0.04)',
+      }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F7' }}>{label}</div>
+        </div>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', fontVariantNumeric: 'tabular-nums', marginRight: '2px' }}>{value}</div>
+        {/* Invest grade badge */}
+        <div style={{
+          fontSize: '9px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px',
+          background: `${cls.color}15`, color: cls.color, whiteSpace: 'nowrap',
+          minWidth: '52px', textAlign: 'center',
+        }}>
+          {indInvestGrade}
+        </div>
+        {/* 5-dot scale */}
+        <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+          {[1, 2, 3, 4, 5].map(l => (
+            <div key={l} style={{
+              width: l === level ? '8px' : '5px',
+              height: l === level ? '8px' : '5px',
+              borderRadius: '50%',
+              background: l <= level ? volaClasses[l - 1].color : 'rgba(255,255,255,0.08)',
+              transition: 'all 0.2s ease',
+              boxShadow: l === level ? `0 0 6px ${cls.color}40` : 'none',
+            }} />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  // ── DATA TAB ──
+  const DataView = () => (
+    <>
+      {/* Top row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+        {/* Fear & Greed */}
+        <div style={glass}>
+          <div style={sectionLabel}>Fear & Greed</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ fontSize: '42px', fontWeight: 700, color: fearColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{v.fearGreed}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{
+                height: '4px', borderRadius: '2px', position: 'relative',
+                background: 'linear-gradient(to right, #FF3B30, #FF9500, #FFCC00, #34C759, #30D158)',
+              }}>
+                <div style={{
+                  position: 'absolute', top: '-4px', left: `${v.fearGreed}%`, transform: 'translateX(-50%)',
+                  width: '12px', height: '12px', borderRadius: '50%', background: '#fff',
+                  boxShadow: `0 0 12px ${fearColor}`,
+                }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Put/Call */}
+        <div style={glass}>
+          <div style={sectionLabel}>Put/Call Ratios</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div>
+              <div style={metricLabel}>Equity</div>
+              <div style={metricValue(v.equityPutCall < 0.7 ? '#30D158' : v.equityPutCall > 1.0 ? '#FF453A' : '#FFCC00')}>
+                {f(v.equityPutCall, 2)}
+              </div>
+            </div>
+            <div>
+              <div style={metricLabel}>Total</div>
+              <div style={metricValue(v.totalPutCall < 1.0 ? '#30D158' : '#FF453A')}>
+                {f(v.totalPutCall, 2)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Yields */}
+        <div style={glass}>
+          <div style={sectionLabel}>US Treasuries</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+            {[
+              { label: '2Y', val: y.y2 },
+              { label: '10Y', val: y.y10 },
+              { label: '30Y', val: y.y30 },
+            ].map((item, i) => (
+              <div key={i}>
+                <div style={metricLabel}>{item.label}</div>
+                <div style={metricValue('#BF5AF2')}>{f(item.val, 2)}%</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Volatility row */}
+      <div style={{ ...glass, marginBottom: '8px' }}>
+        <div style={sectionLabel}>Volatility Indices</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(8, 1fr)', gap: '4px' }}>
+          {[
+            { label: 'VIX', val: f(v.vix) },
+            { label: 'RVX', val: f(v.rvx) },
+            { label: 'VXN', val: f(v.vxn) },
+            { label: 'VVIX', val: f(v.vvix) },
+            { label: 'VIX/VXV', val: f(vixRatio, 3) },
+            { label: 'SKEW', val: f(v.skewIndex) },
+            { label: 'MOVE', val: f(v.moveIndex) },
+            { label: 'Left Tail', val: f(v.leftTailVol) },
+          ].map((item, i) => (
+            <div key={i} style={{ textAlign: 'center', padding: '8px 0' }}>
+              <div style={metricLabel}>{item.label}</div>
+              <div style={metricValue('#F5F5F7')}>{item.val}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '8px' }}>
+        {/* Term Structure */}
+        <div style={glass}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={sectionLabel}>VIX Term Structure</div>
+            <div style={{
+              fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', marginBottom: '12px',
+              background: contango ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)',
+              color: contango ? '#30D158' : '#FF453A',
+            }}>
+              {contango ? 'Contango' : 'Backwardation'}
+            </div>
+          </div>
+
+          <svg viewBox="0 0 600 220" style={{ width: '100%', height: '220px' }}>
+            {[12, 14, 16, 18, 20].map((val, i) => (
+              <g key={i}>
+                <line x1="35" y1={190 - (val - 12) * 20} x2="580" y2={190 - (val - 12) * 20} stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
+                <text x="28" y={190 - (val - 12) * 20 + 3} fill="rgba(255,255,255,0.15)" fontSize="9" textAnchor="end">{val}</text>
+              </g>
+            ))}
+            <line x1="35" y1={190 - (v.vix - 12) * 20} x2="580" y2={190 - (v.vix - 12) * 20} stroke="rgba(255,159,10,0.4)" strokeWidth="1" strokeDasharray="4 3" />
+            <text x="575" y={190 - (v.vix - 12) * 20 - 6} fill="rgba(255,159,10,0.7)" fontSize="9" fontWeight="600" textAnchor="end">VIX Spot: {f(v.vix)}</text>
+            <defs>
+              <linearGradient id="areaGradB" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#0A84FF" stopOpacity="0.15" />
+                <stop offset="100%" stopColor="#0A84FF" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path
+              d={`M ${35 + 0 * 136},${190 - (v.vx1 - 12) * 20} L ${35 + 1 * 136},${190 - (v.vx2 - 12) * 20} L ${35 + 2 * 136},${190 - (v.vx3 - 12) * 20} L ${35 + 3 * 136},${190 - (v.vx4 - 12) * 20} L ${35 + 4 * 136},${190 - (v.vx5 - 12) * 20} L ${35 + 4 * 136},190 L 35,190 Z`}
+              fill="url(#areaGradB)"
+            />
+            <polyline
+              points={[v.vx1, v.vx2, v.vx3, v.vx4, v.vx5].map((val, i) => `${35 + i * 136},${190 - (val - 12) * 20}`).join(' ')}
+              fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            />
+            {[
+              { val: v.vx1, label: 'VX1' },
+              { val: v.vx2, label: 'VX2' },
+              { val: v.vx3, label: 'VX3' },
+              { val: v.vx4, label: 'VX4' },
+              { val: v.vx5, label: 'VX5' },
+            ].map((p, i) => (
+              <g key={i}>
+                <circle cx={35 + i * 136} cy={190 - (p.val - 12) * 20} r="3" fill="#0A84FF" />
+                <text x={35 + i * 136} y={190 - (p.val - 12) * 20 - 10} fill="#0A84FF" fontSize="10" fontWeight="600" textAnchor="middle">{f(p.val)}</text>
+                <text x={35 + i * 136} y={207} fill="rgba(255,255,255,0.25)" fontSize="9" fontWeight="500" textAnchor="middle">{p.label}</text>
+              </g>
+            ))}
+          </svg>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '4px' }}>
+            {[
+              { label: 'VX1–Spot', val: v.vx1 - v.vix },
+              { label: 'VX2–VX1', val: v.vx2 - v.vx1 },
+              { label: 'VX5–VX1', val: v.vx5 - v.vx1 },
+            ].map((s, i) => (
+              <div key={i} style={{
+                textAlign: 'center', padding: '6px',
+                background: 'rgba(255,255,255,0.02)', borderRadius: '8px',
+              }}>
+                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', marginBottom: '2px' }}>{s.label}</div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: s.val > 0 ? '#30D158' : '#FF453A', fontVariantNumeric: 'tabular-nums' }}>
+                  {s.val > 0 ? '+' : ''}{f(s.val, 2)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Breadth */}
+        <div style={glass}>
+          <div style={sectionLabel}>S&P 500 Breadth</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {[
+              { label: '5D', ticker: 'S5FD', val: b.above5day },
+              { label: '20D', ticker: 'S5TW', val: b.above20day },
+              { label: '50D', ticker: 'S5FI', val: b.above50day },
+              { label: '200D', ticker: 'S5TH', val: b.above200day },
+            ].map((item, i) => {
+              const color = item.val > 70 ? '#30D158' : item.val > 50 ? '#FFCC00' : item.val > 30 ? '#FF9F0A' : '#FF453A';
+              return (
+                <div key={i}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>{item.label}</span>
+                    <span style={{ fontSize: '15px', fontWeight: 600, color, fontVariantNumeric: 'tabular-nums' }}>{f(item.val)}%</span>
+                  </div>
+                  <div style={{ height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
+                    <div style={{ width: `${item.val}%`, height: '100%', background: color, borderRadius: '2px' }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+
+  // ── ANALYSIS TAB ──
+  const AnalysisView = () => {
+    // Derive groups dynamically from actual indicators
+    const groupNames = [...new Set(indicators.map(ind => ind.group))];
+    const groupedIndicators = groupNames.map(g => ({
+      group: g,
+      items: indicators.filter(ind => ind.group === g),
+    })).filter(g => g.items.length > 0);
+
+    const safeGroupLevel = (items) => {
+      if (items.length === 0) return 1;
+      return Math.min(5, Math.max(1, Math.round(items.reduce((s, it) => s + it.level, 0) / items.length)));
+    };
+
+    return (
+      <>
+        {/* Hero: Vola Class */}
+        <div style={{ ...glass, marginBottom: '8px', padding: '24px 16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px' }}>
+            {/* Left: Class level */}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>
+                Volatilitätsklasse
+              </div>
+              <div style={{ fontSize: '48px', fontWeight: 700, color: currentClass.color, letterSpacing: '-0.04em', lineHeight: 1 }}>
+                {overallLevel}<span style={{ fontSize: '24px', color: 'rgba(255,255,255,0.2)', fontWeight: 500 }}>/5</span>
+              </div>
+              <div style={{ fontSize: '14px', fontWeight: 600, color: currentClass.color, marginTop: '6px' }}>
+                {currentClass.label}
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div style={{ width: '0.5px', height: '70px', background: 'rgba(255,255,255,0.08)' }} />
+
+            {/* Right: Investment grade + scale */}
+            <div style={{ textAlign: 'center', minWidth: '220px' }}>
+              <div style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: '8px' }}>
+                Investitionsgrad
+              </div>
+              <div style={{ fontSize: '36px', fontWeight: 700, color: currentClass.color, letterSpacing: '-0.03em', lineHeight: 1 }}>
+                {currentClass.investGrade}
+              </div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginTop: '6px', marginBottom: '14px' }}>
+                {currentClass.investDesc}
+              </div>
+
+              {/* Investment fill bar — scaled from min to max investPct */}
+              {(() => {
+                const minPct = volaClasses[0].investPct;
+                const maxPct = volaClasses[volaClasses.length - 1].investPct;
+                const range = maxPct - minPct;
+                const fillRatio = (currentClass.investPct - minPct) / range;
+
+                return (
+                  <>
+                    <div style={{ position: 'relative', height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{
+                        width: `${fillRatio * 100}%`,
+                        height: '100%', borderRadius: '4px',
+                        background: `linear-gradient(90deg, ${volaClasses[0].color}, ${currentClass.color})`,
+                        transition: 'width 0.5s ease',
+                        boxShadow: `0 0 10px ${currentClass.color}30`,
+                      }} />
+                    </div>
+                    <div style={{ position: 'relative', height: '14px', marginTop: '4px' }}>
+                      {volaClasses.map((vc, i) => (
+                        <span key={i} style={{
+                          position: 'absolute',
+                          left: `${((vc.investPct - minPct) / range) * 100}%`,
+                          transform: 'translateX(-50%)',
+                          fontSize: '8px', fontWeight: i === overallLevel - 1 ? 700 : 400,
+                          color: i === overallLevel - 1 ? vc.color : 'rgba(255,255,255,0.15)',
+                        }}>
+                          {vc.investPct}%
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Assessment Cards per Group */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+          {groupedIndicators.map((g, gi) => (
+            <div key={gi} style={{ ...glass, ...(gi === groupedIndicators.length - 1 && groupedIndicators.length % 2 !== 0 ? { gridColumn: 'span 2' } : {}) }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={sectionLabel}>{g.group}</div>
+                {(() => {
+                  const gl = safeGroupLevel(g.items);
+                  return (
+                    <div style={{
+                      fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', marginBottom: '12px',
+                      background: `${volaClasses[gl - 1].color}15`,
+                      color: volaClasses[gl - 1].color,
+                    }}>
+                      {gl}/5
+                    </div>
+                  );
+                })()}
+              </div>
+              {g.items.map((item, ii) => (
+                <AssessmentRow key={ii} label={item.label} level={item.level} value={item.value} />
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {/* Distribution */}
+        <div style={glass}>
+          <div style={sectionLabel}>Signalverteilung</div>
+          <div style={{ display: 'flex', gap: '4px', height: '8px', borderRadius: '4px', overflow: 'hidden' }}>
+            {levelDistribution.map((count, i) => (
+              count > 0 ? (
+                <div key={i} style={{
+                  width: `${(count / indicators.length) * 100}%`,
+                  background: volaClasses[i].color,
+                  borderRadius: i === 0 ? '4px 0 0 4px' : i === 4 ? '0 4px 4px 0' : '0',
+                }} />
+              ) : null
+            ))}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+            {volaClasses.map((vc, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: vc.color }} />
+                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>{vc.label}</span>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: vc.color, fontVariantNumeric: 'tabular-nums' }}>{levelDistribution[i]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  // ── MAIN RENDER ──
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#0A0A0A',
+      backgroundImage: 'radial-gradient(ellipse at 20% 20%, rgba(10,132,255,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 80%, rgba(191,90,242,0.04) 0%, transparent 50%)',
+      color: '#F5F5F7',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif',
+      WebkitFontSmoothing: 'antialiased',
+      padding: '16px',
+    }}>
+      <div style={{ maxWidth: '1080px', margin: '0 auto' }}>
+
+        {/* Header with Floating Pill */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', padding: '0 4px' }}>
+          <h1 style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.03em', margin: 0 }}>Market Pivot</h1>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Floating Pill Toggle */}
+            <div style={{
+              display: 'flex', padding: '2px',
+              background: 'rgba(255,255,255,0.06)',
+              borderRadius: '20px',
+              border: '0.5px solid rgba(255,255,255,0.08)',
+            }}>
+              {[
+                { key: 'data', label: 'Data' },
+                { key: 'analysis', label: 'Analysis' },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  style={{
+                    padding: '5px 16px',
+                    borderRadius: '18px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    letterSpacing: '-0.01em',
+                    transition: 'all 0.25s ease',
+                    background: activeTab === tab.key ? 'rgba(255,255,255,0.12)' : 'transparent',
+                    color: activeTab === tab.key ? '#F5F5F7' : 'rgba(255,255,255,0.3)',
+                    boxShadow: activeTab === tab.key ? '0 1px 8px rgba(0,0,0,0.3)' : 'none',
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontVariantNumeric: 'tabular-nums' }}>12.02.2026 · 14:32</span>
+
+            {/* CSV buttons — visible on Data tab */}
+            {activeTab === 'data' && (
+              <div style={{ display: 'flex', gap: '4px' }}>
+                <button
+                  onClick={() => setShowTemplate(true)}
+                  style={{
+                    padding: '5px 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)',
+                    fontSize: '10px', fontWeight: 600, cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#F5F5F7'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Template
+                </button>
+                <label
+                  style={{
+                    padding: '5px 10px', borderRadius: '14px', border: '0.5px solid rgba(10,132,255,0.3)',
+                    background: 'rgba(10,132,255,0.08)', color: '#0A84FF',
+                    fontSize: '10px', fontWeight: 600, cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(10,132,255,0.15)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(10,132,255,0.08)'; }}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  CSV Import
+                  <input type="file" accept=".csv,.txt" onChange={handleFileUpload} style={{ display: 'none' }} />
+                </label>
+              </div>
+            )}
+
+            {/* Config button — only visible on Analysis tab */}
+            {activeTab === 'analysis' && (
+              <button
+                onClick={() => { setDraftThresholds(JSON.parse(JSON.stringify(thresholds))); setValidationErrors({}); setInputTexts({}); setShowConfig(true); }}
+                style={{
+                  padding: '5px 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)',
+                  background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)',
+                  fontSize: '10px', fontWeight: 600, cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#F5F5F7'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+                </svg>
+                Grenzwerte
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Template Modal */}
+        {showTemplate && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px',
+          }}>
+            <div style={{
+              background: '#1C1C1E',
+              border: '0.5px solid rgba(255,255,255,0.1)',
+              borderRadius: '20px',
+              padding: '24px',
+              width: '100%', maxWidth: '560px', maxHeight: '80vh', overflow: 'auto',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>CSV Template</h3>
+                <button onClick={() => setShowTemplate(false)} style={{
+                  background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: '50%',
+                  width: '28px', height: '28px', color: 'rgba(255,255,255,0.5)',
+                  fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>×</button>
+              </div>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginBottom: '12px' }}>
+                Kopiere diesen Inhalt und speichere ihn als .csv Datei. Werte mit Komma als Dezimaltrennzeichen.
+              </p>
+              <div style={{
+                background: 'rgba(0,0,0,0.3)', borderRadius: '12px', padding: '12px',
+                fontFamily: 'monospace', fontSize: '11px', color: 'rgba(255,255,255,0.6)',
+                overflow: 'auto', maxHeight: '340px', whiteSpace: 'pre-wrap', lineHeight: 1.5,
+              }}>
+                {templateContent}
+              </div>
+              <button
+                onClick={copyToClipboard}
+                style={{
+                  marginTop: '12px', width: '100%', padding: '10px',
+                  borderRadius: '12px', border: 'none', cursor: 'pointer',
+                  fontSize: '13px', fontWeight: 600,
+                  background: '#0A84FF', color: '#fff',
+                  transition: 'opacity 0.2s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; }}
+                onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+              >
+                In Zwischenablage kopieren
+              </button>
+              {copySuccess && (
+                <div style={{
+                  marginTop: '8px', padding: '8px', borderRadius: '8px',
+                  background: 'rgba(48,209,88,0.1)', border: '0.5px solid rgba(48,209,88,0.2)',
+                  color: '#30D158', fontSize: '11px', fontWeight: 500, textAlign: 'center',
+                }}>
+                  ✓ Template erfolgreich kopiert!
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Config Modal */}
+        {showConfig && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '16px',
+          }}>
+            <div style={{
+              background: '#1C1C1E',
+              border: '0.5px solid rgba(255,255,255,0.1)',
+              borderRadius: '20px',
+              padding: '24px',
+              width: '100%', maxWidth: '720px', maxHeight: '80vh', overflowY: 'auto',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Grenzwerte anpassen</h3>
+                <button onClick={() => setShowConfig(false)} style={{
+                  background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%',
+                  width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7',
+                  fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>×</button>
+              </div>
+
+              {/* Column headers */}
+              <div style={{ display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 60px', gap: '6px', marginBottom: '6px', padding: '0 4px' }}>
+                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Indikator</div>
+                {volaClasses.slice(0, 4).map((vc, i) => (
+                  <div key={i} style={{ fontSize: '9px', color: vc.color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {vc.label}
+                  </div>
+                ))}
+                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Richtung</div>
+              </div>
+
+              {/* Rows */}
+              {Object.entries(draftThresholds).map(([key, cfg]) => {
+                const err = validationErrors[key];
+                return (
+                  <div key={key} style={{
+                    display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 60px', gap: '6px',
+                    padding: '8px 4px', borderBottom: `0.5px solid ${err ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`,
+                    alignItems: 'center', position: 'relative',
+                  }}>
+                    {/* Label with tooltip */}
+                    <div
+                      style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F7', cursor: 'help', position: 'relative' }}
+                      onMouseEnter={() => setTooltipKey(key)}
+                      onMouseLeave={() => setTooltipKey(null)}
+                    >
+                      {cfg.label}
+                      {err && <span style={{ color: '#FF453A', fontSize: '10px', marginLeft: '4px' }}>!</span>}
+
+                      {/* Tooltip */}
+                      {tooltipKey === key && (
+                        <div style={{
+                          position: 'absolute', bottom: '100%', left: 0, marginBottom: '6px',
+                          background: '#2C2C2E', border: '0.5px solid rgba(255,255,255,0.12)',
+                          borderRadius: '10px', padding: '8px 12px', zIndex: 10,
+                          minWidth: '180px', boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+                        }}>
+                          <div style={{ fontSize: '11px', fontWeight: 600, color: '#F5F5F7', marginBottom: '4px' }}>{cfg.label}</div>
+                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>
+                            Erlaubter Bereich: <span style={{ color: '#0A84FF', fontWeight: 600 }}>
+                              {String(cfg.range[0]).replace('.', ',')} – {String(cfg.range[1]).replace('.', ',')}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
+                            {cfg.dir === 'asc' ? 'Werte müssen aufsteigend sein' : 'Werte müssen absteigend sein'}
+                          </div>
+                          {err && <div style={{ fontSize: '10px', color: '#FF453A', marginTop: '4px' }}>{err}</div>}
+                        </div>
+                      )}
+                    </div>
+
+                    {cfg.values.map((val, vi) => (
+                      <input
+                        key={vi}
+                        type="text"
+                        value={getInputText(key, vi, val)}
+                        onChange={(e) => {
+                          // Store raw text freely — allow commas, minus, dots
+                          setInputTexts(prev => ({ ...prev, [`${key}-${vi}`]: e.target.value }));
+                        }}
+                        onBlur={(e) => {
+                          const raw = e.target.value.replace(',', '.');
+                          const num = parseFloat(raw);
+                          if (!isNaN(num)) {
+                            // Apply value
+                            setDraftThresholds(prev => {
+                              const next = { ...prev };
+                              next[key] = { ...next[key], values: next[key].values.map((v2, i2) => i2 === vi ? num : v2) };
+                              // Re-validate after update
+                              setTimeout(() => validateAll(next), 0);
+                              return next;
+                            });
+                          }
+                          // Clear raw text → display formatted value
+                          setInputTexts(prev => {
+                            const copy = { ...prev };
+                            delete copy[`${key}-${vi}`];
+                            return copy;
+                          });
+                          e.target.style.borderColor = err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.08)';
+                        }}
+                        style={{
+                          background: err ? 'rgba(255,69,58,0.06)' : 'rgba(255,255,255,0.06)',
+                          border: `0.5px solid ${err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                          borderRadius: '8px',
+                          padding: '6px 8px',
+                          fontSize: '13px', fontWeight: 600,
+                          color: '#F5F5F7',
+                          textAlign: 'center',
+                          fontVariantNumeric: 'tabular-nums',
+                          width: '100%',
+                          outline: 'none',
+                        }}
+                        onFocus={e => e.target.style.borderColor = 'rgba(10,132,255,0.5)'}
+                      />
+                    ))}
+                    <div style={{
+                      fontSize: '9px', fontWeight: 600, textAlign: 'center',
+                      color: 'rgba(255,255,255,0.3)',
+                      padding: '4px',
+                      background: 'rgba(255,255,255,0.03)',
+                      borderRadius: '6px',
+                    }}>
+                      {cfg.dir === 'asc' ? '↑ steig.' : '↓ fall.'}
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div style={{ marginTop: '16px', fontSize: '10px', color: 'rgba(255,255,255,0.25)', lineHeight: 1.5 }}>
+                <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↑ steigend:</strong> Werte müssen aufsteigend und unterschiedlich sein<br />
+                <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↓ fallend:</strong> Werte müssen absteigend und unterschiedlich sein<br />
+                <span style={{ color: 'rgba(255,255,255,0.2)' }}>Fahre über einen Indikator für den erlaubten Wertebereich</span>
+              </div>
+
+              {/* Global error summary */}
+              {Object.keys(validationErrors).length > 0 && (
+                <div style={{
+                  marginTop: '12px', padding: '10px 14px', borderRadius: '10px',
+                  background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.2)',
+                  fontSize: '11px', color: '#FF453A', lineHeight: 1.5,
+                }}>
+                  {Object.values(validationErrors).map((msg, i) => (
+                    <div key={i}>• {msg}</div>
+                  ))}
+                </div>
+              )}
+
+              {/* Aktualisieren Button */}
+              <button
+                onClick={() => {
+                  if (validateAll(draftThresholds)) {
+                    setThresholds(JSON.parse(JSON.stringify(draftThresholds)));
+                    setShowConfig(false);
+                  }
+                }}
+                style={{
+                  marginTop: '16px', width: '100%', padding: '12px',
+                  borderRadius: '12px', border: 'none', cursor: 'pointer',
+                  background: Object.keys(validationErrors).length > 0 ? 'rgba(255,255,255,0.06)' : '#0A84FF',
+                  color: Object.keys(validationErrors).length > 0 ? 'rgba(255,255,255,0.3)' : '#fff',
+                  fontSize: '14px', fontWeight: 600,
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={e => { if (Object.keys(validationErrors).length === 0) e.currentTarget.style.opacity = '0.85'; }}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                Aktualisieren
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* CSV Status Toast */}
+        {csvStatus && (
+          <div style={{
+            marginBottom: '8px', padding: '10px 14px', borderRadius: '12px',
+            background: csvStatus.type === 'success' ? 'rgba(48,209,88,0.08)' : 'rgba(255,69,58,0.08)',
+            border: `0.5px solid ${csvStatus.type === 'success' ? 'rgba(48,209,88,0.2)' : 'rgba(255,69,58,0.2)'}`,
+            fontSize: '11px', fontWeight: 500,
+            color: csvStatus.type === 'success' ? '#30D158' : '#FF453A',
+            display: 'flex', alignItems: 'center', gap: '8px',
+          }}>
+            <span>{csvStatus.type === 'success' ? '✓' : '⚠'} {csvStatus.msg}</span>
+            <button onClick={() => setCsvStatus(null)} style={{
+              marginLeft: 'auto', background: 'none', border: 'none',
+              color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '14px', lineHeight: 1,
+            }}>×</button>
+          </div>
+        )}
+
+        {/* Tab Content */}
+        {activeTab === 'data' ? <DataView /> : <AnalysisView />}
+
+      </div>
+    </div>
+  );
+};
+
+export default MarketPivot;
