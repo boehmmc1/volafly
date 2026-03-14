@@ -1,4 +1,22 @@
-import React, { useState } from 'react';
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Pivot</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js" crossorigin></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0A0A0A; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState } = React;
+
 
 const MarketPivot = () => {
   const [activeTab, setActiveTab] = useState('data');
@@ -1005,4 +1023,7 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
   );
 };
 
-export default MarketPivot;
+    ReactDOM.render(<MarketPivot />, document.getElementById('root'));
+  </script>
+</body>
+</html>
