@@ -350,7 +350,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       if (found.length === 0) throw new Error('Keine bekannten Felder im Sheet gefunden');
       applySheetData(data);
       setLastImportDate(new Date());
-      setCsvStatus({ type: 'success', msg: `${found.length} Felder aus Google Sheets geladen` });
+      // Kein Success-Toast — Timestamp-Update genügt als Feedback
     } catch (err) {
       setCsvStatus({ type: 'error', msg: `Google Sheets: ${err.message}` });
     }
@@ -1237,12 +1237,6 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                 boxShadow: activeTab === tab.key ? '0 1px 8px rgba(0,0,0,0.3)' : 'none',
               }}>{tab.label}</button>
             ))}
-          </div>
-          {/* Option B — Subtitle je nach aktivem Tab */}
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '38px', whiteSpace: 'nowrap' }}>
-            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.22)', letterSpacing: '0.04em', fontWeight: 500 }}>
-              {activeTab === 'data' ? 'Aktuelle Indikatoren & Rohdaten' : 'Klassifikation & Handlungsempfehlung'}
-            </span>
           </div>
 
           {/* Rechte Seite — immer gleich breit, kein Layout-Shift */}
