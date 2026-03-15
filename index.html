@@ -39,6 +39,7 @@
       const [password, setPass]   = useState('');
       const [error, setError]     = useState('');
       const [loading, setLoading] = useState(false);
+      const [resetSent, setResetSent] = useState(false);
 
       const handleAuth = async (e) => {
         e.preventDefault();
@@ -60,6 +61,14 @@
           setError(err.message || 'Fehler bei der Anmeldung');
         }
         setLoading(false);
+      };
+
+      const handleReset = async () => {
+        if (!email.trim()) { setError('Bitte zuerst E-Mail eingeben.'); return; }
+        setLoading(true); setError('');
+        const { error: e } = await sb.auth.resetPasswordForEmail(email.trim());
+        setLoading(false);
+        if (e) { setError(e.message); } else { setResetSent(true); }
       };
 
       const features = [
@@ -162,7 +171,23 @@
                   onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
                   onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'}
                   placeholder="Mindestens 6 Zeichen" />
+                {mode === 'login' && (
+                  <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                    <button type="button" onClick={handleReset} disabled={loading}
+                      style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
+                      onMouseEnter={e => e.currentTarget.style.color='rgba(255,255,255,0.6)'}
+                      onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.3)'}>
+                      Passwort vergessen?
+                    </button>
+                  </div>
+                )}
               </div>
+
+              {resetSent && (
+                <div style={{ marginBottom: '16px', padding: '10px 14px', borderRadius: '10px', background: 'rgba(48,209,88,0.08)', border: '0.5px solid rgba(48,209,88,0.2)', fontSize: '12px', color: '#30D158', lineHeight: 1.4 }}>
+                  ✓ Reset-Link gesendet — bitte E-Mail prüfen.
+                </div>
+              )}
 
               {error && (
                 <div style={{ marginBottom: '16px', padding: '10px 14px', borderRadius: '10px', background: error.includes('gesendet') ? 'rgba(48,209,88,0.08)' : 'rgba(255,69,58,0.08)', border: `0.5px solid ${error.includes('gesendet') ? 'rgba(48,209,88,0.2)' : 'rgba(255,69,58,0.2)'}`, fontSize: '12px', color: error.includes('gesendet') ? '#30D158' : '#FF453A', lineHeight: 1.4 }}>
@@ -1945,20 +1970,23 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
           {
             title: 'Marktlage — deine Rohdaten',
             desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch geladen.',
-            cta: 'Weiter',
-            highlight: 'data',
+            cta: 'Zur Bewertung →',
+            tab: 'data',
+            nextTab: 'analysis',
           },
           {
             title: 'Bewertung — die Interpretation',
             desc: 'Volafly klassifiziert alle Indikatoren in 5 Stufen (Stille → Panik) und leitet daraus einen Investitionsgrad ab. Antizyklisch: je mehr Stress, desto höher die empfohlene Investitionsquote.',
-            cta: 'Weiter',
-            highlight: 'analysis',
+            cta: 'Und so lädst du Daten →',
+            tab: 'analysis',
+            nextTab: 'data',
           },
           {
             title: 'Daten laden & anpassen',
-            desc: 'Klick auf „Aktualisieren" . Unter Bewertung → Grenzwerte kannst du alle Schwellenwerte anpassen und als eigene Konfiguration speichern.',
+            desc: 'Klick auf „Aktualisieren" oben rechts um aktuelle Marktdaten zu laden. Unter Bewertung → Grenzwerte kannst du alle Schwellenwerte anpassen und als eigene Konfiguration speichern.',
             cta: 'Loslegen',
-            highlight: null,
+            tab: 'data',
+            nextTab: null,
           },
         ];
         const step = steps[onboardStep];
@@ -1967,13 +1995,22 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
           setShowOnboarding(false);
         };
         return (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 40px' }}>
-            <div style={{ background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '24px', padding: '28px', width: '100%', maxWidth: '480px' }}>
-              {/* Step dots */}
+          <div style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 40px' }}>
+            {/* Klick auf Hintergrund schließt */}
+            <div style={{ position: 'absolute', inset: 0 }} onClick={finish} />
+            <div style={{ position: 'relative', background: 'rgba(28,28,30,0.96)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: '24px', padding: '28px', width: '100%', maxWidth: '480px', boxShadow: '0 -8px 40px rgba(0,0,0,0.4)' }}>
+              {/* Step-Balken */}
               <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
                 {steps.map((_, i) => (
                   <div key={i} style={{ height: '3px', flex: 1, borderRadius: '2px', background: i <= onboardStep ? '#0A84FF' : 'rgba(255,255,255,0.1)', transition: 'background 0.3s ease' }} />
                 ))}
+              </div>
+              {/* Tab-Indikator */}
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '6px', background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', marginBottom: '12px' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0A84FF' }} />
+                <span style={{ fontSize: '10px', fontWeight: 600, color: '#0A84FF', letterSpacing: '0.04em' }}>
+                  {step.tab === 'data' ? 'Marktlage' : 'Bewertung'}
+                </span>
               </div>
               <div style={{ fontSize: '17px', fontWeight: 700, color: '#F5F5F7', marginBottom: '10px', letterSpacing: '-0.01em' }}>{step.title}</div>
               <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, marginBottom: '24px' }}>{step.desc}</div>
@@ -1982,14 +2019,14 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                 <button
                   onClick={() => {
                     if (onboardStep < steps.length - 1) {
-                      if (step.highlight) setActiveTab(step.highlight);
+                      if (step.nextTab) setActiveTab(step.nextTab);
                       setOnboardStep(s => s + 1);
                     } else {
                       finish();
                     }
                   }}
-                  style={{ padding: '10px 24px', borderRadius: '12px', border: 'none', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {step.cta} {onboardStep < steps.length - 1 ? '→' : ''}
+                  style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 12px rgba(10,132,255,0.3)' }}>
+                  {step.cta}
                 </button>
               </div>
             </div>
