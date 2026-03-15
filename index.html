@@ -314,6 +314,84 @@
 
 
 
+const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowProfilePanel, onFinish }) => {
+  const steps = [
+    {
+      title: 'Marktlage — deine Rohdaten',
+      desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch geladen.',
+      cta: 'Zur Bewertung →',
+      tab: 'data',
+      nextTab: 'analysis',
+      action: null,
+    },
+    {
+      title: 'Bewertung — die Interpretation',
+      desc: 'Volafly klassifiziert alle Indikatoren in 5 Stufen (Stille → Panik) und leitet daraus einen Investitionsgrad ab. Je mehr Stress, desto höher die empfohlene Investitionsquote.',
+      cta: 'Konfiguration anpassen →',
+      tab: 'analysis',
+      nextTab: 'analysis',
+      action: null,
+    },
+    {
+      title: 'Konfiguration anpassen',
+      desc: 'Unter Bewertung → Grenzwerte kannst du alle Schwellenwerte anpassen und als eigene Konfiguration speichern.',
+      cta: 'Risikomanagement speichern →',
+      tab: 'analysis',
+      nextTab: 'analysis',
+      action: 'profiles',
+    },
+    {
+      title: 'Eigenes Risikomanagement speichern',
+      desc: 'Speichere deine Grenzwerte als Konfiguration — z.B. "Konservativ" oder "Aggressiv". Mehrere Profile möglich, eines als Standard setzen.',
+      cta: 'Loslegen',
+      tab: 'analysis',
+      nextTab: null,
+      action: null,
+    },
+  ];
+
+  const step = steps[onboardStep];
+
+  const handleNext = () => {
+    if (onboardStep < steps.length - 1) {
+      if (step.nextTab) setActiveTab(step.nextTab);
+      if (step.action === 'profiles') setShowProfilePanel(true);
+      setOnboardStep(onboardStep + 1);
+    } else {
+      onFinish();
+    }
+  };
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 40px' }}>
+      <div style={{ position: 'absolute', inset: 0 }} onClick={onFinish} />
+      <div style={{ position: 'relative', background: 'rgba(28,28,30,0.96)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: '24px', padding: '28px', width: '100%', maxWidth: '480px', boxShadow: '0 -8px 40px rgba(0,0,0,0.4)' }}>
+        {/* Fortschrittsbalken */}
+        <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
+          {steps.map((_, i) => (
+            <div key={i} style={{ height: '3px', flex: 1, borderRadius: '2px', background: i <= onboardStep ? '#0A84FF' : 'rgba(255,255,255,0.1)', transition: 'background 0.3s ease' }} />
+          ))}
+        </div>
+        {/* Tab-Badge */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '6px', background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', marginBottom: '12px' }}>
+          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0A84FF' }} />
+          <span style={{ fontSize: '10px', fontWeight: 600, color: '#0A84FF', letterSpacing: '0.04em' }}>
+            {step.tab === 'data' ? 'Marktlage' : 'Bewertung'}
+          </span>
+        </div>
+        <div style={{ fontSize: '17px', fontWeight: 700, color: '#F5F5F7', marginBottom: '10px', letterSpacing: '-0.01em' }}>{step.title}</div>
+        <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, marginBottom: '24px' }}>{step.desc}</div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button onClick={onFinish} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Überspringen</button>
+          <button onClick={handleNext} style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 12px rgba(10,132,255,0.3)' }}>
+            {step.cta}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const MarketPivot = ({ user, supabase: sbClient }) => {
   const [activeTab, setActiveTab] = useState('data');
   const [showConfig, setShowConfig] = useState(false);
@@ -2043,85 +2121,22 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
       )}
 
       {/* ── Onboarding Overlay (einmalig) ── */}
-      {showOnboarding && (() => {
-        const steps = [
-          {
-            title: 'Marktlage — deine Rohdaten',
-            desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch geladen.',
-            cta: 'Zur Bewertung →',
-            tab: 'data',
-            nextTab: 'analysis',
-            action: null,
-          },
-          {
-            title: 'Bewertung — die Interpretation',
-            desc: 'Volafly klassifiziert alle Indikatoren in 5 Stufen (Stille → Panik) und leitet daraus einen Investitionsgrad ab. Je mehr Stress, desto höher die empfohlene Investitionsquote.',
-            cta: 'Konfiguration anpassen →',
-            tab: 'analysis',
-            nextTab: 'analysis',
-            action: null,
-          },
-          {
-            title: 'Konfiguration anpassen',
-            desc: 'Unter Bewertung → Grenzwerte kannst du alle Schwellenwerte anpassen und als eigene Konfiguration speichern.',
-            cta: 'Risikomanagement speichern →',
-            tab: 'analysis',
-            nextTab: 'analysis',
-            action: 'profiles',
-          },
-          {
-            title: 'Eigenes Risikomanagement speichern',
-            desc: 'Speichere deine Grenzwerte als Konfiguration — z.B. "Konservativ" oder "Aggressiv". Mehrere Profile möglich, eines als Standard setzen.',
-            cta: 'Loslegen',
-            tab: 'analysis',
-            nextTab: null,
-            action: null,
-          },
-        ];
-        const step = steps[onboardStep];
-        const finish = () => {
-          try { localStorage.setItem('volafly_onboarded', '1'); } catch {}
-          setShowOnboarding(false);
-        };
-        return (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 40px' }}>
-            <div style={{ position: 'absolute', inset: 0 }} onClick={finish} />
-            <div style={{ position: 'relative', background: 'rgba(28,28,30,0.96)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: '24px', padding: '28px', width: '100%', maxWidth: '480px', boxShadow: '0 -8px 40px rgba(0,0,0,0.4)' }}>
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
-                {steps.map((_, i) => (
-                  <div key={i} style={{ height: '3px', flex: 1, borderRadius: '2px', background: i <= onboardStep ? '#0A84FF' : 'rgba(255,255,255,0.1)', transition: 'background 0.3s ease' }} />
-                ))}
-              </div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '6px', background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', marginBottom: '12px' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0A84FF' }} />
-                <span style={{ fontSize: '10px', fontWeight: 600, color: '#0A84FF', letterSpacing: '0.04em' }}>
-                  {step.tab === 'data' ? 'Marktlage' : 'Bewertung'}
-                </span>
-              </div>
-              <div style={{ fontSize: '17px', fontWeight: 700, color: '#F5F5F7', marginBottom: '10px', letterSpacing: '-0.01em' }}>{step.title}</div>
-              <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, marginBottom: '24px' }}>{step.desc}</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <button onClick={finish} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Überspringen</button>
-                <button
-                  onClick={() => {
-                    if (onboardStep < steps.length - 1) {
-                      if (step.nextTab) setActiveTab(step.nextTab);
-                      if (step.action === 'profiles') {
-                        setShowProfilePanel(true);
-                      }
-                      setOnboardStep(s => s + 1);
-                    } else {
-                      finish();
-                    }
-                  }}
-                  style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 12px rgba(10,132,255,0.3)' }}>
-                  {step.cta}
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      {showOnboarding && (
+        <OnboardingOverlay
+          onboardStep={onboardStep}
+          setOnboardStep={setOnboardStep}
+          setActiveTab={setActiveTab}
+          setShowProfilePanel={setShowProfilePanel}
+          thresholds={thresholds}
+          setDraftThresholds={setDraftThresholds}
+          setValidationErrors={setValidationErrors}
+          setInputTexts={setInputTexts}
+          onFinish={() => {
+            try { localStorage.setItem('volafly_onboarded', '1'); } catch {}
+            setShowOnboarding(false);
+          }}
+        />
+      )}
 
       {/* Kontakt Modal */}
       {showContact && (
