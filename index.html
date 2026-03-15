@@ -210,23 +210,92 @@
     const App = () => {
       const [user, setUser]       = useState(null);
       const [authLoading, setAuthLoading] = useState(true);
+      const [isPasswordReset, setIsPasswordReset] = useState(false);
+      const [newPw, setNewPw]     = useState('');
+      const [newPwConfirm, setNewPwConfirm] = useState('');
+      const [pwError, setPwError] = useState('');
+      const [pwLoading, setPwLoading] = useState(false);
+      const [pwDone, setPwDone]   = useState(false);
 
       useEffect(() => {
-        // Session prüfen beim Start
-        sb.auth.getSession().then(({ data: { session } }) => {
-          setUser(session?.user ?? null);
-          setAuthLoading(false);
+        // Supabase schickt nach Password-Reset ein PASSWORD_RECOVERY Event
+        const { data: { subscription } } = sb.auth.onAuthStateChange((event, session) => {
+          if (event === 'PASSWORD_RECOVERY') {
+            setIsPasswordReset(true);
+            setAuthLoading(false);
+          } else {
+            setUser(session?.user ?? null);
+            if (event !== 'INITIAL_SESSION') setAuthLoading(false);
+          }
         });
-        // Auth-State-Änderungen lauschen (z.B. nach Google OAuth Redirect)
-        const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
-          setUser(session?.user ?? null);
+        sb.auth.getSession().then(({ data: { session } }) => {
+          if (!isPasswordReset) {
+            setUser(session?.user ?? null);
+            setAuthLoading(false);
+          }
         });
         return () => subscription.unsubscribe();
       }, []);
 
+      const handleNewPassword = async () => {
+        if (newPw.length < 6) { setPwError('Mindestens 6 Zeichen.'); return; }
+        if (newPw !== newPwConfirm) { setPwError('Passwörter stimmen nicht überein.'); return; }
+        setPwLoading(true); setPwError('');
+        const { error } = await sb.auth.updateUser({ password: newPw });
+        setPwLoading(false);
+        if (error) { setPwError(error.message); }
+        else { setPwDone(true); setTimeout(() => { setIsPasswordReset(false); setPwDone(false); setNewPw(''); setNewPwConfirm(''); }, 2000); }
+      };
+
       if (authLoading) return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0A0A0A' }}>
           <div className="spin" style={{ width: '24px', height: '24px', border: '2px solid rgba(255,255,255,0.1)', borderTopColor: '#0A84FF', borderRadius: '50%' }}/>
+        </div>
+      );
+
+      // Passwort-Reset Screen
+      if (isPasswordReset) return (
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0A0A0A', backgroundImage: 'radial-gradient(ellipse at 30% 50%, rgba(10,132,255,0.08) 0%, transparent 55%)', fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}>
+          <div style={{ width: '100%', maxWidth: '360px', padding: '0 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '36px', justifyContent: 'center' }}>
+              <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" strokeWidth="2.5" strokeLinecap="round" fill="none"/><path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.45"/></svg>
+              <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em' }}>Volafly</span>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.09)', borderRadius: '20px', padding: '28px' }}>
+              {pwDone ? (
+                <div style={{ textAlign: 'center', padding: '12px 0' }}>
+                  <div style={{ fontSize: '28px', marginBottom: '12px' }}>✓</div>
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#30D158' }}>Passwort gesetzt</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', marginTop: '6px' }}>Du wirst weitergeleitet…</div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F7', marginBottom: '6px' }}>Neues Passwort</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', marginBottom: '24px' }}>Wähle ein neues Passwort für deinen Account.</div>
+                  <div style={{ marginBottom: '12px' }}>
+                    <label style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: '7px' }}>Neues Passwort</label>
+                    <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="Mindestens 6 Zeichen"
+                      style={{ width: '100%', padding: '11px 14px', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#F5F5F7', fontSize: '14px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                      onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
+                      onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'} />
+                  </div>
+                  <div style={{ marginBottom: '20px' }}>
+                    <label style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.35)', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: '7px' }}>Passwort bestätigen</label>
+                    <input type="password" value={newPwConfirm} onChange={e => setNewPwConfirm(e.target.value)} placeholder="Passwort wiederholen"
+                      style={{ width: '100%', padding: '11px 14px', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#F5F5F7', fontSize: '14px', outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                      onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
+                      onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'}
+                      onKeyDown={e => e.key === 'Enter' && handleNewPassword()} />
+                  </div>
+                  {pwError && <div style={{ marginBottom: '14px', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.2)', fontSize: '12px', color: '#FF453A' }}>{pwError}</div>}
+                  <button onClick={handleNewPassword} disabled={pwLoading}
+                    style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', cursor: pwLoading ? 'wait' : 'pointer', background: 'linear-gradient(135deg, #0A84FF 0%, #0066CC 100%)', color: '#fff', fontSize: '14px', fontWeight: 600, opacity: pwLoading ? 0.7 : 1, fontFamily: 'inherit', boxShadow: '0 4px 16px rgba(10,132,255,0.25)' }}>
+                    {pwLoading ? '…' : 'Passwort speichern →'}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       );
 
@@ -1471,8 +1540,8 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                         onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.06)'}
                         onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                        Eigene Konfigurationen
-                        {profiles.length > 0 && <span style={{ marginLeft: 'auto', fontSize: '10px', background: 'rgba(191,90,242,0.15)', color: '#BF5AF2', padding: '1px 6px', borderRadius: '6px', fontWeight: 600 }}>{profiles.length}</span>}
+                        Eigenes Risikomanagement
+                        {profiles.length > 0 && <span style={{ marginLeft: 'auto', fontSize: '10px', background: 'rgba(10,132,255,0.15)', color: '#0A84FF', padding: '1px 6px', borderRadius: '6px', fontWeight: 600 }}>{profiles.length}</span>}
                       </button>
                       {/* Abmelden */}
                       <button
@@ -1496,7 +1565,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
           <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
             <div style={{ background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '24px', width: '100%', maxWidth: '480px', maxHeight: '80vh', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Eigene Konfigurationen</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Eigenes Risikomanagement</h3>
                 <button onClick={() => closeProfilePanel()} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
               </div>
 
@@ -1523,7 +1592,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                     </button>
                   )}
                   <button onClick={saveProfile} disabled={profileLoading || !newProfileName.trim()}
-                    style={{ padding: '9px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: '#BF5AF2', color: '#fff', fontSize: '13px', fontWeight: 600, opacity: (!newProfileName.trim() || profileLoading) ? 0.4 : 1, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
+                    style={{ padding: '9px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, opacity: (!newProfileName.trim() || profileLoading) ? 0.4 : 1, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
                     {profileLoading ? '…' : editingProfileId ? 'Aktualisieren' : 'Speichern'}
                   </button>
                 </div>
@@ -1973,20 +2042,31 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
             cta: 'Zur Bewertung →',
             tab: 'data',
             nextTab: 'analysis',
+            action: null,
           },
           {
             title: 'Bewertung — die Interpretation',
-            desc: 'Volafly klassifiziert alle Indikatoren in 5 Stufen (Stille → Panik) und leitet daraus einen Investitionsgrad ab. Antizyklisch: je mehr Stress, desto höher die empfohlene Investitionsquote.',
-            cta: 'Und so lädst du Daten →',
+            desc: 'Volafly klassifiziert alle Indikatoren in 5 Stufen (Stille → Panik) und leitet daraus einen Investitionsgrad ab. Je mehr Stress, desto höher die empfohlene Investitionsquote.',
+            cta: 'Konfiguration anpassen →',
             tab: 'analysis',
-            nextTab: 'data',
+            nextTab: 'analysis',
+            action: 'config',
           },
           {
-            title: 'Daten laden & anpassen',
-            desc: 'Klick auf „Aktualisieren" oben rechts um aktuelle Marktdaten zu laden. Unter Bewertung → Grenzwerte kannst du alle Schwellenwerte anpassen und als eigene Konfiguration speichern.',
+            title: 'Konfiguration anpassen',
+            desc: 'Unter Bewertung → Grenzwerte kannst du alle Schwellenwerte anpassen und als eigene Konfiguration speichern.',
+            cta: 'Risikomanagement speichern →',
+            tab: 'analysis',
+            nextTab: 'analysis',
+            action: 'profiles',
+          },
+          {
+            title: 'Eigenes Risikomanagement speichern',
+            desc: 'Speichere deine Grenzwerte als Konfiguration — z.B. "Konservativ" oder "Aggressiv". Mehrere Profile möglich, eines als Standard setzen.',
             cta: 'Loslegen',
-            tab: 'data',
+            tab: 'analysis',
             nextTab: null,
+            action: null,
           },
         ];
         const step = steps[onboardStep];
@@ -1996,16 +2076,13 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
         };
         return (
           <div style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 40px' }}>
-            {/* Klick auf Hintergrund schließt */}
             <div style={{ position: 'absolute', inset: 0 }} onClick={finish} />
             <div style={{ position: 'relative', background: 'rgba(28,28,30,0.96)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: '24px', padding: '28px', width: '100%', maxWidth: '480px', boxShadow: '0 -8px 40px rgba(0,0,0,0.4)' }}>
-              {/* Step-Balken */}
               <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
                 {steps.map((_, i) => (
                   <div key={i} style={{ height: '3px', flex: 1, borderRadius: '2px', background: i <= onboardStep ? '#0A84FF' : 'rgba(255,255,255,0.1)', transition: 'background 0.3s ease' }} />
                 ))}
               </div>
-              {/* Tab-Indikator */}
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '3px 10px', borderRadius: '6px', background: 'rgba(10,132,255,0.1)', border: '0.5px solid rgba(10,132,255,0.2)', marginBottom: '12px' }}>
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0A84FF' }} />
                 <span style={{ fontSize: '10px', fontWeight: 600, color: '#0A84FF', letterSpacing: '0.04em' }}>
@@ -2020,6 +2097,14 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                   onClick={() => {
                     if (onboardStep < steps.length - 1) {
                       if (step.nextTab) setActiveTab(step.nextTab);
+                      if (step.action === 'config') {
+                        setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
+                        setValidationErrors({});
+                        setInputTexts({});
+                        setShowConfig(true);
+                      } else if (step.action === 'profiles') {
+                        setShowProfilePanel(true);
+                      }
                       setOnboardStep(s => s + 1);
                     } else {
                       finish();
