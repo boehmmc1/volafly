@@ -1362,7 +1362,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             <div style={sectionLabel}>WTI Crude Oil</div>
           </TT>
           <div style={{ fontSize: '32px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
-            ${f(ri.wti, 1)}
+            {'$'}{f(ri.wti, 1)}
           </div>
           <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>USD / Barrel</div>
         </div>
@@ -1397,8 +1397,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             })}
           </div>
         </div>
-      </div>
-
       </div>
     </>
   );
