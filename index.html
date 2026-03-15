@@ -481,6 +481,10 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     dxy:          { label: 'DXY',              values: [94, 99, 104, 109],       dir: 'asc',  range: [70, 130] },
     // Gold/SP: 2021 Bull-Peak 0,37 — COVID-Panik 0,65 — GFC 1,14
     goldSP:       { label: 'Gold/S&P',         values: [0.35, 0.45, 0.55, 0.70], dir: 'asc',  range: [0.1, 2.0] },
+    // WTI: <60 = Rezessionssorge, 60-80 = normal, 80-100 = erhöht, >100 = Schock
+    wti:          { label: 'WTI Öl',           values: [60, 80, 100, 120],       dir: 'asc',  range: [20, 200] },
+    // 10Y-2Y Spread: negativ = invertiert = Rezessionsindikator (dir: desc = tiefer Wert = mehr Stress)
+    yieldSpread:  { label: '10Y–2Y Spread',    values: [1.5, 0.5, 0.0, -0.5],   dir: 'desc', range: [-3, 4] },
   };
   const [thresholds, setThresholds] = useState(defaultThresholds);
   const [draftThresholds, setDraftThresholds] = useState(defaultThresholds);
@@ -532,7 +536,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     },
     yieldCurve: { y2: 4.17, y10: 4.165, y30: 4.56 },
     movingAverages: { breadth: { above5day: 52.4, above20day: 64.6, above50day: 68.2, above200day: 60.0 } },
-    riskIndicators: { hySpread: 3.45, dxy: 104.2, goldSP: 0.52 }
+    riskIndicators: { hySpread: 3.45, dxy: 104.2, goldSP: 0.52, wti: 72.5 }
   });
   const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsmLGq2ejgt-yg-ER16AuBC2cjPmHJLa4voisbpgmo3qpNMo7LMNus01PLp6etdn2CJb9724Bp6y-d/pub?gid=0&single=true&output=csv';
 
@@ -620,6 +624,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         hySpread: data.HY_Spread      ?? marketData.riskIndicators.hySpread,
         dxy:      data.DXY            ?? marketData.riskIndicators.dxy,
         goldSP:   data.Gold_SP_Ratio  ?? marketData.riskIndicators.goldSP,
+        wti:      data.WTI            ?? marketData.riskIndicators.wti,
       },
     });
   };
@@ -635,7 +640,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
         'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
         'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
-        'HY_Spread','DXY','Gold_SP_Ratio'];
+        'HY_Spread','DXY','Gold_SP_Ratio','WTI'];
       const found = known.filter(k => data[k] !== undefined);
       if (found.length === 0) throw new Error('Keine bekannten Felder im Sheet gefunden');
       applySheetData(data);
@@ -786,6 +791,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     hySpread:     { label: 'HY Credit Spread', desc: 'Risikoaufschlag für Hochzinsanleihen vs. Staatsanleihen. Frühindikator — weitet sich oft Wochen vor dem VIX aus. Über 5% = Stress.' },
     dxy:          { label: 'US Dollar (DXY)', desc: 'Stärke des USD gegenüber 6 Währungen. Steigt in Risk-Off-Phasen — bestätigt echte Flucht in sichere Häfen.' },
     goldSP:       { label: 'Gold / S&P Ratio', desc: 'Gold geteilt durch S&P 500. Steigt das Ratio, flieht Kapital aus Aktien in Gold — ein klares Risk-Off-Signal.' },
+    wti:          { label: 'WTI Crude Oil', desc: 'Rohölpreis (West Texas Intermediate). Steigt Öl stark bei fallenden Aktien = stagflationärer Schock. Fällt Öl stark = Rezessionsangst.' },
+    yieldSpread:  { label: '10Y – 2Y Spread', desc: 'Zinsstrukturkurve. Negativ (invertiert) = historisch zuverlässigster Rezessionsfrühindikator. Positiv und steigend = Erholung.' },
   };
 
   // ── CSV Template (Original 2-column format: Metric;Value) ──
@@ -815,7 +822,8 @@ S5FI_Above_50Day_MA;${String(marketData.movingAverages.breadth.above50day).repla
 S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).replace('.', ',')}
 HY_Spread;${String(marketData.riskIndicators.hySpread).replace('.', ',')}
 DXY;${String(marketData.riskIndicators.dxy).replace('.', ',')}
-Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
+Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}
+WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
   const copyToClipboard = async () => {
     if (navigator.clipboard && window.isSecureContext) {
@@ -890,7 +898,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
           'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
           'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
           'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
-          'HY_Spread','DXY','Gold_SP_Ratio'];
+          'HY_Spread','DXY','Gold_SP_Ratio','WTI'];
         const foundFields = knownFields.filter(k => data[k] !== undefined);
         if (foundFields.length === 0) {
           setCsvStatus({ type: 'error', msg: 'Keine bekannten Felder gefunden — bitte das Template als Vorlage verwenden' });
@@ -932,6 +940,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
             hySpread: data.HY_Spread ?? marketData.riskIndicators.hySpread,
             dxy:      data.DXY      ?? marketData.riskIndicators.dxy,
             goldSP:   data.Gold_SP_Ratio ?? marketData.riskIndicators.goldSP,
+            wti:      data.WTI      ?? marketData.riskIndicators.wti,
           },
         };
         setMarketData(newData);
@@ -1026,6 +1035,8 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
     { group: 'Kapitalfluss', label: 'HY Credit Spread', level: classifyFromConfig('hySpread', ri.hySpread), value: f(ri.hySpread, 2) + '%' },
     { group: 'Kapitalfluss', label: 'DXY', level: classifyFromConfig('dxy', ri.dxy), value: f(ri.dxy, 1) },
     { group: 'Kapitalfluss', label: 'Gold/S&P', level: classifyFromConfig('goldSP', ri.goldSP), value: f(ri.goldSP, 3) },
+    { group: 'Kapitalfluss', label: 'WTI Öl', level: classifyFromConfig('wti', ri.wti), value: '$' + f(ri.wti, 1) },
+    { group: 'Zinsen', label: '10Y–2Y Spread', level: classifyFromConfig('yieldSpread', y.y10 - y.y2), value: (y.y10 - y.y2 >= 0 ? '+' : '') + f(y.y10 - y.y2, 2) + '%' },
   ].filter(ind => ind.level !== null);
 
   // Weighted average → overall vola class
@@ -1344,6 +1355,49 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
           </div>
           <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>Gold ÷ S&amp;P 500</div>
         </div>
+
+        {/* WTI */}
+        <div style={glass}>
+          <TT id="wti">
+            <div style={sectionLabel}>WTI Crude Oil</div>
+          </TT>
+          <div style={{ fontSize: '32px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
+            ${f(ri.wti, 1)}
+          </div>
+          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>USD / Barrel</div>
+        </div>
+
+      </div>
+
+      {/* Yield Spread Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginTop: '8px' }}>
+        <div style={{ ...glass, gridColumn: 'span 3', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <TT id="yieldSpread">
+            <div>
+              <div style={sectionLabel}>10Y – 2Y Yield Spread</div>
+              <div style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums', color: (y.y10 - y.y2) < 0 ? '#FF453A' : (y.y10 - y.y2) < 0.5 ? '#FF9F0A' : '#30D158' }}>
+                {(y.y10 - y.y2) >= 0 ? '+' : ''}{f(y.y10 - y.y2, 2)}%
+              </div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>
+                {(y.y10 - y.y2) < 0 ? '⚠ Invertiert — historischer Rezessionsindikator' : (y.y10 - y.y2) < 0.5 ? 'Flach — erhöhte Vorsicht' : 'Normal — positive Steilheit'}
+              </div>
+            </div>
+          </TT>
+          {/* Mini-Visualisierung */}
+          <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', height: '40px', paddingRight: '8px' }}>
+            {[y.y2, y.y10, y.y30].map((val, i) => {
+              const labels = ['2Y', '10Y', '30Y'];
+              const h = Math.max(8, Math.min(40, (val / 6) * 40));
+              return (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                  <div style={{ width: '28px', height: `${h}px`, background: 'rgba(191,90,242,0.4)', borderRadius: '3px 3px 0 0', transition: 'height 0.5s ease' }} />
+                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)' }}>{labels[i]}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
 
       </div>
     </>
