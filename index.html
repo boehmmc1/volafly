@@ -314,7 +314,7 @@
 
 
 
-const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowProfilePanel, setShowConfig, setDraftThresholds, setValidationErrors, setInputTexts, thresholds, onFinish }) => {
+const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowProfilePanel, setShowConfig, setDraftThresholds, setValidationErrors, setInputTexts, thresholds, onFinish, fromInfo }) => {
   const [neverShow, setNeverShow] = React.useState(false);
 
   const steps = [
@@ -323,67 +323,79 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
       desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch geladen.',
       cta: 'Zur Bewertung →',
       badge: 'Marktlage',
-      nextTab: 'analysis',
-      action: null,
     },
     {
       title: 'Bewertung — die Interpretation',
       desc: 'Volafly klassifiziert alle Indikatoren in 5 Stufen (Stille → Panik) und leitet daraus einen Investitionsgrad ab. Je mehr Stress, desto höher die empfohlene Investitionsquote.',
       cta: 'Konfiguration anpassen →',
       badge: 'Bewertung',
-      nextTab: 'analysis',
-      action: null,
     },
     {
       title: 'Konfiguration anpassen',
-      desc: 'Unter Bewertung → Grenzwerte kannst du alle Schwellenwerte anpassen und als eigene Konfiguration speichern.',
+      desc: 'Hier siehst du alle Schwellenwerte. Passe sie an und speichere sie als eigene Konfiguration.',
       cta: 'Risikomanagement speichern →',
       badge: 'Bewertung → Grenzwerte',
-      nextTab: 'analysis',
-      action: 'config',
     },
     {
       title: 'Eigenes Risikomanagement speichern',
       desc: 'Speichere deine Grenzwerte als Konfiguration — z.B. "Konservativ" oder "Aggressiv". Mehrere Profile möglich, eines als Standard setzen.',
       cta: 'Loslegen',
       badge: 'Bewertung → Risikomanagement',
-      nextTab: 'analysis',
-      action: 'profiles',
     },
   ];
 
-  const step = steps[onboardStep];
-
-  const saveNeverShow = () => {
-    if (neverShow) {
-      try { localStorage.setItem('volafly_onboarded', '1'); } catch {}
-    }
-  };
-
-  const handleNext = () => {
-    if (step.action === 'config') {
+  // Jeder Schritt führt beim Eintreten die richtige Aktion durch
+  React.useEffect(() => {
+    if (onboardStep === 0) {
+      setShowConfig(false);
+      setShowProfilePanel(false);
+      setActiveTab('data');
+    } else if (onboardStep === 1) {
+      setShowConfig(false);
+      setShowProfilePanel(false);
+      setActiveTab('analysis');
+    } else if (onboardStep === 2) {
+      setShowProfilePanel(false);
+      setActiveTab('analysis');
       setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
       setValidationErrors({});
       setInputTexts({});
       setShowConfig(true);
-    } else if (step.action === 'profiles') {
+    } else if (onboardStep === 3) {
       setShowConfig(false);
-      setShowProfilePanel(true);
+      setActiveTab('analysis');
+      setTimeout(() => setShowProfilePanel(true), 80);
     }
-    if (step.nextTab) setActiveTab(step.nextTab);
+  }, [onboardStep]);
 
+  const step = steps[onboardStep];
+
+  const handleNext = () => {
     if (onboardStep < steps.length - 1) {
       setOnboardStep(onboardStep + 1);
     } else {
-      saveNeverShow();
+      if (neverShow) {
+        try { localStorage.setItem('volafly_onboarded', '1'); } catch {}
+      }
+      setShowConfig(false);
+      setShowProfilePanel(false);
       onFinish();
     }
   };
 
+  const handleSkip = () => {
+    if (neverShow) {
+      try { localStorage.setItem('volafly_onboarded', '1'); } catch {}
+    }
+    setShowConfig(false);
+    setShowProfilePanel(false);
+    onFinish();
+  };
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 40px' }}>
-      <div style={{ position: 'absolute', inset: 0 }} onClick={() => { saveNeverShow(); onFinish(); }} />
-      <div style={{ position: 'relative', background: 'rgba(28,28,30,0.96)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: '24px', padding: '28px', width: '100%', maxWidth: '480px', boxShadow: '0 -8px 40px rgba(0,0,0,0.4)' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 40px', pointerEvents: 'none' }}>
+      {/* Card — pointerEvents zurück aktivieren */}
+      <div style={{ position: 'relative', background: 'rgba(18,18,20,0.97)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: '24px', padding: '28px', width: '100%', maxWidth: '480px', boxShadow: '0 -8px 40px rgba(0,0,0,0.5)', pointerEvents: 'auto' }}>
         {/* Fortschrittsbalken */}
         <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
           {steps.map((_, i) => (
@@ -398,14 +410,18 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
         <div style={{ fontSize: '17px', fontWeight: 700, color: '#F5F5F7', marginBottom: '10px', letterSpacing: '-0.01em' }}>{step.title}</div>
         <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, marginBottom: '24px' }}>{step.desc}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* Checkbox */}
-          <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', userSelect: 'none' }}
-            onClick={() => setNeverShow(v => !v)}>
-            <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1.5px solid ${neverShow ? '#0A84FF' : 'rgba(255,255,255,0.2)'}`, background: neverShow ? '#0A84FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease', flexShrink: 0 }}>
-              {neverShow && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-            </div>
-            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Nicht mehr anzeigen</span>
-          </label>
+          {/* Checkbox nur wenn NICHT aus dem ? geöffnet */}
+          {!fromInfo ? (
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => setNeverShow(v => !v)}>
+              <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1.5px solid ${neverShow ? '#0A84FF' : 'rgba(255,255,255,0.2)'}`, background: neverShow ? '#0A84FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease', flexShrink: 0 }}>
+                {neverShow && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Nicht mehr anzeigen</span>
+            </label>
+          ) : (
+            <button onClick={handleSkip} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
+          )}
           <button onClick={handleNext} style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 12px rgba(10,132,255,0.3)' }}>
             {step.cta}
           </button>
@@ -420,6 +436,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [showConfig, setShowConfig] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [onboardingFromInfo, setOnboardingFromInfo] = useState(false);
   const [onboardStep, setOnboardStep] = useState(0);
 
   // ── Editable Thresholds Config ──
@@ -2141,7 +2158,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
             ))}
 
             <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setShowInfo(false); setOnboardStep(0); setShowOnboarding(true); }}
+              <button onClick={() => { setShowInfo(false); setOnboardStep(0); setOnboardingFromInfo(true); setShowOnboarding(true); }}
                 style={{ fontSize: '11px', color: '#0A84FF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
                 Kurzführung starten →
               </button>
@@ -2162,8 +2179,10 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
           setValidationErrors={setValidationErrors}
           setInputTexts={setInputTexts}
           thresholds={thresholds}
+          fromInfo={onboardingFromInfo}
           onFinish={() => {
             setShowOnboarding(false);
+            setOnboardingFromInfo(false);
             setOnboardStep(0);
           }}
         />
