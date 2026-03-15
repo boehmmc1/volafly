@@ -419,9 +419,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [activeTab, setActiveTab] = useState('data');
   const [showConfig, setShowConfig] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    try { return !localStorage.getItem('volafly_onboarded'); } catch { return true; }
-  });
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [onboardStep, setOnboardStep] = useState(0);
 
   // ── Editable Thresholds Config ──
@@ -524,6 +522,15 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   useEffect(() => {
     if (!sbClient || !user) return;
     loadProfiles();
+  }, []);
+
+  // Onboarding: verstecken wenn User es permanent deaktiviert hat
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('volafly_onboarded')) {
+        setShowOnboarding(false);
+      }
+    } catch {}
   }, []);
 
   // Google Sheets automatisch laden beim Mount
@@ -2133,7 +2140,12 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
               </div>
             ))}
 
-            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }} />
+            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={() => { setShowInfo(false); setOnboardStep(0); setShowOnboarding(true); }}
+                style={{ fontSize: '11px', color: '#0A84FF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
+                Kurzführung starten →
+              </button>
+            </div>
           </div>
         </div>
       )}
