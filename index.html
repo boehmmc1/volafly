@@ -70,7 +70,14 @@
           redirectTo: 'https://volafly.net',
         });
         setLoading(false);
-        if (e) { setError(e.message); } else { setResetSent(true); }
+        if (e) {
+          const msg = e.message?.toLowerCase() || '';
+          if (msg.includes('rate') || msg.includes('limit')) {
+            setError('Zu viele Anfragen — bitte einige Minuten warten und erneut versuchen.');
+          } else {
+            setError(e.message);
+          }
+        } else { setResetSent(true); }
       };
 
       const features = [
@@ -1456,7 +1463,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
               </span>
               <span style={{ position: 'absolute', right: 0, fontSize: '11px', color: 'rgba(255,159,10,0.6)', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap', opacity: lastImportDate ? 0 : 1, transition: 'opacity 0.2s ease', pointerEvents: lastImportDate ? 'none' : 'auto' }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                Keine Daten importiert
+                Daten können nicht abgerufen werden
               </span>
             </div>
 
