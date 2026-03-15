@@ -314,7 +314,7 @@
 
 
 
-const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowProfilePanel, onFinish }) => {
+const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowProfilePanel, setShowConfig, setDraftThresholds, setValidationErrors, setInputTexts, thresholds, onFinish }) => {
   const [neverShow, setNeverShow] = React.useState(false);
 
   const steps = [
@@ -340,40 +340,49 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
       cta: 'Risikomanagement speichern →',
       badge: 'Bewertung → Grenzwerte',
       nextTab: 'analysis',
-      action: 'profiles',
+      action: 'config',
     },
     {
       title: 'Eigenes Risikomanagement speichern',
       desc: 'Speichere deine Grenzwerte als Konfiguration — z.B. "Konservativ" oder "Aggressiv". Mehrere Profile möglich, eines als Standard setzen.',
       cta: 'Loslegen',
       badge: 'Bewertung → Risikomanagement',
-      nextTab: null,
-      action: null,
+      nextTab: 'analysis',
+      action: 'profiles',
     },
   ];
 
   const step = steps[onboardStep];
 
-  const handleFinish = () => {
+  const saveNeverShow = () => {
     if (neverShow) {
       try { localStorage.setItem('volafly_onboarded', '1'); } catch {}
     }
-    onFinish();
   };
 
   const handleNext = () => {
+    if (step.action === 'config') {
+      setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
+      setValidationErrors({});
+      setInputTexts({});
+      setShowConfig(true);
+    } else if (step.action === 'profiles') {
+      setShowConfig(false);
+      setShowProfilePanel(true);
+    }
+    if (step.nextTab) setActiveTab(step.nextTab);
+
     if (onboardStep < steps.length - 1) {
-      if (step.nextTab) setActiveTab(step.nextTab);
-      if (step.action === 'profiles') setShowProfilePanel(true);
       setOnboardStep(onboardStep + 1);
     } else {
-      handleFinish();
+      saveNeverShow();
+      onFinish();
     }
   };
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 70, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 40px' }}>
-      <div style={{ position: 'absolute', inset: 0 }} onClick={handleFinish} />
+      <div style={{ position: 'absolute', inset: 0 }} onClick={() => { saveNeverShow(); onFinish(); }} />
       <div style={{ position: 'relative', background: 'rgba(28,28,30,0.96)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: '24px', padding: '28px', width: '100%', maxWidth: '480px', boxShadow: '0 -8px 40px rgba(0,0,0,0.4)' }}>
         {/* Fortschrittsbalken */}
         <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
@@ -389,11 +398,10 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
         <div style={{ fontSize: '17px', fontWeight: 700, color: '#F5F5F7', marginBottom: '10px', letterSpacing: '-0.01em' }}>{step.title}</div>
         <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, marginBottom: '24px' }}>{step.desc}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* Checkbox "nicht mehr anzeigen" */}
-          <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', userSelect: 'none' }}>
-            <div
-              onClick={() => setNeverShow(v => !v)}
-              style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1.5px solid ${neverShow ? '#0A84FF' : 'rgba(255,255,255,0.2)'}`, background: neverShow ? '#0A84FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease', flexShrink: 0 }}>
+          {/* Checkbox */}
+          <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', userSelect: 'none' }}
+            onClick={() => setNeverShow(v => !v)}>
+            <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1.5px solid ${neverShow ? '#0A84FF' : 'rgba(255,255,255,0.2)'}`, background: neverShow ? '#0A84FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease', flexShrink: 0 }}>
               {neverShow && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
             </div>
             <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Nicht mehr anzeigen</span>
@@ -2125,12 +2133,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
               </div>
             ))}
 
-            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setShowInfo(false); setOnboardStep(0); setShowOnboarding(true); }}
-                style={{ fontSize: '11px', color: '#0A84FF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
-                Kurzführung starten →
-              </button>
-            </div>
+            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }} />
           </div>
         </div>
       )}
@@ -2142,10 +2145,11 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
           setOnboardStep={setOnboardStep}
           setActiveTab={setActiveTab}
           setShowProfilePanel={setShowProfilePanel}
-          thresholds={thresholds}
+          setShowConfig={setShowConfig}
           setDraftThresholds={setDraftThresholds}
           setValidationErrors={setValidationErrors}
           setInputTexts={setInputTexts}
+          thresholds={thresholds}
           onFinish={() => {
             setShowOnboarding(false);
             setOnboardStep(0);
