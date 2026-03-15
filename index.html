@@ -1158,7 +1158,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           </div>
         </div>
 
-        {/* Yields */}
+        {/* Yields + Spread */}
         <div style={glass}>
           <div style={sectionLabel}>US Treasuries</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
@@ -1173,8 +1173,33 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               </TT>
             ))}
           </div>
+          {/* 10Y–2Y Spread */}
+          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <TT id="yieldSpread">
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>10Y – 2Y Spread</span>
+                <span style={{ fontSize: '15px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: (y.y10 - y.y2) < 0 ? '#FF453A' : (y.y10 - y.y2) < 0.5 ? '#FF9F0A' : '#30D158' }}>
+                  {(y.y10 - y.y2) >= 0 ? '+' : ''}{f(y.y10 - y.y2, 2)}%
+                </span>
+                {(y.y10 - y.y2) < 0 && <span style={{ fontSize: '9px', color: '#FF453A', opacity: 0.7 }}>⚠ invertiert</span>}
+              </div>
+            </TT>
+            {/* Mini Yield-Kurve */}
+            <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', height: '28px' }}>
+              {[y.y2, y.y10, y.y30].map((val, i) => {
+                const labels = ['2Y', '10Y', '30Y'];
+                const h = Math.max(6, Math.min(28, (val / 6) * 28));
+                return (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                    <div style={{ width: '22px', height: `${h}px`, background: 'rgba(191,90,242,0.35)', borderRadius: '2px 2px 0 0' }} />
+                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)' }}>{labels[i]}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
-      </div>
+      </div>  {/* end top 3-col grid */}
 
       {/* Volatility row */}
       <div style={{ ...glass, marginBottom: '8px' }}>
@@ -1323,79 +1348,51 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         </div>
       </div>
 
-      {/* Market Sentiment Row — HY Spread, DXY, Gold/SP — Ist-Werte */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginTop: '8px' }}>
+      {/* Makrosignale */}
+      <div style={{ ...glass, marginTop: '8px' }}>
+        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Makrosignale</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
 
-        <div style={glass}>
           <TT id="hySpread">
-            <div style={sectionLabel}>HY Credit Spread</div>
-          </TT>
-          <div style={{ fontSize: '32px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
-            {f(ri.hySpread, 2)}<span style={{ fontSize: '16px', fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: '4px' }}>%</span>
-          </div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>ICE BofA OAS</div>
-        </div>
-
-        <div style={glass}>
-          <TT id="dxy">
-            <div style={sectionLabel}>US Dollar Index</div>
-          </TT>
-          <div style={{ fontSize: '32px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
-            {f(ri.dxy, 1)}
-          </div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>DXY</div>
-        </div>
-
-        <div style={glass}>
-          <TT id="goldSP">
-            <div style={sectionLabel}>Gold / S&amp;P 500</div>
-          </TT>
-          <div style={{ fontSize: '32px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
-            {f(ri.goldSP, 3)}
-          </div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>Gold ÷ S&amp;P 500</div>
-        </div>
-
-        {/* WTI */}
-        <div style={glass}>
-          <TT id="wti">
-            <div style={sectionLabel}>WTI Crude Oil</div>
-          </TT>
-          <div style={{ fontSize: '32px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums' }}>
-            {'$'}{f(ri.wti, 1)}
-          </div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>USD / Barrel</div>
-        </div>
-
-      </div>
-
-      {/* Yield Spread Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginTop: '8px' }}>
-        <div style={{ ...glass, gridColumn: 'span 3', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <TT id="yieldSpread">
             <div>
-              <div style={sectionLabel}>10Y – 2Y Yield Spread</div>
-              <div style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums', color: (y.y10 - y.y2) < 0 ? '#FF453A' : (y.y10 - y.y2) < 0.5 ? '#FF9F0A' : '#30D158' }}>
-                {(y.y10 - y.y2) >= 0 ? '+' : ''}{f(y.y10 - y.y2, 2)}%
+              <div style={metricLabel}>HY Credit Spread</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
+                {f(ri.hySpread, 2)}<span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: '3px' }}>%</span>
               </div>
-              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '4px' }}>
-                {(y.y10 - y.y2) < 0 ? '⚠ Invertiert — historischer Rezessionsindikator' : (y.y10 - y.y2) < 0.5 ? 'Flach — erhöhte Vorsicht' : 'Normal — positive Steilheit'}
-              </div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>ICE BofA OAS</div>
             </div>
           </TT>
-          {/* Mini-Visualisierung */}
-          <div style={{ display: 'flex', gap: '3px', alignItems: 'flex-end', height: '40px', paddingRight: '8px' }}>
-            {[y.y2, y.y10, y.y30].map((val, i) => {
-              const labels = ['2Y', '10Y', '30Y'];
-              const h = Math.max(8, Math.min(40, (val / 6) * 40));
-              return (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
-                  <div style={{ width: '28px', height: `${h}px`, background: 'rgba(191,90,242,0.4)', borderRadius: '3px 3px 0 0', transition: 'height 0.5s ease' }} />
-                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)' }}>{labels[i]}</div>
-                </div>
-              );
-            })}
-          </div>
+
+          <TT id="dxy">
+            <div>
+              <div style={metricLabel}>US Dollar Index</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
+                {f(ri.dxy, 1)}
+              </div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>DXY</div>
+            </div>
+          </TT>
+
+          <TT id="goldSP">
+            <div>
+              <div style={metricLabel}>Gold / S&amp;P 500</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
+                {f(ri.goldSP, 3)}
+              </div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>Gold ÷ S&amp;P 500</div>
+            </div>
+          </TT>
+
+          <TT id="wti">
+            <div>
+              <div style={metricLabel}>WTI Crude Oil</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
+                {'$'}{f(ri.wti, 1)}
+              </div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Barrel</div>
+            </div>
+          </TT>
+
         </div>
       </div>
     </>
