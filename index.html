@@ -70,7 +70,7 @@
 
       return (
         <div style={{
-          minHeight: '100vh', display: 'flex',
+          minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
           background: '#0A0A0A',
           backgroundImage: 'radial-gradient(ellipse at 15% 40%, rgba(10,132,255,0.08) 0%, transparent 55%), radial-gradient(ellipse at 85% 20%, rgba(191,90,242,0.06) 0%, transparent 50%)',
           fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif',
@@ -98,7 +98,7 @@
               <span style={{ color: '#0A84FF' }}>bevor er spricht.</span>
             </h1>
             <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, margin: '0 0 48px', maxWidth: '400px' }}>
-              Volafly aggregiert die wichtigsten Volatilitäts- und Sentiment-Indikatoren und übersetzt sie in eine klare Handlungsempfehlung — antizyklisch, datenbasiert, ohne Rauschen.
+              Volafly aggregiert die wichtigsten Volatilitäts- und Sentiment-Indikatoren und übersetzt sie in eine klare Handlungsempfehlung — antizyklisch, datenbasiert, rational.
             </p>
 
             {/* Feature-Liste */}
@@ -1919,9 +1919,9 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
             </p>
 
             {[
-              { tab: 'Marktlage', color: '#0A84FF', desc: 'Alle Rohdaten auf einen Blick — VIX, Credit Spreads, Fear & Greed, Breadth, Terminstruktur und mehr. Daten kommen automatisch aus deinem Google Sheet.' },
+              { tab: 'Marktlage', color: '#0A84FF', desc: 'Alle Rohdaten auf einen Blick — VIX, Credit Spreads, Fear & Greed, Breadth, Terminstruktur und mehr. Die Daten werden automatisch geladen.' },
               { tab: 'Bewertung', color: '#BF5AF2', desc: 'Die Interpretation: Volafly klassifiziert alle Indikatoren in 5 Stufen und berechnet daraus einen Gesamt-Investitionsgrad — antizyklisch und datenbasiert.' },
-              { tab: 'Daten aktualisieren', color: '#30D158', desc: 'Klick auf „Aktualisieren" lädt die aktuellen Werte aus deinem Google Sheet. Der Timestamp zeigt den letzten Abruf.' },
+              { tab: 'Daten aktualisieren', color: '#30D158', desc: 'Klick auf „Aktualisieren" lädt die aktuellen Werte . Der Timestamp zeigt den letzten Abruf.' },
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: i < 2 ? '16px' : 0 }}>
                 <div style={{ padding: '3px 10px', borderRadius: '6px', background: `${item.color}15`, border: `0.5px solid ${item.color}30`, fontSize: '10px', fontWeight: 700, color: item.color, whiteSpace: 'nowrap', marginTop: '1px' }}>{item.tab}</div>
@@ -1929,8 +1929,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
               </div>
             ))}
 
-            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.2)' }}>Volafly · Alle Daten dienen nur zur Information</span>
+            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end' }}>
               <button onClick={() => { setShowInfo(false); setOnboardStep(0); setShowOnboarding(true); }}
                 style={{ fontSize: '11px', color: '#0A84FF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
                 Kurzführung starten →
@@ -1945,7 +1944,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
         const steps = [
           {
             title: 'Marktlage — deine Rohdaten',
-            desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch aus deinem Google Sheet geladen.',
+            desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch geladen.',
             cta: 'Weiter',
             highlight: 'data',
           },
@@ -1957,7 +1956,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
           },
           {
             title: 'Daten laden & anpassen',
-            desc: 'Klick auf „Aktualisieren" um dein Google Sheet zu laden. Unter Bewertung → Grenzwerte kannst du alle Schwellenwerte anpassen und als eigene Konfiguration speichern.',
+            desc: 'Klick auf „Aktualisieren" . Unter Bewertung → Grenzwerte kannst du alle Schwellenwerte anpassen und als eigene Konfiguration speichern.',
             cta: 'Loslegen',
             highlight: null,
           },
