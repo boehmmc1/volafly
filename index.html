@@ -596,24 +596,42 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   };
 
   const parseSheetsCsv = (text) => {
-    const lines = text.split(/\r?\n/);
+    const lines = text.replace(/\r/g, '').split('\n');
     const data = {};
     const descs = {};
     if (lines.length < 2) return { data, descs };
-    // Auto-detect separator from header line
-    const header = lines[0];
-    const sep = header.includes(';') ? ';' : ',';
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
-      const parts = parseCsvLine(line, sep);
+
+      // Try to extract the semicolon-separated payload regardless of outer structure:
+      // Case A: line starts with " and the quoted content contains ; → extract quoted content
+      // Case B: line has ; at top level → use directly
+      let payload = line;
+      if (line.startsWith('"')) {
+        // Find the closing quote (end of first quoted field)
+        let end = 1;
+        while (end < line.length) {
+          if (line[end] === '"') {
+            if (line[end + 1] === '"') { end += 2; continue; } // escaped quote
+            break;
+          }
+          end++;
+        }
+        payload = line.slice(1, end).replace(/""/g, '"');
+      }
+
+      // Now parse payload with ';' as separator
+      const parts = parseCsvLine(payload, ';');
       if (parts.length < 2) continue;
+
       const metric = parts[0].replace(/^["']|["']$/g, '').trim();
+      if (!metric) continue;
       const valueStr = parts[1].replace(/^["']|["']$/g, '').trim().replace(',', '.');
       const value = parseFloat(valueStr);
       if (!isNaN(value)) data[metric] = value;
       if (parts.length >= 3) {
-        const desc = parts[2].replace(/^["']|["']$/g, '').trim();
+        const desc = parts[2].replace(/^["']|["']$/g, '').replace(/;$/, '').trim();
         if (desc) descs[metric] = desc;
       }
     }
@@ -666,6 +684,9 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       const res = await fetch(SHEETS_URL);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
+      // Debug: zeige erste Zeile und erkannten Separator
+      const firstLine = text.split(/\r?\n/)[0] || '';
+      const detectedSep = firstLine.includes(';') ? ';' : ',';
       const { data, descs } = parseSheetsCsv(text);
       const known = ['VIX','RVX','VXN','VVIX','VXV','Fear_Greed_Index','Equity_Put_Call_Ratio',
         'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
@@ -673,11 +694,12 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
         'HY_Spread','DXY','Gold_SP_Ratio','WTI'];
       const found = known.filter(k => data[k] !== undefined);
-      if (found.length === 0) throw new Error('Keine bekannten Felder im Sheet gefunden');
+      if (found.length === 0) throw new Error(`Keine bekannten Felder gefunden (Sep: "${detectedSep}", Header: "${firstLine.slice(0,60)}")`);
       applySheetData(data);
       if (Object.keys(descs).length > 0) setSheetDescs(descs);
       setLastImportDate(new Date());
-      // Kein Success-Toast — Timestamp-Update genügt als Feedback
+      setCsvStatus({ type: 'success', msg: `${found.length} Felder geladen (Sep: "${detectedSep}")` });
+      setTimeout(() => setCsvStatus(null), 5000);
     } catch (err) {
       setCsvStatus({ type: 'error', msg: `Google Sheets: ${err.message}` });
     }
