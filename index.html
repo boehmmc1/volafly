@@ -317,73 +317,47 @@
 const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowProfilePanel, setShowConfig, setDraftThresholds, setValidationErrors, setInputTexts, thresholds, onFinish, fromInfo }) => {
   const [neverShow, setNeverShow] = React.useState(false);
 
-  const steps = [
-    {
-      title: 'Marktlage — deine Rohdaten',
-      desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch geladen.',
-      cta: 'Zur Bewertung →',
-      badge: 'Marktlage',
-    },
-    {
-      title: 'Bewertung — die Interpretation',
-      desc: 'Volafly klassifiziert alle Indikatoren in 5 Stufen (Stille → Panik) und leitet daraus einen Investitionsgrad ab. Je mehr Stress, desto höher die empfohlene Investitionsquote.',
-      cta: 'Konfiguration anpassen →',
-      badge: 'Bewertung',
-    },
-    {
-      title: 'Konfiguration anpassen',
-      desc: 'Hier siehst du alle Schwellenwerte. Passe sie an und speichere sie als eigene Konfiguration.',
-      cta: 'Risikomanagement speichern →',
-      badge: 'Bewertung → Grenzwerte',
-    },
-    {
-      title: 'Eigenes Risikomanagement speichern',
-      desc: 'Speichere deine Grenzwerte als Konfiguration — z.B. "Konservativ" oder "Aggressiv". Mehrere Profile möglich, eines als Standard setzen.',
-      cta: 'Loslegen',
-      badge: 'Bewertung → Risikomanagement',
-    },
-  ];
+  // Schritt 0 = Intro-Screen (wie das ?-Modal), Schritte 1-4 = Guided Tour
+  const isIntro = onboardStep === 0;
 
-  // Jeder Schritt führt beim Eintreten die richtige Aktion durch
+  const tourSteps = [
+    { title: 'Marktlage — deine Rohdaten', desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch geladen.', cta: 'Zur Bewertung →', badge: 'Marktlage' },
+    { title: 'Bewertung — die Interpretation', desc: 'Volafly klassifiziert alle Indikatoren in 5 Stufen (Stille → Panik) und leitet daraus einen Investitionsgrad ab. Je mehr Stress, desto höher die empfohlene Investitionsquote.', cta: 'Konfiguration anpassen →', badge: 'Bewertung' },
+    { title: 'Konfiguration anpassen', desc: 'Hier siehst du alle Schwellenwerte. Passe sie an und speichere sie als eigene Konfiguration.', cta: 'Risikomanagement speichern →', badge: 'Bewertung → Grenzwerte' },
+    { title: 'Eigenes Risikomanagement speichern', desc: 'Speichere deine Grenzwerte als Konfiguration — z.B. "Konservativ" oder "Aggressiv". Mehrere Profile möglich, eines als Standard setzen.', cta: 'Loslegen', badge: 'Bewertung → Risikomanagement' },
+  ];
+  const totalSteps = 1 + tourSteps.length; // Intro + 4 Tour-Schritte
+
+  // Tour-Schritt (0-basiert ab onboardStep=1)
+  const tourIdx = onboardStep - 1;
+
   React.useEffect(() => {
     if (onboardStep === 0) {
       setShowConfig(false);
       setShowProfilePanel(false);
-      setActiveTab('data');
     } else if (onboardStep === 1) {
       setShowConfig(false);
       setShowProfilePanel(false);
-      setActiveTab('analysis');
+      setActiveTab('data');
     } else if (onboardStep === 2) {
+      setShowConfig(false);
+      setShowProfilePanel(false);
+      setActiveTab('analysis');
+    } else if (onboardStep === 3) {
       setShowProfilePanel(false);
       setActiveTab('analysis');
       setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
       setValidationErrors({});
       setInputTexts({});
       setShowConfig(true);
-    } else if (onboardStep === 3) {
+    } else if (onboardStep === 4) {
       setShowConfig(false);
       setActiveTab('analysis');
       setTimeout(() => setShowProfilePanel(true), 80);
     }
   }, [onboardStep]);
 
-  const step = steps[onboardStep];
-
-  const handleNext = () => {
-    if (onboardStep < steps.length - 1) {
-      setOnboardStep(onboardStep + 1);
-    } else {
-      if (neverShow) {
-        try { localStorage.setItem('volafly_onboarded_v2', '1'); } catch {}
-      }
-      setShowConfig(false);
-      setShowProfilePanel(false);
-      onFinish();
-    }
-  };
-
-  const handleSkip = () => {
+  const saveAndClose = () => {
     if (neverShow) {
       try { localStorage.setItem('volafly_onboarded_v2', '1'); } catch {}
     }
@@ -392,16 +366,72 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
     onFinish();
   };
 
+  const handleNext = () => {
+    if (onboardStep < totalSteps - 1) {
+      setOnboardStep(onboardStep + 1);
+    } else {
+      saveAndClose();
+    }
+  };
+
+  // ── Intro-Schritt ──
+  if (isIntro) return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}>
+      <div style={{ background: '#161618', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '500px', boxShadow: '0 24px 80px rgba(0,0,0,0.7)' }}>
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" strokeWidth="2.5" strokeLinecap="round" fill="none"/><path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.45"/></svg>
+          <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em' }}>Volafly</span>
+        </div>
+        <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.04em', marginBottom: '20px' }}>Volatilität lesen. On the fly.</div>
+
+        <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.7, margin: '0 0 24px' }}>
+          Volafly aggregiert die wichtigsten Volatilitäts- und Sentiment-Indikatoren des Marktes und übersetzt sie automatisch in eine klare Klassifikation — von <strong style={{ color: '#8E8E93' }}>Stille</strong> bis <strong style={{ color: '#FF453A' }}>Panik</strong>.
+        </p>
+
+        {[
+          { tab: 'Marktlage', color: '#0A84FF', desc: 'Alle Rohdaten auf einen Blick — VIX, Credit Spreads, Fear & Greed, Breadth, Terminstruktur und mehr. Die Daten werden automatisch geladen.' },
+          { tab: 'Bewertung', color: '#BF5AF2', desc: 'Die Interpretation: Volafly klassifiziert alle Indikatoren in 5 Stufen und berechnet daraus einen Gesamt-Investitionsgrad — antizyklisch und datenbasiert.' },
+          { tab: 'Daten aktualisieren', color: '#30D158', desc: 'Klick auf „Aktualisieren" lädt die aktuellen Werte. Der Timestamp zeigt den letzten Abruf.' },
+        ].map((item, i) => (
+          <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: i < 2 ? '16px' : '0' }}>
+            <div style={{ padding: '3px 10px', borderRadius: '6px', background: `${item.color}15`, border: `0.5px solid ${item.color}30`, fontSize: '10px', fontWeight: 700, color: item.color, whiteSpace: 'nowrap', marginTop: '1px', flexShrink: 0 }}>{item.tab}</div>
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>{item.desc}</div>
+          </div>
+        ))}
+
+        {/* Footer */}
+        <div style={{ marginTop: '28px', paddingTop: '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* Checkbox — nur beim Login-Onboarding, nicht wenn von ? geöffnet */}
+          {!fromInfo ? (
+            <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', userSelect: 'none' }}
+              onClick={() => setNeverShow(v => !v)}>
+              <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1.5px solid ${neverShow ? '#0A84FF' : 'rgba(255,255,255,0.2)'}`, background: neverShow ? '#0A84FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease', flexShrink: 0 }}>
+                {neverShow && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+              </div>
+              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Nicht mehr anzeigen</span>
+            </label>
+          ) : (
+            <button onClick={saveAndClose} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
+          )}
+          <button onClick={handleNext} style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: 'linear-gradient(135deg, #0A84FF 0%, #0066CC 100%)', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 12px rgba(10,132,255,0.3)' }}>
+            Kurzführung starten →
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Tour-Schritte 1–4 ──
+  const step = tourSteps[tourIdx];
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 80, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 16px 40px', pointerEvents: 'none' }}>
-      {/* Gradient vignette — oben dunkler, unten heller für die Card */}
       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.6) 100%)', pointerEvents: 'none' }} />
-      {/* Card */}
       <div style={{ position: 'relative', background: '#161618', border: '0.5px solid rgba(255,255,255,0.18)', borderRadius: '24px', padding: '28px', width: '100%', maxWidth: '480px', boxShadow: '0 -2px 0 rgba(10,132,255,0.4), 0 -16px 48px rgba(0,0,0,0.7)', pointerEvents: 'auto' }}>
-        {/* Fortschrittsbalken */}
+        {/* Fortschrittsbalken — zeigt nur Tour-Schritte */}
         <div style={{ display: 'flex', gap: '6px', marginBottom: '20px' }}>
-          {steps.map((_, i) => (
-            <div key={i} style={{ height: '3px', flex: 1, borderRadius: '2px', background: i <= onboardStep ? '#0A84FF' : 'rgba(255,255,255,0.1)', transition: 'background 0.3s ease' }} />
+          {tourSteps.map((_, i) => (
+            <div key={i} style={{ height: '3px', flex: 1, borderRadius: '2px', background: i <= tourIdx ? '#0A84FF' : 'rgba(255,255,255,0.1)', transition: 'background 0.3s ease' }} />
           ))}
         </div>
         {/* Tab-Badge */}
@@ -412,18 +442,7 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
         <div style={{ fontSize: '17px', fontWeight: 700, color: '#F5F5F7', marginBottom: '10px', letterSpacing: '-0.01em' }}>{step.title}</div>
         <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, marginBottom: '24px' }}>{step.desc}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {/* Checkbox nur wenn NICHT aus dem ? geöffnet */}
-          {!fromInfo ? (
-            <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', userSelect: 'none' }}
-              onClick={() => setNeverShow(v => !v)}>
-              <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1.5px solid ${neverShow ? '#0A84FF' : 'rgba(255,255,255,0.2)'}`, background: neverShow ? '#0A84FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease', flexShrink: 0 }}>
-                {neverShow && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
-              </div>
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Nicht mehr anzeigen</span>
-            </label>
-          ) : (
-            <button onClick={handleSkip} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
-          )}
+          <button onClick={saveAndClose} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Überspringen</button>
           <button onClick={handleNext} style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 12px rgba(10,132,255,0.3)' }}>
             {step.cta}
           </button>
