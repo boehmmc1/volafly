@@ -1633,7 +1633,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
 
             {/* Info-Button */}
             <button
-              onClick={() => setShowInfo(true)}
+              onClick={() => { setOnboardStep(0); setOnboardingFromInfo(true); setShowOnboarding(true); }}
               title="Was ist Volafly?"
               style={{ width: '30px', height: '30px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}
               onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
@@ -2141,47 +2141,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
 
       </div>
 
-      {/* ── Info Modal ── */}
-      {showInfo && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 60, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-          <div style={{ background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '32px', width: '100%', maxWidth: '500px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                  <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" strokeWidth="2.5" strokeLinecap="round" fill="none"/><path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.45"/></svg>
-                  <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em' }}>Volafly</span>
-                </div>
-                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.04em' }}>Volatilität lesen. On the fly.</div>
-              </div>
-              <button onClick={() => setShowInfo(false)} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
-            </div>
-
-            <p style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.65, margin: '0 0 24px' }}>
-              Volafly aggregiert die wichtigsten Volatilitäts- und Sentiment-Indikatoren des Marktes und übersetzt sie automatisch in eine klare Klassifikation — von <strong style={{ color: '#8E8E93' }}>Stille</strong> bis <strong style={{ color: '#FF453A' }}>Panik</strong>.
-            </p>
-
-            {[
-              { tab: 'Marktlage', color: '#0A84FF', desc: 'Alle Rohdaten auf einen Blick — VIX, Credit Spreads, Fear & Greed, Breadth, Terminstruktur und mehr. Die Daten werden automatisch geladen.' },
-              { tab: 'Bewertung', color: '#BF5AF2', desc: 'Die Interpretation: Volafly klassifiziert alle Indikatoren in 5 Stufen und berechnet daraus einen Gesamt-Investitionsgrad — antizyklisch und datenbasiert.' },
-              { tab: 'Daten aktualisieren', color: '#30D158', desc: 'Klick auf „Aktualisieren" lädt die aktuellen Werte . Der Timestamp zeigt den letzten Abruf.' },
-            ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', marginBottom: i < 2 ? '16px' : 0 }}>
-                <div style={{ padding: '3px 10px', borderRadius: '6px', background: `${item.color}15`, border: `0.5px solid ${item.color}30`, fontSize: '10px', fontWeight: 700, color: item.color, whiteSpace: 'nowrap', marginTop: '1px' }}>{item.tab}</div>
-                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.6 }}>{item.desc}</div>
-              </div>
-            ))}
-
-            <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'flex-end' }}>
-              <button onClick={() => { setShowInfo(false); setOnboardStep(0); setOnboardingFromInfo(true); setShowOnboarding(true); }}
-                style={{ fontSize: '11px', color: '#0A84FF', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 600 }}>
-                Kurzführung starten →
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Onboarding Overlay (einmalig) ── */}
+      {/* ── Onboarding Overlay (einmalig nach Login + via ?) ── */}
       {showOnboarding && (
         <OnboardingOverlay
           onboardStep={onboardStep}
