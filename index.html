@@ -2059,7 +2059,7 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
             cta: 'Konfiguration anpassen →',
             tab: 'analysis',
             nextTab: 'analysis',
-            action: 'config',
+            action: null,
           },
           {
             title: 'Konfiguration anpassen',
@@ -2106,14 +2106,8 @@ Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}`;
                   onClick={() => {
                     if (onboardStep < steps.length - 1) {
                       if (step.nextTab) setActiveTab(step.nextTab);
-                      if (step.action === 'config') {
-                        setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
-                        setValidationErrors({});
-                        setInputTexts({});
-                        setShowConfig(true);
-                      } else if (step.action === 'profiles') {
-                        setShowConfig(false); // Grenzwerte zuerst schließen
-                        setTimeout(() => setShowProfilePanel(true), 120); // kurze Pause für sauberen Übergang
+                      if (step.action === 'profiles') {
+                        setShowProfilePanel(true);
                       }
                       setOnboardStep(s => s + 1);
                     } else {
