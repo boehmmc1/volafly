@@ -545,6 +545,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [lastImportDate, setLastImportDate] = useState(null);
   const [dataTooltip, setDataTooltip] = useState(null);
+  const [sheetDescs, setSheetDescs] = useState({});
   const [fetchLoading, setFetchLoading] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [contactEmail, setContactEmail] = useState('');
@@ -576,7 +577,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const parseSheetsCsv = (text) => {
     const lines = text.split(/\r?\n/);
     const data = {};
-    if (lines.length < 2) return data;
+    const descs = {};
+    if (lines.length < 2) return { data, descs };
     // Auto-detect separator from header line
     const header = lines[0];
     const sep = header.includes(';') ? ';' : ',';
@@ -589,8 +591,13 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       const valueStr = parts[1].trim().replace(/^["']|["']$/g, '').replace(',', '.');
       const value = parseFloat(valueStr);
       if (!isNaN(value)) data[metric] = value;
+      // 3rd column: Desc (optional)
+      if (parts.length >= 3) {
+        const desc = parts[2].trim().replace(/^["']|["']$/g, '');
+        if (desc) descs[metric] = desc;
+      }
     }
-    return data;
+    return { data, descs };
   };
 
   const applySheetData = (data) => {
@@ -639,7 +646,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       const res = await fetch(SHEETS_URL);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
-      const data = parseSheetsCsv(text);
+      const { data, descs } = parseSheetsCsv(text);
       const known = ['VIX','RVX','VXN','VVIX','VXV','Fear_Greed_Index','Equity_Put_Call_Ratio',
         'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
         'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
@@ -648,6 +655,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       const found = known.filter(k => data[k] !== undefined);
       if (found.length === 0) throw new Error('Keine bekannten Felder im Sheet gefunden');
       applySheetData(data);
+      if (Object.keys(descs).length > 0) setSheetDescs(descs);
       setLastImportDate(new Date());
       // Kein Success-Toast — Timestamp-Update genügt als Feedback
     } catch (err) {
@@ -1086,8 +1094,24 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   };
 
   // ── Tooltip helper ──
+  // Map: tooltip ID → CSV Metric key (for Desc lookup)
+  const TOOLTIP_CSV_KEY = {
+    fearGreed: 'Fear_Greed_Index', equityPC: 'Equity_Put_Call_Ratio', totalPC: 'Total_Put_Call_Ratio',
+    y2: 'Yield_2Y', y10: 'Yield_10Y', y30: 'Yield_30Y',
+    vix: 'VIX', rvx: 'RVX', vxn: 'VXN', vvix: 'VVIX', vixVxv: 'VXV',
+    skew: 'SKEW_Index', move: 'MOVE_Index', leftTail: 'Left_Tail_Volatility',
+    breadth5: 'S5FD_Above_5Day_MA', breadth20: 'S5TW_Above_20Day_MA',
+    breadth50: 'S5FI_Above_50Day_MA', breadth200: 'S5TH_Above_200Day_MA',
+    hySpread: 'HY_Spread', dxy: 'DXY', goldSP: 'Gold_SP_Ratio', wti: 'WTI',
+    vx1spot: 'VX1', vx2vx1: 'VX2', vx5vx1: 'VX5',
+    yieldSpread: 'Yield_10Y', // kein eigenes Key — nutzt 10Y-Eintrag als Fallback
+  };
+
   const TT = ({ id, children }) => {
-    const tip = TOOLTIPS[id];
+    const base = TOOLTIPS[id];
+    const csvKey = TOOLTIP_CSV_KEY[id];
+    const sheetDesc = csvKey ? sheetDescs[csvKey] : undefined;
+    const tip = base ? { ...base, desc: sheetDesc ?? base.desc } : null;
     return (
       <div
         style={{ position: 'relative', display: 'inline-block', width: '100%' }}
