@@ -576,10 +576,14 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const parseSheetsCsv = (text) => {
     const lines = text.split(/\r?\n/);
     const data = {};
+    if (lines.length < 2) return data;
+    // Auto-detect separator from header line
+    const header = lines[0];
+    const sep = header.includes(';') ? ';' : ',';
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim().replace(/^["']|["']$/g, '');
       if (!line) continue;
-      const parts = line.split(';');
+      const parts = line.split(sep);
       if (parts.length < 2) continue;
       const metric = parts[0].trim().replace(/^["']|["']$/g, '');
       const valueStr = parts[1].trim().replace(/^["']|["']$/g, '').replace(',', '.');
@@ -873,18 +877,14 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           event.target.value = ''; return;
         }
 
-        const header = lines[0].replace(/^["']|["']$/g, '').toLowerCase();
-        if (!header.includes(';')) {
-          setCsvStatus({ type: 'error', msg: 'Falsches Trennzeichen — bitte Semikolon (;) als Trennzeichen verwenden' });
-          setTimeout(() => setCsvStatus(null), 4000);
-          event.target.value = ''; return;
-        }
+        const headerRaw = lines[0].replace(/^["']|["']$/g, '');
+        const sep = headerRaw.includes(';') ? ';' : ',';
 
         const data = {};
         for (let i = 1; i < lines.length; i++) {
           const line = lines[i].trim().replace(/^["']|["']$/g, '');
           if (!line) continue;
-          const parts = line.split(';');
+          const parts = line.split(sep);
           if (parts.length >= 2) {
             const metric = parts[0].trim().replace(/^["']|["']$/g, '');
             const valueStr = parts[1].trim().replace(/^["']|["']$/g, '').replace(',', '.');
