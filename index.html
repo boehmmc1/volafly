@@ -600,38 +600,73 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     const data = {};
     const descs = {};
     if (lines.length < 2) return { data, descs };
+
+    // Detect separator from header
+    const header = lines[0];
+    const sep = header.includes(';') ? ';' : ',';
+
     for (let i = 1; i < lines.length; i++) {
       const line = lines[i].trim();
       if (!line) continue;
 
-      // Try to extract the semicolon-separated payload regardless of outer structure:
-      // Case A: line starts with " and the quoted content contains ; → extract quoted content
-      // Case B: line has ; at top level → use directly
-      let payload = line;
-      if (line.startsWith('"')) {
-        // Find the closing quote (end of first quoted field)
+      // Case A: line is a single quoted field containing semicolons (old format)
+      // e.g. "VXN;29,87;Desc;",,url
+      if (line.startsWith('"') && line.includes(';')) {
         let end = 1;
         while (end < line.length) {
           if (line[end] === '"') {
-            if (line[end + 1] === '"') { end += 2; continue; } // escaped quote
+            if (line[end + 1] === '"') { end += 2; continue; }
             break;
           }
           end++;
         }
-        payload = line.slice(1, end).replace(/""/g, '"');
+        const payload = line.slice(1, end).replace(/""/g, '"');
+        if (payload.includes(';')) {
+          const parts = parseCsvLine(payload, ';');
+          if (parts.length < 2) continue;
+          const metric = parts[0].trim();
+          if (!metric) continue;
+          const valueStr = parts[1].trim().replace(',', '.');
+          const value = parseFloat(valueStr);
+          if (!isNaN(value)) data[metric] = value;
+          if (parts.length >= 3) {
+            const desc = parts[2].replace(/;$/, '').trim();
+            if (desc) descs[metric] = desc;
+          }
+          continue;
+        }
       }
 
-      // Now parse payload with ';' as separator
-      const parts = parseCsvLine(payload, ';');
-      if (parts.length < 2) continue;
+      // Case B: proper multi-column CSV (sep = , or ;)
+      // When sep=',': fields are [Metric, IntPart, DecPart, Desc...] if value has decimal comma
+      // e.g. VXN,29,87,Der CBOE Nasdaq...
+      // We detect this by checking if field[1] is digits-only and field[2] is digits-only
+      const rawParts = parseCsvLine(line, sep);
+      if (rawParts.length < 2) continue;
 
-      const metric = parts[0].replace(/^["']|["']$/g, '').trim();
+      const metric = rawParts[0].replace(/^["']|["']$/g, '').trim();
       if (!metric) continue;
-      const valueStr = parts[1].replace(/^["']|["']$/g, '').trim().replace(',', '.');
-      const value = parseFloat(valueStr);
+
+      let valueStr = rawParts[1].replace(/^["']|["']$/g, '').trim();
+      let descIndex = 2;
+
+      // If sep=',' and value looks like it was split on decimal comma:
+      // rawParts[1] = "29" and rawParts[2] = "87" (both pure digits/numbers, no letters)
+      if (sep === ',' && rawParts.length >= 3) {
+        const part1 = rawParts[1].trim();
+        const part2 = rawParts[2].trim();
+        if (/^\d+$/.test(part1) && /^\d+$/.test(part2)) {
+          // Rejoin as decimal number with dot
+          valueStr = part1 + '.' + part2;
+          descIndex = 3;
+        }
+      }
+
+      const value = parseFloat(valueStr.replace(',', '.'));
       if (!isNaN(value)) data[metric] = value;
-      if (parts.length >= 3) {
-        const desc = parts[2].replace(/^["']|["']$/g, '').replace(/;$/, '').trim();
+
+      if (rawParts.length > descIndex) {
+        const desc = rawParts[descIndex].replace(/^["']|["']$/g, '').replace(/;$/, '').trim();
         if (desc) descs[metric] = desc;
       }
     }
