@@ -1218,17 +1218,17 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
   // ── TradingView Chart Popup ──────────────────────────────────────────────
   const TV_SYMBOLS = {
-    'vix':      { label: 'VIX',              symbol: 'TVC:VIX' },
-    'rvx':      { label: 'RVX',              symbol: 'CBOEFTSE:RVX' },
-    'vxn':      { label: 'VXN',              symbol: 'CBOE:VXN' },
-    'vvix':     { label: 'VVIX',             symbol: 'CBOE:VVIX' },
-    'vixVxv':   { label: 'VIX3M (VXV)',      symbol: 'CBOE:VIX3M' },
-    'skew':     { label: 'SKEW Index',        symbol: 'CBOE:SKEW' },
-    'move':     { label: 'MOVE Index',        symbol: 'TVC:MOVE' },
-    'dxy':      { label: 'DXY',              symbol: 'TVC:DXY' },
-    'y2':       { label: 'Yield 2Y',          symbol: 'TVC:US02Y' },
-    'y10':      { label: 'Yield 10Y',         symbol: 'TVC:US10Y' },
-    'y30':      { label: 'Yield 30Y',         symbol: 'TVC:US30Y' },
+    'vix':    { label: 'VIX',        symbol: 'TVC:VIX',     embed: true },
+    'rvx':    { label: 'RVX',        symbol: 'CBOEFTSE:RVX', embed: false, tvUrl: 'https://de.tradingview.com/symbols/CBOEFTSE-RVX/' },
+    'vxn':    { label: 'VXN',        symbol: 'CBOE:VXN',    embed: false, tvUrl: 'https://de.tradingview.com/symbols/CBOE-VXN/' },
+    'vvix':   { label: 'VVIX',       symbol: 'CBOE:VVIX',   embed: false, tvUrl: 'https://de.tradingview.com/symbols/CBOE-VVIX/' },
+    'vixVxv': { label: 'VIX3M',      symbol: 'CBOE:VIX3M',  embed: false, tvUrl: 'https://www.tradingview.com/symbols/CBOE-VIX3M/' },
+    'skew':   { label: 'SKEW Index', symbol: 'CBOE:SKEW',   embed: false, tvUrl: 'https://de.tradingview.com/symbols/CBOE-SKEW/' },
+    'move':   { label: 'MOVE Index', symbol: 'TVC:MOVE',    embed: true },
+    'dxy':    { label: 'DXY',        symbol: 'TVC:DXY',     embed: true },
+    'y2':     { label: 'Yield 2Y',   symbol: 'TVC:US02Y',   embed: true },
+    'y10':    { label: 'Yield 10Y',  symbol: 'TVC:US10Y',   embed: true },
+    'y30':    { label: 'Yield 30Y',  symbol: 'TVC:US30Y',   embed: true },
   };
 
   const [chartModal, setChartModal] = React.useState(null);
@@ -1335,7 +1335,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               return (
                 <TT key={i} id={item.id}>
                   <div
-                    onClick={tvEntry ? () => setChartModal(tvEntry) : undefined}
+                    onClick={tvEntry ? () => { if (tvEntry.embed) setChartModal(tvEntry); else window.open(tvEntry.tvUrl, '_blank'); } : undefined}
                     style={{ cursor: tvEntry ? 'pointer' : 'default', borderRadius: '6px', padding: '2px', transition: 'background 0.15s', position: 'relative' }}
                     onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
@@ -1387,7 +1387,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             return (
               <TT key={i} id={item.id}>
                 <div
-                  onClick={tvEntry ? () => setChartModal(tvEntry) : undefined}
+                  onClick={tvEntry ? () => { if (tvEntry.embed) setChartModal(tvEntry); else window.open(tvEntry.tvUrl, '_blank'); } : undefined}
                   style={{
                     textAlign: 'center', padding: '8px 4px',
                     cursor: tvEntry ? 'pointer' : 'default',
@@ -1547,24 +1547,18 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
 
           <TT id="hySpread">
-            <div
-              onClick={() => setChartModal(TV_SYMBOLS['hySpread'])}
-              style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', position: 'relative' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
+            <div style={{ borderRadius: '8px', padding: '4px' }}>
               <div style={metricLabel}>HY Credit Spread</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {f(ri.hySpread, 2)}<span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: '3px' }}>%</span>
               </div>
               <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>ICE BofA OAS</div>
-              <div style={{ position: 'absolute', top: '6px', right: '6px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
             </div>
           </TT>
 
           <TT id="dxy">
             <div
-              onClick={() => setChartModal(TV_SYMBOLS['dxy'])}
+              onClick={() => { const e = TV_SYMBOLS['dxy']; if (e.embed) setChartModal(e); else window.open(e.tvUrl, '_blank'); }}
               style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', position: 'relative' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
