@@ -1222,10 +1222,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
     'rvx':      { label: 'RVX',              symbol: 'CBOEFTSE:RVX' },
     'vxn':      { label: 'VXN',              symbol: 'CBOE:VXN' },
     'vvix':     { label: 'VVIX',             symbol: 'CBOE:VVIX' },
-    'vixVxv':   { label: 'VIX/VXV (VIX3M)', symbol: 'CBOE:VIX3M' },
+    'vixVxv':   { label: 'VIX3M (VXV)',      symbol: 'CBOE:VIX3M' },
     'skew':     { label: 'SKEW Index',        symbol: 'CBOE:SKEW' },
     'move':     { label: 'MOVE Index',        symbol: 'TVC:MOVE' },
-    'hySpread': { label: 'HY Credit Spread',  symbol: 'FRED:BAMLH0A0HYM2' },
     'dxy':      { label: 'DXY',              symbol: 'TVC:DXY' },
     'y2':       { label: 'Yield 2Y',          symbol: 'TVC:US02Y' },
     'y10':      { label: 'Yield 10Y',         symbol: 'TVC:US10Y' },
@@ -1235,8 +1234,38 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const [chartModal, setChartModal] = React.useState(null);
 
   const ChartModal = ({ label, symbol, onClose }) => {
-    const encodedSymbol = symbol.replace(':', '%3A');
-    const tvUrl = `https://s.tradingview.com/widgetembed/?symbol=${encodedSymbol}&interval=D&range=12M&theme=dark&style=1&locale=de_DE&toolbar_bg=%230A0A0A&enable_publishing=false&hide_top_toolbar=0&save_image=0&allow_symbol_change=0`;
+    const idRef = React.useRef('tvchart_' + symbol.replace(/[^a-zA-Z0-9]/g, '_'));
+    React.useEffect(() => {
+      const container = document.getElementById(idRef.current);
+      if (!container) return;
+      // Clear any previous widget
+      container.innerHTML = '';
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+      script.async = true;
+      script.innerHTML = JSON.stringify({
+        autosize: true,
+        symbol: symbol,
+        interval: 'D',
+        timezone: 'Europe/Berlin',
+        theme: 'dark',
+        style: '1',
+        locale: 'de_DE',
+        backgroundColor: 'rgba(28, 28, 30, 0)',
+        gridColor: 'rgba(255, 255, 255, 0.06)',
+        allow_symbol_change: false,
+        calendar: false,
+        hide_top_toolbar: false,
+        hide_legend: false,
+        range: '12M',
+        save_image: false,
+        support_host: 'https://www.tradingview.com',
+      });
+      container.appendChild(script);
+      return () => { container.innerHTML = ''; };
+    }, [symbol]);
+
     return (
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, zIndex: 9999,
@@ -1253,15 +1282,19 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             <div style={{ fontSize: '14px', fontWeight: 700, color: '#F5F5F7' }}>{label}</div>
             <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: '14px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>✕</button>
           </div>
-          <iframe
-            src={tvUrl}
-            style={{ width: '100%', height: '275px', border: 'none', display: 'block' }}
-            allowTransparency={true}
-            allow="fullscreen"
+          <div
+            className="tradingview-widget-container"
+            id={idRef.current}
+            style={{ height: '275px', width: '100%' }}
           />
           <div style={{ padding: '8px 18px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.18)' }}>1-Jahreschart · Tageskerzen</span>
-            <a href={`https://www.tradingview.com/symbols/${symbol.replace(':', '-')}/`} target="_blank" rel="noopener" style={{ fontSize: '10px', color: '#0A84FF', textDecoration: 'none' }}>Auf TradingView öffnen →</a>
+            <a
+              href={`https://www.tradingview.com/symbols/${symbol.replace(':', '-')}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ fontSize: '10px', color: '#0A84FF', textDecoration: 'none' }}
+            >Auf TradingView öffnen →</a>
           </div>
         </div>
       </div>
