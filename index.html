@@ -1299,7 +1299,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   >
                     <div style={metricLabel}>{item.label}</div>
                     <div style={metricValue('#BF5AF2')}>{f(item.val, 2)}%</div>
-                    {tvEntry && <div style={{ position: 'absolute', top: '2px', right: '2px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>}
+                    
                   </div>
                 </TT>
               );
@@ -1524,8 +1524,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {f(ri.dxy, 1)}
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>DXY</div>
-              <div style={{ position: 'absolute', top: '6px', right: '6px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>DXY ↗</div>
             </div>
           </TT>
 
@@ -1538,10 +1537,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             >
               <div style={metricLabel}>Gold</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
-                {'$'}{f(ri.gold, 0)}
+                {'$'}{ri.gold ? f(ri.gold, 0) : '—'}
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz</div>
-              <div style={{ position: 'absolute', top: '6px', right: '6px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz ↗</div>
             </div>
           </TT>
 
@@ -1556,8 +1554,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {'$'}{f(ri.wti, 1)}
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Barrel</div>
-              <div style={{ position: 'absolute', top: '6px', right: '6px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Barrel ↗</div>
             </div>
           </TT>
 
