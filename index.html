@@ -1281,7 +1281,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
         {/* Yields + Spread */}
         <div style={glass}>
-          <div style={sectionLabel}>US Treasuries</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+            <div style={sectionLabel}>US Treasuries</div>
+          </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
             {[
               { label: '2Y', val: y.y2, id: 'y2' },
@@ -1293,13 +1295,15 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 <TT key={i} id={item.id}>
                   <div
                     onClick={tvEntry ? () => window.open(tvEntry.tvUrl, '_blank') : undefined}
-                    style={{ cursor: tvEntry ? 'pointer' : 'default', borderRadius: '6px', padding: '2px', transition: 'background 0.15s', position: 'relative' }}
+                    style={{ cursor: tvEntry ? 'pointer' : 'default', borderRadius: '6px', padding: '4px', transition: 'background 0.15s' }}
                     onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                   >
-                    <div style={metricLabel}>{item.label}</div>
+                    <div style={{ ...metricLabel, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      {item.label}
+                      {tvEntry && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>}
+                    </div>
                     <div style={metricValue('#BF5AF2')}>{f(item.val, 2)}%</div>
-                    
                   </div>
                 </TT>
               );
@@ -1322,12 +1326,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
       {/* Volatility row */}
       <div style={{ ...glass, marginBottom: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <div style={{ marginBottom: '12px' }}>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Volatility Indices</div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Indikator antippen für Chart
-          </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '4px' }}>
           {[
@@ -1345,23 +1345,15 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               <TT key={i} id={item.id}>
                 <div
                   onClick={tvEntry ? () => window.open(tvEntry.tvUrl, '_blank') : undefined}
-                  style={{
-                    textAlign: 'center', padding: '8px 4px',
-                    cursor: tvEntry ? 'pointer' : 'default',
-                    borderRadius: '8px',
-                    transition: 'background 0.15s ease',
-                    position: 'relative',
-                  }}
+                  style={{ textAlign: 'center', padding: '8px 4px', cursor: tvEntry ? 'pointer' : 'default', borderRadius: '8px', transition: 'background 0.15s ease' }}
                   onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                 >
-                  <div style={metricLabel}>{item.label}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: '4px' }}>
+                    {item.label}
+                    {tvEntry && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>}
+                  </div>
                   <div style={metricValue('#F5F5F7')}>{item.val}</div>
-                  {tvEntry && (
-                    <div style={{ position: 'absolute', top: '4px', right: '4px' }}>
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                    </div>
-                  )}
                 </div>
               </TT>
             );
@@ -1494,12 +1486,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
       {/* Makrosignale */}
       <div style={{ ...glass, marginTop: '8px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <div style={{ marginBottom: '12px' }}>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Makrosignale</div>
-          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            Antippen öffnet TradingView
-          </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
 
@@ -1510,11 +1498,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={metricLabel}>HY Credit Spread</div>
+              <div style={{...metricLabel, display:"flex", alignItems:"center", gap:"3px"}}>HY Credit Spread <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {f(ri.hySpread, 2)}<span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: '3px' }}>%</span>
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>ICE BofA OAS ↗</div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>ICE BofA OAS</div>
             </div>
           </TT>
 
@@ -1525,11 +1513,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={metricLabel}>US Dollar Index</div>
+              <div style={{...metricLabel, display:"flex", alignItems:"center", gap:"3px"}}>US Dollar Index <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {f(ri.dxy, 1)}
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>DXY ↗</div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>DXY</div>
             </div>
           </TT>
 
@@ -1540,11 +1528,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={metricLabel}>Gold</div>
+              <div style={{...metricLabel, display:"flex", alignItems:"center", gap:"3px"}}>Gold <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {'$'}{ri.gold ? f(ri.gold, 0) : '—'}
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz ↗</div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz</div>
             </div>
           </TT>
 
@@ -1555,11 +1543,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={metricLabel}>WTI Crude Oil</div>
+              <div style={{...metricLabel, display:"flex", alignItems:"center", gap:"3px"}}>WTI Crude Oil <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {'$'}{f(ri.wti, 1)}
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Barrel ↗</div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Barrel</div>
             </div>
           </TT>
 
