@@ -1503,9 +1503,89 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
     };
 
     const [expertOpen, setExpertOpen] = React.useState(false);
+    const [simpleView, setSimpleView] = React.useState(true);
+
+    // Ampel-Gruppen: zusammengefasste Kategorien für Einsteiger
+    const ampelGroups = [
+      {
+        label: 'Volatilität',
+        desc: 'Wie nervös ist der Markt?',
+        items: indicators.filter(i => i.group === 'Volatilität' || i.group === 'Struktur'),
+      },
+      {
+        label: 'Sentiment',
+        desc: 'Wie fühlen sich Anleger?',
+        items: indicators.filter(i => i.group === 'Sentiment'),
+      },
+      {
+        label: 'Kapitalfluss',
+        desc: 'Wohin fließt das Geld?',
+        items: indicators.filter(i => i.group === 'Kapitalfluss' || i.group === 'Zinsen'),
+      },
+    ].map(g => ({
+      ...g,
+      level: g.items.length > 0 ? Math.round(g.items.reduce((s, i) => s + i.level, 0) / g.items.length) : 1,
+    }));
 
     return (
       <>
+        {/* ── Einfach / Detailliert Toggle ── */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+          <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '3px', gap: '2px' }}>
+            {['Einfach', 'Detailliert'].map((label, i) => (
+              <button key={i} onClick={() => setSimpleView(i === 0)} style={{
+                fontSize: '11px', fontWeight: 600, padding: '5px 12px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                background: simpleView === (i === 0) ? 'rgba(255,255,255,0.12)' : 'transparent',
+                color: simpleView === (i === 0) ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)',
+                transition: 'all 0.2s ease',
+              }}>{label}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Ampel-Ansicht (Einfach) ── */}
+        {simpleView && (
+          <div style={{ marginBottom: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '8px' }}>
+              {ampelGroups.map((g, i) => {
+                const cls = volaClasses[g.level - 1];
+                return (
+                  <div key={i} style={{
+                    ...glass,
+                    textAlign: 'center',
+                    padding: '20px 12px',
+                    border: `0.5px solid ${cls.color}30`,
+                    background: `${cls.color}08`,
+                  }}>
+                    <div style={{
+                      width: '36px', height: '36px', borderRadius: '50%',
+                      background: cls.color,
+                      margin: '0 auto 12px',
+                      boxShadow: `0 0 12px ${cls.color}40`,
+                    }} />
+                    <div style={{ fontSize: '13px', fontWeight: 700, color: 'rgba(255,255,255,0.85)', marginBottom: '4px' }}>{g.label}</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>{g.desc}</div>
+                    <div style={{ fontSize: '11px', fontWeight: 600, color: cls.color, marginTop: '8px' }}>{cls.label}</div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{
+              ...glass, padding: '12px 16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+              <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>
+                Mehr Details gewünscht?
+              </div>
+              <button onClick={() => setSimpleView(false)} style={{
+                fontSize: '11px', fontWeight: 600, color: '#BF5AF2', background: 'rgba(191,90,242,0.1)',
+                border: '0.5px solid rgba(191,90,242,0.3)', borderRadius: '6px', padding: '5px 12px', cursor: 'pointer', fontFamily: 'inherit',
+              }}>Detailansicht →</button>
+            </div>
+          </div>
+        )}
+        {/* ── Hero Card + Details nur in Detailansicht ── */}
+        {!simpleView && (<>
         {/* ── Hero Card — volle Breite ── */}
         <div style={{
           ...glass,
@@ -1712,6 +1792,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             </div>
           )}
         </div>
+      </>
+        )}
       </>
     );
   };
