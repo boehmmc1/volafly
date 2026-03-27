@@ -1222,10 +1222,10 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
     'rvx':      { label: 'RVX',              symbol: 'CBOEFTSE:RVX' },
     'vxn':      { label: 'VXN',              symbol: 'CBOE:VXN' },
     'vvix':     { label: 'VVIX',             symbol: 'CBOE:VVIX' },
-    'vixVxv':   { label: 'VIX/VXV',          symbol: 'CBOE:VIX3M' },
+    'vixVxv':   { label: 'VIX/VXV (VIX3M)', symbol: 'CBOE:VIX3M' },
     'skew':     { label: 'SKEW Index',        symbol: 'CBOE:SKEW' },
     'move':     { label: 'MOVE Index',        symbol: 'TVC:MOVE' },
-    'hySpread': { label: 'HY Credit Spread',  symbol: 'FRED:BAMLH0A0HYM2EY' },
+    'hySpread': { label: 'HY Credit Spread',  symbol: 'FRED:BAMLH0A0HYM2' },
     'dxy':      { label: 'DXY',              symbol: 'TVC:DXY' },
     'y2':       { label: 'Yield 2Y',          symbol: 'TVC:US02Y' },
     'y10':      { label: 'Yield 10Y',         symbol: 'TVC:US10Y' },
@@ -1235,7 +1235,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const [chartModal, setChartModal] = React.useState(null);
 
   const ChartModal = ({ label, symbol, onClose }) => {
-    const tvUrl = `https://www.tradingview.com/widgetembed/?symbol=${encodeURIComponent(symbol)}&interval=D&range=12M&theme=dark&style=1&locale=de_DE&toolbar_bg=%230A0A0A&enable_publishing=false&hide_top_toolbar=0&hide_legend=0&save_image=0&hide_volume=0&studies=%5B%5D`;
+    const encodedSymbol = symbol.replace(':', '%3A');
+    const tvUrl = `https://s.tradingview.com/widgetembed/?symbol=${encodedSymbol}&interval=D&range=12M&theme=dark&style=1&locale=de_DE&toolbar_bg=%230A0A0A&enable_publishing=false&hide_top_toolbar=0&save_image=0&allow_symbol_change=0`;
     return (
       <div onClick={onClose} style={{
         position: 'fixed', inset: 0, zIndex: 9999,
@@ -1258,8 +1259,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             allowTransparency={true}
             allow="fullscreen"
           />
-          <div style={{ padding: '8px 18px 14px', fontSize: '10px', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
-            1-Jahreschart · Tageskerzen · Antippen außerhalb zum Schließen
+          <div style={{ padding: '8px 18px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.18)' }}>1-Jahreschart · Tageskerzen</span>
+            <a href={`https://www.tradingview.com/symbols/${symbol.replace(':', '-')}/`} target="_blank" rel="noopener" style={{ fontSize: '10px', color: '#0A84FF', textDecoration: 'none' }}>Auf TradingView öffnen →</a>
           </div>
         </div>
       </div>
