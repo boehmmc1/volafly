@@ -1218,62 +1218,17 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
   // ── TradingView Chart Popup ──────────────────────────────────────────────
   const TV_SYMBOLS = {
-    'vix':    { label: 'VIX',        symbol: 'TVC:VIX',     embed: true },
-    'rvx':    { label: 'RVX',        symbol: 'CBOEFTSE:RVX', embed: false, tvUrl: 'https://de.tradingview.com/symbols/CBOEFTSE-RVX/' },
-    'vxn':    { label: 'VXN',        symbol: 'CBOE:VXN',    embed: false, tvUrl: 'https://de.tradingview.com/symbols/CBOE-VXN/' },
-    'vvix':   { label: 'VVIX',       symbol: 'CBOE:VVIX',   embed: false, tvUrl: 'https://de.tradingview.com/symbols/CBOE-VVIX/' },
-    'vixVxv': { label: 'VIX3M',      symbol: 'CBOE:VIX3M',  embed: false, tvUrl: 'https://www.tradingview.com/symbols/CBOE-VIX3M/' },
-    'skew':   { label: 'SKEW Index', symbol: 'CBOE:SKEW',   embed: false, tvUrl: 'https://de.tradingview.com/symbols/CBOE-SKEW/' },
-    'move':   { label: 'MOVE Index', symbol: 'TVC:MOVE',    embed: true },
-    'dxy':    { label: 'DXY',        symbol: 'TVC:DXY',     embed: true },
-    'y2':     { label: 'Yield 2Y',   symbol: 'TVC:US02Y',   embed: true },
-    'y10':    { label: 'Yield 10Y',  symbol: 'TVC:US10Y',   embed: true },
-    'y30':    { label: 'Yield 30Y',  symbol: 'TVC:US30Y',   embed: true },
-  };
-
-  const [chartModal, setChartModal] = React.useState(null);
-
-  const ChartModal = ({ label, symbol, onClose }) => {
-    const containerRef = React.useRef(null);
-    React.useEffect(() => {
-      const container = containerRef.current;
-      if (!container) return;
-      container.innerHTML = '';
-      const widget = document.createElement('div');
-      widget.className = 'tradingview-widget-container__widget';
-      widget.style.cssText = 'height:calc(100% - 32px);width:100%';
-      const copyright = document.createElement('div');
-      copyright.className = 'tradingview-widget-copyright';
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-      script.async = true;
-      script.textContent = JSON.stringify({
-        symbol, interval: 'D', timezone: 'Europe/Berlin',
-        theme: 'dark', style: '1', locale: 'de_DE',
-        backgroundColor: '#1C1C1E', allow_symbol_change: false,
-        hide_side_toolbar: true, save_image: false, autosize: true,
-      });
-      container.appendChild(widget);
-      container.appendChild(copyright);
-      container.appendChild(script);
-      return () => { container.innerHTML = ''; };
-    }, [symbol]);
-    return (
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-        <div onClick={e => e.stopPropagation()} style={{ background: '#1C1C1E', borderRadius: '18px', border: '0.5px solid rgba(255,255,255,0.12)', width: '100%', maxWidth: '700px', overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '0.5px solid rgba(255,255,255,0.07)' }}>
-            <div style={{ fontSize: '14px', fontWeight: 700, color: '#F5F5F7' }}>{label}</div>
-            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: '14px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>✕</button>
-          </div>
-          <div ref={containerRef} className="tradingview-widget-container" style={{ height: '450px', width: '100%' }} />
-          <div style={{ padding: '8px 18px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.18)' }}>1-Jahreschart · Tageskerzen</span>
-            <a href={'https://de.tradingview.com/symbols/' + symbol.replace(':', '-') + '/'} target="_blank" rel="noopener noreferrer" style={{ fontSize: '10px', color: '#0A84FF', textDecoration: 'none' }}>Auf TradingView öffnen →</a>
-          </div>
-        </div>
-      </div>
-    );
+    'vix':    { label: 'VIX',        tvUrl: 'https://de.tradingview.com/symbols/TVC-VIX/' },
+    'rvx':    { label: 'RVX',        tvUrl: 'https://de.tradingview.com/symbols/CBOEFTSE-RVX/' },
+    'vxn':    { label: 'VXN',        tvUrl: 'https://de.tradingview.com/symbols/CBOE-VXN/' },
+    'vvix':   { label: 'VVIX',       tvUrl: 'https://de.tradingview.com/symbols/CBOE-VVIX/' },
+    'vixVxv': { label: 'VIX3M',      tvUrl: 'https://www.tradingview.com/symbols/CBOE-VIX3M/' },
+    'skew':   { label: 'SKEW Index', tvUrl: 'https://de.tradingview.com/symbols/CBOE-SKEW/' },
+    'move':   { label: 'MOVE Index', tvUrl: 'https://de.tradingview.com/symbols/TVC-MOVE/' },
+    'dxy':    { label: 'DXY',        tvUrl: 'https://de.tradingview.com/symbols/TVC-DXY/' },
+    'y2':     { label: 'Yield 2Y',   tvUrl: 'https://www.tradingview.com/symbols/TVC-US02Y/' },
+    'y10':    { label: 'Yield 10Y',  tvUrl: 'https://www.tradingview.com/symbols/TVC-US10Y/' },
+    'y30':    { label: 'Yield 30Y',  tvUrl: 'https://www.tradingview.com/symbols/TVC-US30Y/' },
   };
 
   // ── DATA TAB ──
@@ -1335,7 +1290,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               return (
                 <TT key={i} id={item.id}>
                   <div
-                    onClick={tvEntry ? () => { if (tvEntry.embed) setChartModal(tvEntry); else window.open(tvEntry.tvUrl, '_blank'); } : undefined}
+                    onClick={tvEntry ? () => window.open(tvEntry.tvUrl, '_blank') : undefined}
                     style={{ cursor: tvEntry ? 'pointer' : 'default', borderRadius: '6px', padding: '2px', transition: 'background 0.15s', position: 'relative' }}
                     onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
@@ -1387,7 +1342,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             return (
               <TT key={i} id={item.id}>
                 <div
-                  onClick={tvEntry ? () => { if (tvEntry.embed) setChartModal(tvEntry); else window.open(tvEntry.tvUrl, '_blank'); } : undefined}
+                  onClick={tvEntry ? () => window.open(tvEntry.tvUrl, '_blank') : undefined}
                   style={{
                     textAlign: 'center', padding: '8px 4px',
                     cursor: tvEntry ? 'pointer' : 'default',
@@ -1558,7 +1513,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
           <TT id="dxy">
             <div
-              onClick={() => { const e = TV_SYMBOLS['dxy']; if (e.embed) setChartModal(e); else window.open(e.tvUrl, '_blank'); }}
+              onClick={() => window.open(TV_SYMBOLS['dxy'].tvUrl, '_blank')}
               style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', position: 'relative' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
@@ -1594,7 +1549,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
         </div>
       </div>
-      {chartModal && <ChartModal label={chartModal.label} symbol={chartModal.symbol} onClose={() => setChartModal(null)} />}
     </>
   );
 
