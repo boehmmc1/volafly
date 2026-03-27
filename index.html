@@ -1216,6 +1216,66 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
     );
   };
 
+  // ── TradingView Chart Popup ──────────────────────────────────────────────
+  const TV_SYMBOLS = {
+    'vix':      { label: 'VIX',              symbol: 'TVC:VIX' },
+    'rvx':      { label: 'RVX',              symbol: 'CBOEFTSE:RVX' },
+    'vxn':      { label: 'VXN',              symbol: 'CBOE:VXN' },
+    'vvix':     { label: 'VVIX',             symbol: 'CBOE:VVIX' },
+    'vixVxv':   { label: 'VIX/VXV',          symbol: 'CBOE:VIX3M' },
+    'skew':     { label: 'SKEW Index',        symbol: 'CBOE:SKEW' },
+    'move':     { label: 'MOVE Index',        symbol: 'TVC:MOVE' },
+    'hySpread': { label: 'HY Credit Spread',  symbol: 'FRED:BAMLH0A0HYM2' },
+    'dxy':      { label: 'DXY',              symbol: 'TVC:DXY' },
+    'y2':       { label: 'Yield 2Y',          symbol: 'TVC:US02Y' },
+    'y10':      { label: 'Yield 10Y',         symbol: 'TVC:US10Y' },
+    'y30':      { label: 'Yield 30Y',         symbol: 'TVC:US30Y' },
+  };
+
+  const [chartModal, setChartModal] = React.useState(null);
+
+  const ChartModal = ({ label, symbol, onClose }) => {
+    const containerId = React.useRef('tv_' + Math.random().toString(36).slice(2));
+    React.useEffect(() => {
+      const container = document.getElementById(containerId.current);
+      if (!container) return;
+      const s = document.createElement('script');
+      s.src = 'https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js';
+      s.async = true;
+      s.innerHTML = JSON.stringify({
+        symbol, width: '100%', height: 200,
+        locale: 'de_DE', dateRange: '3M',
+        colorTheme: 'dark', isTransparent: true, autosize: true,
+      });
+      container.appendChild(s);
+    }, []);
+    return (
+      <div onClick={onClose} style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(0,0,0,0.72)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px',
+      }}>
+        <div onClick={e => e.stopPropagation()} style={{
+          background: '#1C1C1E', borderRadius: '18px',
+          border: '0.5px solid rgba(255,255,255,0.12)',
+          width: '100%', maxWidth: '400px', overflow: 'hidden',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderBottom: '0.5px solid rgba(255,255,255,0.07)' }}>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: '#F5F5F7' }}>{label}</div>
+            <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: '14px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+          </div>
+          <div style={{ padding: '4px 8px 0' }}>
+            <div className="tradingview-widget-container" id={containerId.current} style={{ minHeight: '200px' }} />
+          </div>
+          <div style={{ padding: '8px 18px 14px', fontSize: '10px', color: 'rgba(255,255,255,0.18)', textAlign: 'center' }}>
+            3-Monats-Chart · Daten von TradingView
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // ── DATA TAB ──
   const DataView = () => (
     <>
@@ -1270,12 +1330,24 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               { label: '2Y', val: y.y2, id: 'y2' },
               { label: '10Y', val: y.y10, id: 'y10' },
               { label: '30Y', val: y.y30, id: 'y30' },
-            ].map((item, i) => (
-              <TT key={i} id={item.id}>
-                <div style={metricLabel}>{item.label}</div>
-                <div style={metricValue('#BF5AF2')}>{f(item.val, 2)}%</div>
-              </TT>
-            ))}
+            ].map((item, i) => {
+              const tvEntry = TV_SYMBOLS[item.id];
+              return (
+                <TT key={i} id={item.id}>
+                  <div
+                    onClick={tvEntry ? () => setChartModal(tvEntry) : undefined}
+                    style={{ cursor: tvEntry ? 'pointer' : 'default', borderRadius: '6px', padding: '2px', transition: 'background 0.15s', position: 'relative' }}
+                    onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <div style={metricLabel}>{item.label}</div>
+                    <div style={metricValue('#BF5AF2')}>{f(item.val, 2)}%</div>
+                    {tvEntry && <div style={{ position: 'absolute', top: '2px', right: '2px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>}
+                  </div>
+                </TT>
+              );
+            })}
+          </div>
           </div>
           {/* 10Y–2Y Spread */}
           <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1294,7 +1366,13 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
       {/* Volatility row */}
       <div style={{ ...glass, marginBottom: '8px' }}>
-        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Volatility Indices</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Volatility Indices</div>
+          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Indikator antippen für Chart
+          </div>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '4px' }}>
           {[
             { label: 'VIX', val: f(v.vix), id: 'vix' },
@@ -1305,14 +1383,33 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             { label: 'SKEW', val: f(v.skewIndex), id: 'skew' },
             { label: 'MOVE', val: f(v.moveIndex), id: 'move' },
             { label: 'Left Tail', val: f(v.leftTailVol), id: 'leftTail' },
-          ].map((item, i) => (
-            <TT key={i} id={item.id}>
-              <div style={{ textAlign: 'center', padding: '8px 0' }}>
-                <div style={metricLabel}>{item.label}</div>
-                <div style={metricValue('#F5F5F7')}>{item.val}</div>
-              </div>
-            </TT>
-          ))}
+          ].map((item, i) => {
+            const tvEntry = TV_SYMBOLS[item.id];
+            return (
+              <TT key={i} id={item.id}>
+                <div
+                  onClick={tvEntry ? () => setChartModal(tvEntry) : undefined}
+                  style={{
+                    textAlign: 'center', padding: '8px 4px',
+                    cursor: tvEntry ? 'pointer' : 'default',
+                    borderRadius: '8px',
+                    transition: 'background 0.15s ease',
+                    position: 'relative',
+                  }}
+                  onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                >
+                  <div style={metricLabel}>{item.label}</div>
+                  <div style={metricValue('#F5F5F7')}>{item.val}</div>
+                  {tvEntry && (
+                    <div style={{ position: 'absolute', top: '4px', right: '4px' }}>
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                  )}
+                </div>
+              </TT>
+            );
+          })}
         </div>
       </div>
 
@@ -1441,26 +1538,44 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
       {/* Makrosignale */}
       <div style={{ ...glass, marginTop: '8px' }}>
-        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Makrosignale</div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Makrosignale</div>
+          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Antippen für Chart
+          </div>
+        </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '8px' }}>
 
           <TT id="hySpread">
-            <div>
+            <div
+              onClick={() => setChartModal(TV_SYMBOLS['hySpread'])}
+              style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', position: 'relative' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
               <div style={metricLabel}>HY Credit Spread</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {f(ri.hySpread, 2)}<span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: '3px' }}>%</span>
               </div>
               <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>ICE BofA OAS</div>
+              <div style={{ position: 'absolute', top: '6px', right: '6px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
             </div>
           </TT>
 
           <TT id="dxy">
-            <div>
+            <div
+              onClick={() => setChartModal(TV_SYMBOLS['dxy'])}
+              style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', position: 'relative' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
               <div style={metricLabel}>US Dollar Index</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {f(ri.dxy, 1)}
               </div>
               <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>DXY</div>
+              <div style={{ position: 'absolute', top: '6px', right: '6px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
             </div>
           </TT>
 
@@ -1486,6 +1601,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
         </div>
       </div>
+      {chartModal && <ChartModal label={chartModal.label} symbol={chartModal.symbol} onClose={() => setChartModal(null)} />}
     </>
   );
 
