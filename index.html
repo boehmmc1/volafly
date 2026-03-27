@@ -14,6 +14,11 @@
     body { background: #0A0A0A; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spin { animation: spin 0.8s linear infinite; display: inline-block; }
+    @keyframes volafly-pulse {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.06); }
+      100% { transform: scale(1); }
+    }
   </style>
 </head>
 <body>
@@ -1502,7 +1507,19 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
     return (
       <>
         {/* ── Hero Card — volle Breite ── */}
-        <div style={{ ...glass, marginBottom: '8px', padding: '28px 32px' }}>
+        <div style={{
+          ...glass,
+          marginBottom: '8px',
+          padding: '28px 32px',
+          background: `rgba(${
+            overallLevel === 1 ? '60,60,70' :
+            overallLevel === 2 ? '15,40,20' :
+            overallLevel === 3 ? '40,35,0' :
+            overallLevel === 4 ? '50,20,10' :
+            '50,10,10'
+          }, 0.55)`,
+          transition: 'background 0.8s ease',
+        }}>
 
           {/* 5-Klassen-Spektrum — Balken + Label darunter, kein Overflow */}
           <div style={{ marginBottom: '28px' }}>
@@ -1540,7 +1557,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>
                 Volatilitätsklasse
               </div>
-              <div style={{ fontSize: '72px', fontWeight: 700, color: currentClass.color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+              <div style={{
+                fontSize: '72px', fontWeight: 700, color: currentClass.color,
+                lineHeight: 1, fontVariantNumeric: 'tabular-nums',
+                animation: 'volafly-pulse 0.4s ease',
+              }}>
                 {overallLevel}<span style={{ fontSize: '26px', color: 'rgba(255,255,255,0.18)', fontWeight: 500, marginLeft: '4px' }}>/5</span>
               </div>
               <div style={{ fontSize: '20px', fontWeight: 600, color: currentClass.color, marginTop: '8px', letterSpacing: '-0.01em' }}>
@@ -1586,6 +1607,31 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             </div>
 
           </div>
+
+          {/* ── Handlungssatz ── */}
+          <div style={{
+            marginTop: '24px',
+            paddingTop: '20px',
+            borderTop: '0.5px solid rgba(255,255,255,0.07)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+          }}>
+            <div style={{
+              width: '3px', height: '36px', borderRadius: '2px',
+              background: currentClass.color,
+              flexShrink: 0,
+              transition: 'background 0.4s ease',
+            }} />
+            <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
+              {overallLevel === 1 && 'Der Markt ist ungewöhnlich ruhig — Vorsicht vor Selbstgefälligkeit. Basis-Exposure von bis zu 40% ist angemessen.'}
+              {overallLevel === 2 && 'Geringes Stressniveau. Ein rationaler Investor hält eine solide Basis-Position von bis zu 60%.'}
+              {overallLevel === 3 && 'Erhöhte Unsicherheit. Jetzt selektiv aufbauen — bis zu 80% Investitionsgrad ist rational.'}
+              {overallLevel === 4 && 'Deutlicher Stress im Markt. Ein rationaler Investor erhöht jetzt antizyklisch auf bis zu 90%.'}
+              {overallLevel === 5 && 'Kapitulation — maximale Angst. Historisch der beste Kaufzeitpunkt. Bis zu 110% für aggressive Investoren.'}
+            </div>
+          </div>
+
         </div>
 
         {/* ── Signalverteilung ── */}
