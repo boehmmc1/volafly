@@ -541,7 +541,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     },
     yieldCurve: { y2: 4.17, y10: 4.165, y30: 4.56 },
     movingAverages: { breadth: { above5day: 52.4, above20day: 64.6, above50day: 68.2, above200day: 60.0 } },
-    riskIndicators: { hySpread: 3.45, dxy: 104.2, goldSP: 0.52, wti: 72.5 }
+    riskIndicators: { hySpread: 3.45, dxy: 104.2, goldSP: 0.52, gold: 3200, wti: 72.5 }
   });
   const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsmLGq2ejgt-yg-ER16AuBC2cjPmHJLa4voisbpgmo3qpNMo7LMNus01PLp6etdn2CJb9724Bp6y-d/pub?gid=0&single=true&output=csv';
 
@@ -713,6 +713,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         hySpread: data.HY_Spread      ?? marketData.riskIndicators.hySpread,
         dxy:      data.DXY            ?? marketData.riskIndicators.dxy,
         goldSP:   data.Gold_SP_Ratio  ?? marketData.riskIndicators.goldSP,
+        gold:     data.Gold           ?? marketData.riskIndicators.gold,
         wti:      data.WTI            ?? marketData.riskIndicators.wti,
       },
     });
@@ -732,7 +733,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
         'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
         'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
-        'HY_Spread','DXY','Gold_SP_Ratio','WTI'];
+        'HY_Spread','DXY','Gold_SP_Ratio','Gold','WTI'];
       const found = known.filter(k => data[k] !== undefined);
       if (found.length === 0) throw new Error(`Keine bekannten Felder gefunden (Sep: "${detectedSep}", Header: "${firstLine.slice(0,60)}")`);
       applySheetData(data);
@@ -986,7 +987,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
           'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
           'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
-          'HY_Spread','DXY','Gold_SP_Ratio','WTI'];
+          'HY_Spread','DXY','Gold_SP_Ratio','Gold','WTI'];
         const foundFields = knownFields.filter(k => data[k] !== undefined);
         if (foundFields.length === 0) {
           setCsvStatus({ type: 'error', msg: 'Keine bekannten Felder gefunden — bitte das Template als Vorlage verwenden' });
@@ -1028,6 +1029,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             hySpread: data.HY_Spread ?? marketData.riskIndicators.hySpread,
             dxy:      data.DXY      ?? marketData.riskIndicators.dxy,
             goldSP:   data.Gold_SP_Ratio ?? marketData.riskIndicators.goldSP,
+            gold:     data.Gold     ?? marketData.riskIndicators.gold,
             wti:      data.WTI      ?? marketData.riskIndicators.wti,
           },
         };
@@ -1528,22 +1530,34 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           </TT>
 
           <TT id="goldSP">
-            <div>
-              <div style={metricLabel}>Gold / S&amp;P 500</div>
+            <div
+              onClick={() => window.open('https://www.tradingview.com/symbols/TVC-GOLD/', '_blank')}
+              style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', position: 'relative' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <div style={metricLabel}>Gold</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
-                {f(ri.goldSP, 3)}
+                {'$'}{f(ri.gold, 0)}
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>Gold ÷ S&amp;P 500</div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz</div>
+              <div style={{ position: 'absolute', top: '6px', right: '6px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
             </div>
           </TT>
 
           <TT id="wti">
-            <div>
+            <div
+              onClick={() => window.open('https://www.tradingview.com/symbols/NYMEX-CL1!/', '_blank')}
+              style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', position: 'relative' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
               <div style={metricLabel}>WTI Crude Oil</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {'$'}{f(ri.wti, 1)}
               </div>
               <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Barrel</div>
+              <div style={{ position: 'absolute', top: '6px', right: '6px' }}><svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
             </div>
           </TT>
 
