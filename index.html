@@ -1234,26 +1234,45 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const [chartModal, setChartModal] = React.useState(null);
 
   const ChartModal = ({ label, symbol, onClose }) => {
-    const containerRef = React.useRef(null);
+    const widgetRef = React.useRef(null);
     React.useEffect(() => {
-      // Script nur einmal laden
-      if (!document.querySelector('script[src*="tv-mini-chart"]')) {
-        const script = document.createElement('script');
-        script.type = 'module';
-        script.src = 'https://widgets.tradingview-widget.com/w/de_DE/tv-mini-chart.js';
-        document.head.appendChild(script);
-      }
-      if (!containerRef.current) return;
-      containerRef.current.innerHTML = '';
-      const el = document.createElement('tv-mini-chart');
-      el.setAttribute('symbol', symbol);
-      el.setAttribute('interval', 'D');
-      el.setAttribute('range', '12M');
-      el.setAttribute('color-theme', 'dark');
-      el.style.width = '100%';
-      el.style.height = '260px';
-      el.style.display = 'block';
-      containerRef.current.appendChild(el);
+      if (!widgetRef.current) return;
+      widgetRef.current.innerHTML = '';
+      const inner = document.createElement('div');
+      inner.style.cssText = 'height:calc(100% - 32px);width:100%';
+      const copyright = document.createElement('div');
+      copyright.className = 'tradingview-widget-copyright';
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+      script.async = true;
+      script.text = JSON.stringify({
+        symbol: symbol,
+        interval: 'D',
+        timezone: 'Europe/Berlin',
+        theme: 'dark',
+        style: '1',
+        locale: 'de_DE',
+        backgroundColor: '#1C1C1E',
+        gridColor: 'rgba(255,255,255,0.06)',
+        allow_symbol_change: false,
+        calendar: false,
+        details: false,
+        hide_side_toolbar: true,
+        hide_top_toolbar: false,
+        hide_legend: false,
+        hide_volume: false,
+        hotlist: false,
+        save_image: false,
+        withdateranges: false,
+        compareSymbols: [],
+        studies: [],
+        autosize: true,
+      });
+      widgetRef.current.appendChild(inner);
+      widgetRef.current.appendChild(copyright);
+      widgetRef.current.appendChild(script);
+      return () => { if (widgetRef.current) widgetRef.current.innerHTML = ''; };
     }, [symbol]);
 
     return (
@@ -1272,10 +1291,14 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             <div style={{ fontSize: '14px', fontWeight: 700, color: '#F5F5F7' }}>{label}</div>
             <button onClick={onClose} style={{ background: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.5)', fontSize: '14px', width: '28px', height: '28px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>✕</button>
           </div>
-          <div ref={containerRef} style={{ height: '260px', width: '100%', background: '#1C1C1E' }} />
+          <div
+            ref={widgetRef}
+            className="tradingview-widget-container"
+            style={{ height: '300px', width: '100%' }}
+          />
           <div style={{ padding: '8px 18px 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.18)' }}>1-Jahreschart · Tageskerzen</span>
-            <a href={`https://www.tradingview.com/symbols/${symbol.replace(':', '-')}/`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '10px', color: '#0A84FF', textDecoration: 'none' }}>Auf TradingView öffnen →</a>
+            <a href={`https://de.tradingview.com/symbols/${symbol.replace(':', '-')}/`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '10px', color: '#0A84FF', textDecoration: 'none' }}>Auf TradingView öffnen →</a>
           </div>
         </div>
       </div>
