@@ -542,7 +542,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     yieldCurve: { y2: 4.17, y10: 4.165, y30: 4.56 },
     movingAverages: { breadth: { above5day: 52.4, above20day: 64.6, above50day: 68.2, above200day: 60.0 } },
     riskIndicators: { hySpread: 3.45, dxy: 104.2, goldSP: 0.52, gold: 3200, silver: 32, wti: 72.5 },
-    indices: { spx: 5200, ndx: 18000, rut: 2000 }
+    indices: { spx: 5200, ndx: 18000, rut: 2000, spx200d: 5300, ndx200d: 19000 }
   });
   const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsmLGq2ejgt-yg-ER16AuBC2cjPmHJLa4voisbpgmo3qpNMo7LMNus01PLp6etdn2CJb9724Bp6y-d/pub?gid=0&single=true&output=csv';
 
@@ -722,6 +722,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         spx: data.SPX ?? marketData.indices.spx,
         ndx: data.NDX ?? marketData.indices.ndx,
         rut: data.RUT ?? marketData.indices.rut,
+        spx200d: data.SPX_200D ?? marketData.indices.spx200d,
+        ndx200d: data.NDX_200D ?? marketData.indices.ndx200d,
       },
     });
   };
@@ -740,7 +742,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
         'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
         'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
-        'HY_Spread','DXY','Gold_SP_Ratio','Gold','Silver','WTI','SPX','NDX','RUT'];
+        'HY_Spread','DXY','Gold_SP_Ratio','Gold','Silver','WTI','SPX','NDX','RUT','SPX_200D','NDX_200D'];
       const found = known.filter(k => data[k] !== undefined);
       if (found.length === 0) throw new Error(`Keine bekannten Felder gefunden (Sep: "${detectedSep}", Header: "${firstLine.slice(0,60)}")`);
       applySheetData(data);
@@ -994,7 +996,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
           'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
           'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
-          'HY_Spread','DXY','Gold_SP_Ratio','Gold','Silver','WTI','SPX','NDX','RUT'];
+          'HY_Spread','DXY','Gold_SP_Ratio','Gold','Silver','WTI','SPX','NDX','RUT','SPX_200D','NDX_200D'];
         const foundFields = knownFields.filter(k => data[k] !== undefined);
         if (foundFields.length === 0) {
           setCsvStatus({ type: 'error', msg: 'Keine bekannten Felder gefunden — bitte das Template als Vorlage verwenden' });
@@ -1044,6 +1046,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             spx: data.SPX ?? marketData.indices.spx,
             ndx: data.NDX ?? marketData.indices.ndx,
             rut: data.RUT ?? marketData.indices.rut,
+            spx200d: data.SPX_200D ?? marketData.indices.spx200d,
+            ndx200d: data.NDX_200D ?? marketData.indices.ndx200d,
           },
         };
         setMarketData(newData);
@@ -1068,7 +1072,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const y = marketData.yieldCurve;
   const b = marketData.movingAverages.breadth;
   const ri = marketData.riskIndicators;
-  const idx = marketData.indices || { spx: null, ndx: null, rut: null };
+  const idx = marketData.indices || { spx: null, ndx: null, rut: null, spx200d: null, ndx200d: null };
 
   const fearColor = v.fearGreed < 25 ? '#FF3B30' : v.fearGreed < 45 ? '#FF9500' : v.fearGreed < 55 ? '#FFCC00' : v.fearGreed < 75 ? '#34C759' : '#30D158';
   const contango = v.vx5 > v.vx1;
@@ -1550,6 +1554,19 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             </div>
           </TT>
 
+          <div
+            onClick={() => window.open('https://www.tradingview.com/chart/?symbol=TVC%3ASILVER&interval=D', '_blank')}
+            style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>Silber <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
+              {'$'}{ri.silver ? f(ri.silver, 2) : '—'}
+            </div>
+            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz</div>
+          </div>
+
           <TT id="wti">
             <div
               onClick={() => window.open('https://www.tradingview.com/symbols/NYMEX-CL1!/?interval=D', '_blank')}
@@ -1565,19 +1582,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             </div>
           </TT>
 
-          <div
-            onClick={() => window.open('https://www.tradingview.com/chart/?symbol=TVC%3ASILVER&interval=D', '_blank')}
-            style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>Silber <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
-              {'$'}{ri.silver ? f(ri.silver, 2) : '—'}
-            </div>
-            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz</div>
-          </div>
-
         </div>
       </div>
 
@@ -1588,23 +1592,44 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
           {[
-            { label: 'S&P 500',    val: idx.spx, url: 'https://www.tradingview.com/symbols/SP-SPX/?interval=D',       sub: 'SPX' },
-            { label: 'Nasdaq 100', val: idx.ndx, url: 'https://www.tradingview.com/symbols/NASDAQ-NDX/?interval=D',    sub: 'NDX' },
-            { label: 'Russell 2000', val: idx.rut, url: 'https://www.tradingview.com/symbols/TVC-RUT/?interval=D',     sub: 'RUT' },
-          ].map((item, i) => (
-            <div key={i}
-              onClick={() => window.open(item.url, '_blank')}
-              style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>{item.label} <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-              <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
-                {item.val ? f(item.val, 0) : '—'}
+            { label: 'S&P 500',      val: idx.spx, ma200: idx.spx200d, url: 'https://www.tradingview.com/symbols/SP-SPX/?interval=D',      sub: 'SPX' },
+            { label: 'Nasdaq 100',   val: idx.ndx, ma200: idx.ndx200d, url: 'https://www.tradingview.com/symbols/NASDAQ-NDX/?interval=D',   sub: 'NDX' },
+            { label: 'Russell 2000', val: idx.rut, ma200: null,        url: 'https://www.tradingview.com/symbols/TVC-RUT/?interval=D',      sub: 'RUT' },
+          ].map((item, i) => {
+            const aboveMA = item.ma200 ? item.val > item.ma200 : null;
+            return (
+              <div key={i}
+                onClick={() => window.open(item.url, '_blank')}
+                style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>{item.label} <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
+                  {item.val ? item.val.toLocaleString('de-DE', {maximumFractionDigits: 0}) : '—'}
+                </div>
+                {aboveMA !== null && (
+                  <div style={{ marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 7px', borderRadius: '5px',
+                    background: aboveMA ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)',
+                    border: `0.5px solid ${aboveMA ? 'rgba(48,209,88,0.25)' : 'rgba(255,69,58,0.25)'}`,
+                  }}>
+                    <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+                      {aboveMA
+                        ? <polyline points="1,7 5,3 9,7" stroke="#30D158" strokeWidth="1.5" strokeLinecap="round"/>
+                        : <polyline points="1,3 5,7 9,3" stroke="#FF453A" strokeWidth="1.5" strokeLinecap="round"/>
+                      }
+                    </svg>
+                    <span style={{ fontSize: '9px', fontWeight: 600, color: aboveMA ? '#30D158' : '#FF453A' }}>
+                      {aboveMA ? 'über 200T' : 'unter 200T'}
+                    </span>
+                  </div>
+                )}
+                {aboveMA === null && (
+                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>{item.sub}</div>
+                )}
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>{item.sub}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </>
