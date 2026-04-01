@@ -1322,7 +1322,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         {/* Put/Call */}
         <div style={glass}>
           <div style={sectionLabel}>Put/Call Ratios</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
             <TT id="equityPC">
               <div style={metricLabel}>Equity</div>
               <div style={metricValue(v.equityPutCall < 0.7 ? '#30D158' : v.equityPutCall > 1.0 ? '#FF453A' : '#FFCC00')}>
@@ -1737,7 +1737,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           </div>
 
           {/* Hauptinhalt: 3 Spalten */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
 
             {/* Links: Vola-Klasse */}
             <div style={{ textAlign: 'center' }}>
@@ -1760,7 +1760,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             </div>
 
             {/* Mitte: Divider */}
-            <div style={{ width: '0.5px', height: '100px', background: 'rgba(255,255,255,0.07)', margin: '0 20px', flexShrink: 0 }} />
+            <div style={{ display: 'none' }} />
 
             {/* Rechts: Investitionsgrad */}
             <div style={{ textAlign: 'center' }}>
@@ -1872,9 +1872,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           {/* Collapsible content */}
           {expertOpen && (
             <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '12px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
                 {groupedIndicators.map((g, gi) => (
-                  <div key={gi} style={{ ...glass, ...(gi === groupedIndicators.length - 1 && groupedIndicators.length % 2 !== 0 ? { gridColumn: 'span 2' } : {}) }}>
+                  <div key={gi} style={{ ...glass, ...({}) }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={sectionLabel}>{g.group}</div>
                       {(() => {
@@ -1949,6 +1949,13 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 )}
                 <button onClick={() => { setOnboardStep(0); setOnboardingFromInfo(true); setShowOnboarding(true); }}
                   style={{ width: '30px', height: '30px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' }}>?</button>
+                {/* User avatar mobil */}
+                <button
+                  onClick={signOut}
+                  title="Abmelden"
+                  style={{ width: '30px', height: '30px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.06)', color: '#F5F5F7', cursor: 'pointer', fontSize: '11px', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {(user?.email?.[0] || '?').toUpperCase()}
+                </button>
               </div>
             </div>
             {/* Zeile 2: Tabs zentriert + Timestamp */}
@@ -2537,9 +2544,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         {activeTab === 'data' ? <DataView /> : (
           <>
             {/* Option A — Kontext-Banner oben im Bewertungs-Tab */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', padding: '9px 14px', background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px', padding: '9px 14px', background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: lastImportDate ? '#30D158' : '#FF9F0A', boxShadow: lastImportDate ? '0 0 6px #30D158' : '0 0 6px #FF9F0A' }} />
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: lastImportDate ? '#30D158' : '#FF9F0A', boxShadow: lastImportDate ? '0 0 6px #30D158' : '0 0 6px #FF9F0A', flexShrink: 0 }} />
                 <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums' }}>
                   {lastImportDate
                     ? `Interpretation basierend auf Marktdaten vom ${formatTime(lastImportDate)}`
@@ -2548,7 +2555,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               </div>
               <button
                 onClick={() => setActiveTab('data')}
-                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', alignSelf: isMobile ? 'flex-end' : 'auto' }}
                 onMouseEnter={e => { e.currentTarget.style.color = '#F5F5F7'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
