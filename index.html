@@ -1322,7 +1322,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         {/* Put/Call */}
         <div style={glass}>
           <div style={sectionLabel}>Put/Call Ratios</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             <TT id="equityPC">
               <div style={metricLabel}>Equity</div>
               <div style={metricValue(v.equityPutCall < 0.7 ? '#30D158' : v.equityPutCall > 1.0 ? '#FF453A' : '#FFCC00')}>
@@ -1443,23 +1443,23 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             const yMin = Math.floor((rawMin - pad) / 2) * 2;
             const yMax = Math.ceil((rawMax + pad) / 2) * 2;
             const yRange = yMax - yMin;
-            const chartH = 160;
-            const yBase = 190;
+            const chartH = 180;
+            const yBase = 215;
             const toY = (val) => yBase - ((val - yMin) / yRange) * chartH;
             // nice grid lines: ~5 steps
             const step = Math.ceil(yRange / 5 / 2) * 2 || 2;
             const gridVals = [];
             for (let g = Math.ceil(yMin / step) * step; g <= yMax; g += step) gridVals.push(g);
             return (
-              <svg viewBox="0 0 600 220" style={{ width: '100%', height: '220px' }}>
+              <svg viewBox="0 0 620 260" style={{ width: '100%', height: '260px' }}>
                 {gridVals.map((val, i) => (
                   <g key={i}>
-                    <line x1="35" y1={toY(val)} x2="580" y2={toY(val)} stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-                    <text x="28" y={toY(val) + 3} fill="rgba(255,255,255,0.15)" fontSize="9" textAnchor="end">{val}</text>
+                    <line x1="42" y1={toY(val)} x2="590" y2={toY(val)} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+                    <text x="36" y={toY(val) + 4} fill="rgba(255,255,255,0.3)" fontSize="12" textAnchor="end">{val}</text>
                   </g>
                 ))}
-                <line x1="35" y1={toY(v.vix)} x2="580" y2={toY(v.vix)} stroke="rgba(255,159,10,0.4)" strokeWidth="1" strokeDasharray="4 3" />
-                <text x="575" y={toY(v.vix) - 6} fill="rgba(255,159,10,0.7)" fontSize="9" fontWeight="600" textAnchor="end">VIX Spot: {f(v.vix)}</text>
+                <line x1="42" y1={toY(v.vix)} x2="590" y2={toY(v.vix)} stroke="rgba(255,159,10,0.5)" strokeWidth="1.5" strokeDasharray="5 4" />
+                <text x="588" y={toY(v.vix) - 8} fill="rgba(255,159,10,0.85)" fontSize="12" fontWeight="600" textAnchor="end">VIX Spot: {f(v.vix)}</text>
                 <defs>
                   <linearGradient id="areaGradB" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#0A84FF" stopOpacity="0.15" />
@@ -1467,12 +1467,12 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   </linearGradient>
                 </defs>
                 <path
-                  d={`M ${35 + 0 * 136},${toY(v.vx1)} L ${35 + 1 * 136},${toY(v.vx2)} L ${35 + 2 * 136},${toY(v.vx3)} L ${35 + 3 * 136},${toY(v.vx4)} L ${35 + 4 * 136},${toY(v.vx5)} L ${35 + 4 * 136},${yBase} L 35,${yBase} Z`}
+                  d={`M ${42 + 0 * 137},${toY(v.vx1)} L ${42 + 1 * 137},${toY(v.vx2)} L ${42 + 2 * 137},${toY(v.vx3)} L ${42 + 3 * 137},${toY(v.vx4)} L ${42 + 4 * 137},${toY(v.vx5)} L ${42 + 4 * 137},${yBase} L 42,${yBase} Z`}
                   fill="url(#areaGradB)"
                 />
                 <polyline
-                  points={[v.vx1, v.vx2, v.vx3, v.vx4, v.vx5].map((val, i) => `${35 + i * 136},${toY(val)}`).join(' ')}
-                  fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                  points={[v.vx1, v.vx2, v.vx3, v.vx4, v.vx5].map((val, i) => `${42 + i * 137},${toY(val)}`).join(' ')}
+                  fill="none" stroke="#0A84FF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
                 />
                 {[
                   { val: v.vx1, label: 'VX1' },
@@ -1482,9 +1482,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   { val: v.vx5, label: 'VX5' },
                 ].map((p, i) => (
                   <g key={i}>
-                    <circle cx={35 + i * 136} cy={toY(p.val)} r="3" fill="#0A84FF" />
-                    <text x={35 + i * 136} y={toY(p.val) - 10} fill="#0A84FF" fontSize="10" fontWeight="600" textAnchor="middle">{f(p.val)}</text>
-                    <text x={35 + i * 136} y={207} fill="rgba(255,255,255,0.25)" fontSize="9" fontWeight="500" textAnchor="middle">{p.label}</text>
+                    <circle cx={42 + i * 137} cy={toY(p.val)} r="4.5" fill="#0A84FF" />
+                    <text x={42 + i * 137} y={toY(p.val) - 12} fill="#0A84FF" fontSize="13" fontWeight="700" textAnchor="middle">{f(p.val)}</text>
+                    <text x={42 + i * 137} y={238} fill="rgba(255,255,255,0.4)" fontSize="12" fontWeight="600" textAnchor="middle">{p.label}</text>
                   </g>
                 ))}
               </svg>
