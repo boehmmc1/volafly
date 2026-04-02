@@ -995,6 +995,26 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     setNewProfileName('');
     setProfileMsg(null);
   };
+  const [notifyWeeklyReport, setNotifyWeeklyReport] = useState(false);
+  const [notifyLevelChange, setNotifyLevelChange] = useState(false);
+  const [notifyLoading, setNotifyLoading] = useState(false);
+
+  const loadNotifyPrefs = async () => {
+    if (!user) return;
+    const { data } = await sbClient.from('notification_preferences').select('notify_weekly,notify_level').eq('user_id', user.id).single();
+    if (data) { setNotifyWeeklyReport(!!data.notify_weekly); setNotifyLevelChange(!!data.notify_level); }
+  };
+
+  const saveNotifyPref = async (field, value) => {
+    if (!user) return;
+    setNotifyLoading(true);
+    await sbClient.from('notification_preferences').upsert({
+      user_id: user.id, email: user.email,
+      [field]: value,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    setNotifyLoading(false);
+  };
 
   const signOut = async () => { await sbClient.auth.signOut(); };
 
@@ -2103,7 +2123,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                             Kontakt
                           </button>
-                          <button onClick={() => { setMobileMenuOpen(false); setShowProfilePanel(true); }}
+                          <button onClick={() => { setMobileMenuOpen(false); setShowProfilePanel(true); loadNotifyPrefs(); }}
                             style={{ width: '100%', padding: '9px 10px', borderRadius: '10px', border: 'none', background: 'transparent', color: '#F5F5F7', fontSize: '13px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'left', fontFamily: 'inherit' }}
                             onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.06)'}
                             onMouseLeave={e => e.currentTarget.style.background='transparent'}>
@@ -2275,7 +2295,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       </button>
                       {/* Profile */}
                       <button
-                        onClick={() => { setMenuOpen(false); setShowProfilePanel(true); }}
+                        onClick={() => { setMenuOpen(false); setShowProfilePanel(true); loadNotifyPrefs(); }}
                         style={{ width: '100%', padding: '9px 10px', borderRadius: '10px', border: 'none', background: 'transparent', color: '#F5F5F7', fontSize: '13px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'left', fontFamily: 'inherit' }}
                         onMouseEnter={e => e.currentTarget.style.background='rgba(255,255,255,0.06)'}
                         onMouseLeave={e => e.currentTarget.style.background='transparent'}>
@@ -2301,101 +2321,50 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         </div>
         )} {/* end desktop header */}
 
-        {/* Profile Panel Modal */}
+        {/* Profile Panel Modal — Benachrichtigungen */}
         {showProfilePanel && (
-          <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
-            <div style={{ background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '20px', padding: '24px', width: '100%', maxWidth: '480px', maxHeight: '80vh', overflowY: 'auto' }}>
+          <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', padding: isMobile ? '0' : '16px' }}>
+            <div style={{ background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: isMobile ? '24px 24px 0 0' : '20px', padding: isMobile ? '20px 16px 36px' : '24px', width: '100%', maxWidth: '440px', maxHeight: isMobile ? '80vh' : 'auto', overflowY: 'auto' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Eigenes Risikomanagement</h3>
+                <div>
+                  <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Benachrichtigungen</h3>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '3px' }}>{user?.email}</div>
+                </div>
                 <button onClick={() => closeProfilePanel()} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
               </div>
 
-              {/* Profil speichern / aktualisieren */}
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
-                  {editingProfileId ? 'Konfiguration aktualisieren' : 'Aktuelle Grenzwerte speichern als'}
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <input
-                    type="text"
-                    value={newProfileName}
-                    onChange={e => setNewProfileName(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && saveProfile()}
-                    placeholder="z.B. Konservativ, Mein Setup…"
-                    style={{ flex: 1, padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: `0.5px solid ${editingProfileId ? 'rgba(10,132,255,0.35)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '10px', color: '#F5F5F7', fontSize: '13px', outline: 'none', fontFamily: 'inherit' }}
-                    onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
-                    onBlur={e => e.target.style.borderColor= editingProfileId ? 'rgba(10,132,255,0.35)' : 'rgba(255,255,255,0.1)'}
-                  />
-                  {editingProfileId && (
-                    <button onClick={cancelEdit}
-                      style={{ padding: '9px 12px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontFamily: 'inherit' }}>
-                      ✕
-                    </button>
-                  )}
-                  <button onClick={saveProfile} disabled={profileLoading || !newProfileName.trim()}
-                    style={{ padding: '9px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, opacity: (!newProfileName.trim() || profileLoading) ? 0.4 : 1, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-                    {profileLoading ? '…' : editingProfileId ? 'Aktualisieren' : 'Speichern'}
-                  </button>
-                </div>
-              </div>
-
-              {/* Feedback */}
-              {profileMsg && (
-                <div style={{ marginBottom: '16px', padding: '10px 12px', borderRadius: '10px', background: profileMsg.type === 'success' ? 'rgba(48,209,88,0.08)' : 'rgba(255,69,58,0.08)', border: `0.5px solid ${profileMsg.type === 'success' ? 'rgba(48,209,88,0.2)' : 'rgba(255,69,58,0.2)'}`, fontSize: '12px', color: profileMsg.type === 'success' ? '#30D158' : '#FF453A' }}>
-                  {profileMsg.type === 'success' ? '✓' : '⚠'} {profileMsg.text}
-                </div>
-              )}
-
-              {/* Gespeicherte Konfigurationen */}
-              <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px' }}>
-                Gespeicherte Konfigurationen ({profiles.length})
-              </div>
-
-              {profiles.length === 0 ? (
-                <div style={{ padding: '20px', textAlign: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '13px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px' }}>
-                  Noch keine Konfigurationen gespeichert
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {profiles.map(p => (
-                    <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: activeProfileId === p.id ? 'rgba(10,132,255,0.06)' : 'rgba(255,255,255,0.03)', border: `0.5px solid ${activeProfileId === p.id ? 'rgba(10,132,255,0.2)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '12px' }}>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <div style={{ fontSize: '13px', fontWeight: 600, color: activeProfileId === p.id ? '#0A84FF' : '#F5F5F7' }}>{p.name}</div>
-                          {p.is_default && (
-                            <div style={{ fontSize: '9px', fontWeight: 600, padding: '1px 5px', borderRadius: '4px', background: 'rgba(48,209,88,0.12)', color: '#30D158' }}>Standard</div>
-                          )}
-                        </div>
-                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', marginTop: '2px' }}>
-                          {new Date(p.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                        </div>
-                      </div>
-                      {!p.is_default && (
-                        <button onClick={() => setDefaultProfile(p.id)}
-                          style={{ padding: '5px 8px', borderRadius: '8px', border: '0.5px solid rgba(48,209,88,0.2)', background: 'rgba(48,209,88,0.06)', color: '#30D158', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
-                          ★ Standard
-                        </button>
-                      )}
-                      <button onClick={() => startEditProfile(p)}
-                        style={{ padding: '5px 8px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }}
-                        title="Umbenennen oder Grenzwerte aktualisieren">
-                        ✎
-                      </button>
-                      <button onClick={() => loadProfile(p)}
-                        style={{ padding: '5px 12px', borderRadius: '8px', border: '0.5px solid rgba(10,132,255,0.25)', background: 'rgba(10,132,255,0.07)', color: '#0A84FF', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
-                        Laden
-                      </button>
-                      <button onClick={() => deleteProfile(p.id, p.name)}
-                        style={{ padding: '5px 8px', borderRadius: '8px', border: '0.5px solid rgba(255,69,58,0.2)', background: 'rgba(255,69,58,0.06)', color: '#FF453A', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }}>
-                        ✕
-                      </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                {/* Weekly Report */}
+                <div style={{ padding: '14px 16px', borderRadius: '14px', border: `0.5px solid ${notifyWeeklyReport ? 'rgba(10,132,255,0.3)' : 'rgba(255,255,255,0.08)'}`, background: notifyWeeklyReport ? 'rgba(10,132,255,0.05)' : 'rgba(255,255,255,0.02)', cursor: 'pointer' }}
+                  onClick={() => { const v = !notifyWeeklyReport; setNotifyWeeklyReport(v); saveNotifyPref('notify_weekly', v); }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    <div style={{ marginTop: '2px', width: '20px', height: '20px', borderRadius: '6px', border: `1.5px solid ${notifyWeeklyReport ? '#0A84FF' : 'rgba(255,255,255,0.2)'}`, background: notifyWeeklyReport ? '#0A84FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                      {notifyWeeklyReport && <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
                     </div>
-                  ))}
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7', marginBottom: '4px' }}>Wöchentlicher Risiko-Report</div>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>Jeden Montag erhältst du eine persönliche Zusammenfassung des Bewertungs-Tabs auf Basis deiner aktiven Konfiguration — aktuelle Vola-Klasse, Investitionsgrad und wichtigste Signale.</div>
+                    </div>
+                  </div>
                 </div>
-              )}
+
+                {/* Level Change Alert */}
+                <div style={{ padding: '14px 16px', borderRadius: '14px', border: `0.5px solid ${notifyLevelChange ? 'rgba(10,132,255,0.3)' : 'rgba(255,255,255,0.08)'}`, background: notifyLevelChange ? 'rgba(10,132,255,0.05)' : 'rgba(255,255,255,0.02)', cursor: 'pointer' }}
+                  onClick={() => { const v = !notifyLevelChange; setNotifyLevelChange(v); saveNotifyPref('notify_level', v); }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                    <div style={{ marginTop: '2px', width: '20px', height: '20px', borderRadius: '6px', border: `1.5px solid ${notifyLevelChange ? '#0A84FF' : 'rgba(255,255,255,0.2)'}`, background: notifyLevelChange ? '#0A84FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+                      {notifyLevelChange && <svg width="11" height="11" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7', marginBottom: '4px' }}>Benachrichtigung bei Investitionsgradänderung</div>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>Sobald sich die empfohlene Volatilitätsklasse ändert und damit ein anderer Investitionsgrad gilt, wirst du sofort per Mail informiert.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <div style={{ marginTop: '16px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', fontSize: '10px', color: 'rgba(255,255,255,0.2)', lineHeight: 1.5 }}>
-                Konfigurationen werden mit deinem Account gespeichert und sind nur für dich sichtbar.
+                {notifyLoading ? '⏳ Wird gespeichert…' : <>Mails werden an <strong style={{ color: 'rgba(255,255,255,0.35)' }}>{user?.email}</strong> gesendet. Änderungen werden sofort gespeichert.</>}
               </div>
             </div>
           </div>
@@ -2607,6 +2576,13 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                                     Als Standard
                                   </button>
                                 )}
+                                <button
+                                  onClick={() => deleteProfile(p.id, p.name)}
+                                  style={{ width: '28px', height: '28px', borderRadius: '8px', border: '0.5px solid rgba(255,69,58,0.2)', background: 'rgba(255,69,58,0.06)', color: '#FF453A', fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                                  onMouseEnter={e => e.currentTarget.style.background='rgba(255,69,58,0.18)'}
+                                  onMouseLeave={e => e.currentTarget.style.background='rgba(255,69,58,0.06)'}>
+                                  ×
+                                </button>
                               </div>
                             </div>
                           ))}
