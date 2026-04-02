@@ -501,7 +501,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     return () => window.removeEventListener('resize', fn);
   }, []);
   const [showConfig, setShowConfig] = useState(false);
-  const [configTab, setConfigTab] = useState('thresholds');
+  const [configTab, setConfigTab] = useState('templates');
   const [pendingColors, setPendingColors] = useState({});
   const [showInfo, setShowInfo] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -1168,7 +1168,45 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const [volaClasses, setVolaClasses] = useState(defaultVolaClasses);
   const [draftVolaClasses, setDraftVolaClasses] = useState(defaultVolaClasses);
 
-  // Classify using config thresholds
+  // ── Vorgefertigte Templates ──
+  const PRESET_TEMPLATES = [
+    {
+      id: 'antizykliker',
+      name: 'Der Antizykliker',
+      desc: '5 Klassen · VIX & Sentiment-fokussiert · kauft bei Panik, reduziert bei Euphorie',
+      classes: [
+        { label: 'Stille',   color: '#8E8E93', investPct: 30,  subtitle: 'Markt zu ruhig — Complacency-Risiko',       desc: 'Der Markt ist ungewöhnlich ruhig. Complacency ist die größte Gefahr — Investitionsgrad bis zu 30% ist angemessen.' },
+        { label: 'Ruhe',     color: '#30D158', investPct: 55,  subtitle: 'Geringes Stressniveau — Basis-Exposure',     desc: 'Normales Umfeld mit geringem Stressniveau. Solide Basis-Position von bis zu 55%.' },
+        { label: 'Spannung', color: '#FFCC00', investPct: 80,  subtitle: 'Erhöhte Unsicherheit — selektiv aufbauen',   desc: 'Erhöhte Unsicherheit — antizyklisch erste Positionen aufbauen. Bis zu 80%.' },
+        { label: 'Stress',   color: '#FF9F0A', investPct: 100, subtitle: 'Deutlicher Stress — aggressiv erhöhen',      desc: 'Deutlicher Stress im Markt. Antizykliker erhöhen jetzt auf bis zu 100%.' },
+        { label: 'Panik',    color: '#FF453A', investPct: 120, subtitle: 'Kapitulation — maximale Position',           desc: 'Kapitulation und maximale Angst — historisch bester Kaufzeitpunkt. Bis zu 120% für mutige Investoren.' },
+      ],
+      thresholds: { vix: true, vvix: true, fearGreed: true, equityPutCall: true, vx1Spread: true, vx2Spread: true, hySpread: true, spxAbove200d: true },
+    },
+    {
+      id: 'momentum',
+      name: 'Der Momentum-Investor',
+      desc: '3 Klassen · Trend & Breadth-fokussiert · folgt dem Markt, meidet Turbulenzen',
+      classes: [
+        { label: 'Trend',    color: '#30D158', investPct: 100, subtitle: 'Klarer Aufwärtstrend — voll investiert',     desc: 'Klarer Aufwärtstrend bestätigt. Momentum-Investor ist voll investiert bis zu 100%.' },
+        { label: 'Neutral',  color: '#FFCC00', investPct: 60,  subtitle: 'Unklarer Trend — selektiv positioniert',    desc: 'Trend ist unklarer — selektiv positioniert bleiben. Bis zu 60%.' },
+        { label: 'Crash',    color: '#FF453A', investPct: 20,  subtitle: 'Abwärtstrend — defensiv positioniert',      desc: 'Abwärtstrend aktiv — Kapitalschutz hat Priorität. Maximal 20% Exposure.' },
+      ],
+      thresholds: { vix: true, vixVxv: true, vx1Spread: true, spxAbove200d: true, ndxAbove200d: true },
+    },
+    {
+      id: 'risikoManager',
+      name: 'Der Risiko-Manager',
+      desc: '4 Klassen · Spread & Makro-fokussiert · Kapitalerhalt als oberstes Ziel',
+      classes: [
+        { label: 'Grün',     color: '#30D158', investPct: 70,  subtitle: 'Niedriges Risiko — solide Position',        desc: 'Risikoumfeld ist günstig. Solide Position von bis zu 70% ist angemessen.' },
+        { label: 'Gelb',     color: '#FFCC00', investPct: 50,  subtitle: 'Erhöhtes Risiko — defensiver werden',       desc: 'Erhöhtes Risikoumfeld — Position auf bis zu 50% reduzieren.' },
+        { label: 'Orange',   color: '#FF9F0A', investPct: 30,  subtitle: 'Hohes Risiko — stark reduzieren',           desc: 'Hohes Risikoniveau — stark auf bis zu 30% reduzieren und Absicherungen prüfen.' },
+        { label: 'Rot',      color: '#FF453A', investPct: 10,  subtitle: 'Extremes Risiko — fast cash',              desc: 'Extremes Risikoumfeld — nahezu vollständig aus dem Markt heraus. Maximal 10%.' },
+      ],
+      thresholds: { hySpread: true, dxy: true, yieldSpread: true, moveIndex: true, vix: true, goldSP: true },
+    },
+  ];
   const classifyFromConfig = (key, value) => {
     const cfg = thresholds[key] ?? defaultThresholds[key];
     if (!cfg) return null;
@@ -2393,7 +2431,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
               {/* Tab bar */}
               <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '3px', marginBottom: '16px', border: '0.5px solid rgba(255,255,255,0.07)' }}>
-                {[{ key: 'classes', label: 'Klassen' }, { key: 'thresholds', label: 'Grenzwerte' }].map(tab => (
+                {[{ key: 'templates', label: 'Templates' }, { key: 'classes', label: 'Klassen' }, { key: 'thresholds', label: 'Grenzwerte' }].map(tab => (
                   <button key={tab.key} onClick={() => setConfigTab(tab.key)} style={{
                     flex: 1, padding: '8px', borderRadius: '10px', border: 'none', cursor: 'pointer',
                     fontSize: '12px', fontWeight: 600, fontFamily: 'inherit', transition: 'all 0.2s',
@@ -2402,6 +2440,62 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   }}>{tab.label}</button>
                 ))}
               </div>
+
+              {/* ── TAB: Templates ── */}
+              {configTab === 'templates' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {PRESET_TEMPLATES.map(tpl => (
+                    <div key={tpl.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7', marginBottom: '3px' }}>{tpl.name}</div>
+                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4 }}>{tpl.desc}</div>
+                        {/* Class color dots */}
+                        <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
+                          {tpl.classes.map((c, i) => (
+                            <div key={i} title={c.label} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: c.color, flexShrink: 0 }} />
+                              <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{c.label}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const newClasses = tpl.classes;
+                          const n = newClasses.length;
+                          // Build adjusted thresholds: activate only template's indicators, deactivate rest
+                          const adjusted = Object.fromEntries(Object.entries(defaultThresholds).map(([key, cfg]) => {
+                            const active = !!(tpl.thresholds[key]);
+                            return [key, { ...cfg, active }];
+                          }));
+                          const equalized = computeEqualWeights(adjusted);
+                          // Trim/pad values to n-1
+                          const sized = Object.fromEntries(Object.entries(equalized).map(([key, cfg]) => {
+                            const vals = [...cfg.values];
+                            while (vals.length < n - 1) vals.push(vals[vals.length - 1] ?? 0);
+                            return [key, { ...cfg, values: vals.slice(0, n - 1) }];
+                          }));
+                          setVolaClasses(newClasses);
+                          setDraftVolaClasses(JSON.parse(JSON.stringify(newClasses)));
+                          setThresholds(sized);
+                          setDraftThresholds(JSON.parse(JSON.stringify(sized)));
+                          setValidationErrors({});
+                          setInputTexts({});
+                          setConfigTab('thresholds');
+                        }}
+                        style={{ padding: '7px 14px', borderRadius: '10px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: '#0A84FF', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
+                        onMouseEnter={e => e.currentTarget.style.background='rgba(10,132,255,0.18)'}
+                        onMouseLeave={e => e.currentTarget.style.background='rgba(10,132,255,0.08)'}>
+                        Laden →
+                      </button>
+                    </div>
+                  ))}
+                  {/* Save current as template hint */}
+                  <div style={{ marginTop: '8px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Eigene Konfiguration als Template → kommt bald</span>
+                  </div>
+                </div>
+              )}
 
               {/* ── TAB: Klassen ── */}
               {configTab === 'classes' && (
@@ -2613,9 +2707,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 const t4 = cfg.values[draftVolaClasses.length - 2] ?? cfg.values[cfg.values.length - 1];
                 const inputCount = draftVolaClasses.length - 1;
                 const isBinRow = (cfg.range[1] - cfg.range[0]) <= 1 && Number.isInteger(cfg.range[0]) && Number.isInteger(cfg.range[1]);
-                const colTemplate = isBinRow
-                  ? `130px 44px repeat(${draftVolaClasses.length}, 1fr) 54px 32px`
-                  : `130px 44px repeat(${inputCount}, 1fr) 70px 54px 32px`;
+                const colTemplate = `130px 44px repeat(${inputCount}, 1fr) 70px 54px 32px`;
                 return (
                   <div key={key} style={{
                     display: 'grid', gridTemplateColumns: colTemplate, gap: '5px',
@@ -2646,26 +2738,17 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                     {(() => {
                       const isBin = (cfg.range[1] - cfg.range[0]) <= 1 && Number.isInteger(cfg.range[0]) && Number.isInteger(cfg.range[1]);
                       if (isBin) {
-                        // Binary: n toggles for ALL n classes (inputCount = n-1, plus last column merged)
-                        // Values array has n-1 entries; last class is implicit inverse
-                        // We show n toggles: first n-1 map to values[], last shows complement
-                        const allN = draftVolaClasses.length;
-                        return draftVolaClasses.map((vc, ci) => {
-                          const isLast = ci === allN - 1;
-                          // Last class: its state is derived — if last threshold is 1, last class gets whatever remains
-                          // For simplicity: last class toggle writes to values[n-2]
-                          const vi = isLast ? allN - 2 : ci;
-                          const rawVal = cfg.values[vi] ?? 1;
-                          // For last class in desc: if all thresholds >= 1, last class gets 0 (unter)
-                          // We invert display for last class
-                          const isUeber = isLast ? rawVal < 1 : rawVal >= 1;
+                        // n-1 toggles in the input columns (matching normal rows)
+                        return Array.from({length: inputCount}).map((_, vi) => {
+                          const val = cfg.values[vi] ?? 1;
+                          const isUeber = val >= 1;
                           return (
-                            <button key={ci}
+                            <button key={vi}
                               onClick={() => setDraftThresholds(prev => {
                                 const next = { ...prev };
                                 const vals = [...(next[key].values || [])];
                                 while (vals.length <= vi) vals.push(1);
-                                vals[vi] = isLast ? (isUeber ? 1 : 0) : (isUeber ? 0 : 1);
+                                vals[vi] = isUeber ? 0 : 1;
                                 return { ...next, [key]: { ...next[key], values: vals } };
                               })}
                               style={{ background: isUeber ? 'rgba(48,209,88,0.1)' : 'rgba(255,69,58,0.1)', border: `0.5px solid ${isUeber ? 'rgba(48,209,88,0.3)' : 'rgba(255,69,58,0.3)'}`, borderRadius: '8px', padding: '5px 4px', fontSize: '10px', fontWeight: 700, color: isUeber ? '#30D158' : '#FF453A', textAlign: 'center', width: '100%', cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -2700,10 +2783,28 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                         );
                       });
                     })()}
-                    {/* Last (Panik) column: hidden for binary (already covered above), shown for normal */}
+                    {/* Last (Panik) column */}
                     {(() => {
                       const isBin = (cfg.range[1] - cfg.range[0]) <= 1 && Number.isInteger(cfg.range[0]) && Number.isInteger(cfg.range[1]);
-                      if (isBin) return null;
+                      if (isBin) {
+                        // Last class toggle — derived from last threshold value
+                        const lastVI = inputCount - 1;
+                        const lastVal = cfg.values[lastVI] ?? 1;
+                        const lastIsUeber = lastVal < 1; // last class gets opposite of last threshold
+                        return (
+                          <button
+                            onClick={() => setDraftThresholds(prev => {
+                              const next = { ...prev };
+                              const vals = [...(next[key].values || [])];
+                              while (vals.length <= lastVI) vals.push(1);
+                              vals[lastVI] = lastIsUeber ? 1 : 0;
+                              return { ...next, [key]: { ...next[key], values: vals } };
+                            })}
+                            style={{ background: lastIsUeber ? 'rgba(48,209,88,0.1)' : 'rgba(255,69,58,0.1)', border: `0.5px solid ${lastIsUeber ? 'rgba(48,209,88,0.3)' : 'rgba(255,69,58,0.3)'}`, borderRadius: '8px', padding: '5px 3px', fontSize: '10px', fontWeight: 700, color: lastIsUeber ? '#30D158' : '#FF453A', textAlign: 'center', width: '100%', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            {lastIsUeber ? '↑ über' : '↓ unter'}
+                          </button>
+                        );
+                      }
                       return <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: lastVC.color, background: `${lastVC.color}10`, border: `0.5px solid ${lastVC.color}30`, borderRadius: '8px', padding: '5px 3px' }}>
                         {cfg.dir === 'asc' ? `>${String(t4).replace('.', ',')}` : `<${String(t4).replace('.', ',')}`}
                       </div>;
