@@ -501,6 +501,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     return () => window.removeEventListener('resize', fn);
   }, []);
   const [showConfig, setShowConfig] = useState(false);
+  const [configTab, setConfigTab] = useState('thresholds');
   const [showInfo, setShowInfo] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     try { return !localStorage.getItem('volafly_onboarded_v2'); } catch { return true; }
@@ -2367,12 +2368,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               maxHeight: isMobile ? '92vh' : '80vh', overflowY: 'auto',
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <div>
-                  <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Grenzwerte anpassen</h3>
-                  {!isMobile && <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '4px', lineHeight: 1.4 }}>
-                    Jede Spalte definiert den <strong style={{ color: 'rgba(255,255,255,0.45)' }}>Maximalwert</strong> für diese Volatilitätsstufe.
-                  </div>}
-                </div>
+                <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Grenzwerte anpassen</h3>
                 <button onClick={() => setShowConfig(false)} style={{
                   background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%',
                   width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7',
@@ -2380,7 +2376,80 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 }}>×</button>
               </div>
 
-              {isMobile ? (
+              {/* Tab bar */}
+              <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '3px', marginBottom: '16px', border: '0.5px solid rgba(255,255,255,0.07)' }}>
+                {[{ key: 'classes', label: 'Klassen' }, { key: 'thresholds', label: 'Grenzwerte' }].map(tab => (
+                  <button key={tab.key} onClick={() => setConfigTab(tab.key)} style={{
+                    flex: 1, padding: '8px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                    fontSize: '12px', fontWeight: 600, fontFamily: 'inherit', transition: 'all 0.2s',
+                    background: configTab === tab.key ? 'rgba(255,255,255,0.12)' : 'transparent',
+                    color: configTab === tab.key ? '#F5F5F7' : 'rgba(255,255,255,0.35)',
+                  }}>{tab.label}</button>
+                ))}
+              </div>
+
+              {/* ── TAB: Klassen ── */}
+              {configTab === 'classes' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+                  {/* Header row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr 80px 32px', gap: '10px', alignItems: 'center', padding: '0 4px 8px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
+                    <div/>
+                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Name</div>
+                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', textAlign: 'center' }}>Investition</div>
+                    <div/>
+                  </div>
+                  {draftVolaClasses.map((vc, i) => {
+                    const isLast = i === draftVolaClasses.length - 1;
+                    return (
+                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '16px 1fr 80px 32px', gap: '10px', alignItems: 'center', padding: '8px 4px', borderBottom: '0.5px solid rgba(255,255,255,0.04)' }}>
+                        {/* Color bar */}
+                        <div style={{ width: '3px', height: '22px', borderRadius: '2px', background: vc.color, justifySelf: 'center' }} />
+                        {/* Name input */}
+                        <input
+                          value={vc.label}
+                          onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, label: e.target.value} : c))}
+                          style={{ background: 'rgba(255,255,255,0.06)', border: `0.5px solid ${vc.color}40`, borderRadius: '8px', padding: '7px 10px', fontSize: '13px', fontWeight: 700, color: vc.color, outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                          onFocus={e => e.target.style.borderColor=vc.color}
+                          onBlur={e => e.target.style.borderColor=`${vc.color}40`}
+                        />
+                        {/* Investitionsgrad */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px', padding: '6px 10px' }}>
+                          <input type="number" min="0" max="200" step="1"
+                            value={vc.investPct}
+                            onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, investPct: parseInt(e.target.value)||0} : c))}
+                            style={{ background: 'transparent', border: 'none', fontSize: '13px', fontWeight: 700, color: '#F5F5F7', textAlign: 'right', width: '100%', outline: 'none' }}
+                          />
+                          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
+                        </div>
+                        {/* Remove button — nicht für letzte Klasse wenn nur 2 übrig */}
+                        {(!isLast || draftVolaClasses.length > 2) && draftVolaClasses.length > 2 ? (
+                          <button onClick={() => setDraftVolaClasses(prev => prev.filter((_,j) => j!==i))}
+                            style={{ width: '26px', height: '26px', borderRadius: '50%', border: 'none', background: 'rgba(255,69,58,0.12)', color: '#FF453A', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                            onMouseEnter={e => e.currentTarget.style.background='rgba(255,69,58,0.25)'}
+                            onMouseLeave={e => e.currentTarget.style.background='rgba(255,69,58,0.12)'}>×</button>
+                        ) : <div/>}
+                      </div>
+                    );
+                  })}
+                  {/* Add class */}
+                  <button onClick={() => {
+                    const colors = ['#8E8E93','#30D158','#FFCC00','#FF9F0A','#FF453A','#0A84FF','#BF5AF2'];
+                    const color = colors[draftVolaClasses.length % colors.length];
+                    setDraftVolaClasses(prev => [...prev, { label: 'Neu', color, investPct: 50 }]);
+                  }}
+                    style={{ marginTop: '10px', width: '100%', padding: '10px', borderRadius: '10px', border: '0.5px dashed rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.35)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(10,132,255,0.4)'; e.currentTarget.style.color='#0A84FF'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}>
+                    + Klasse hinzufügen
+                  </button>
+                  <div style={{ marginTop: '12px', fontSize: '11px', color: 'rgba(255,255,255,0.2)', lineHeight: 1.5 }}>
+                    Die letzte Klasse gilt für alle Werte oberhalb des letzten Grenzwerts. Reihenfolge = aufsteigend von Stille zu Panik.
+                  </div>
+                </div>
+              )}
+
+              {/* ── TAB: Grenzwerte ── */}
+              {configTab === 'thresholds' && (isMobile ? (
                 /* ── Mobile: Card pro Indikator ── */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {Object.entries(draftThresholds).map(([key, cfg]) => {
@@ -2430,38 +2499,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               ) : (
                 /* ── Desktop: Tabelle ── */
                 <>
-              {/* ── Volatilitätsklassen-Editor ── */}
-              <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.07)' }}>
-                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>Volatilitätsklassen</div>
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-                  {draftVolaClasses.map((vc, i) => (
-                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '90px' }}>
-                      <input value={vc.label}
-                        onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, label: e.target.value} : c))}
-                        style={{ background: 'rgba(255,255,255,0.06)', border: `0.5px solid ${vc.color}60`, borderRadius: '8px', padding: '5px 8px', fontSize: '12px', fontWeight: 700, color: vc.color, textAlign: 'center', outline: 'none', width: '100%', boxSizing: 'border-box' }}
-                      />
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <input type="number" min="0" max="200" step="1" value={vc.investPct}
-                          onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, investPct: parseInt(e.target.value)||0} : c))}
-                          style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '4px 6px', fontSize: '11px', fontWeight: 600, color: '#F5F5F7', textAlign: 'center', outline: 'none', width: '100%', boxSizing: 'border-box' }}
-                        />
-                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
-                      </div>
-                      {draftVolaClasses.length > 2 && (
-                        <button onClick={() => setDraftVolaClasses(prev => prev.filter((_,j) => j!==i))}
-                          style={{ background: 'rgba(255,69,58,0.1)', border: 'none', borderRadius: '6px', color: '#FF453A', cursor: 'pointer', fontSize: '11px', padding: '3px', fontFamily: 'inherit' }}>× entfernen</button>
-                      )}
-                    </div>
-                  ))}
-                  <button onClick={() => setDraftVolaClasses(prev => [...prev, { label: 'Neu', color: '#8E8E93', investPct: 50 }])}
-                    style={{ minWidth: '80px', padding: '5px 10px', borderRadius: '8px', border: '0.5px dashed rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.4)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', alignSelf: 'flex-start', marginTop: '0' }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(10,132,255,0.5)'; e.currentTarget.style.color='#0A84FF'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.2)'; e.currentTarget.style.color='rgba(255,255,255,0.4)'; }}>
-                    + Klasse
-                  </button>
-                </div>
-              </div>
-
               {/* Weight summary bar */}
               {(() => {
                 const activeEntries = Object.entries(draftThresholds).filter(([,c]) => c.active !== false);
@@ -2584,7 +2621,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↑ steigend:</strong> Werte müssen aufsteigend und unterschiedlich sein · <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↓ fallend:</strong> absteigend
               </div>
                 </>
-              )} {/* end desktop/mobile branch */}
+              ))} {/* end thresholds tab */}
 
               {/* Global error summary */}
               {Object.keys(validationErrors).length > 0 && (
