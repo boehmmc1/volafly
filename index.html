@@ -813,37 +813,48 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     setTimeout(() => setCsvStatus(null), 4000);
   };
 
+  const applyPresetById = (pid) => {
+    const tpl = PRESET_TEMPLATES.find(t => t.id === pid);
+    if (!tpl) return;
+    const n = tpl.classes.length;
+    const adj = Object.fromEntries(Object.entries(defaultThresholds).map(([key, cfg]) => [key, { ...cfg, active: !!(tpl.thresholds[key]) }]));
+    const eq = computeEqualWeights(adj);
+    const sized = Object.fromEntries(Object.entries(eq).map(([key, cfg]) => {
+      const vals = [...cfg.values];
+      while (vals.length < n - 1) vals.push(vals[vals.length-1] ?? 0);
+      return [key, { ...cfg, values: vals.slice(0, n-1) }];
+    }));
+    setVolaClasses(tpl.classes);
+    setThresholds(sized);
+  };
+
   const loadProfiles = async () => {
+    const pid = (() => { try { return localStorage.getItem('volafly_default_preset') || null; } catch { return null; } })();
     const { data, error } = await sbClient
       .from('threshold_profiles')
       .select('*')
       .order('created_at', { ascending: false });
     if (!error && data && data.length > 0) {
       setProfiles(data);
-      const defaultProfile = data.find(p => p.is_default) || data[0];
-      const merged = { ...defaultThresholds, ...defaultProfile.thresholds };
-      setThresholds(merged);
-      setActiveProfileId(defaultProfile.id);
-    } else {
-      // No saved profiles — load default preset if set
-      try {
-        const pid = localStorage.getItem('volafly_default_preset');
-        if (pid) {
-          const tpl = PRESET_TEMPLATES.find(t => t.id === pid);
-          if (tpl) {
-            const n = tpl.classes.length;
-            const adj = Object.fromEntries(Object.entries(defaultThresholds).map(([key, cfg]) => [key, { ...cfg, active: !!(tpl.thresholds[key]) }]));
-            const eq = computeEqualWeights(adj);
-            const sized = Object.fromEntries(Object.entries(eq).map(([key, cfg]) => {
-              const vals = [...cfg.values];
-              while (vals.length < n - 1) vals.push(vals[vals.length-1] ?? 0);
-              return [key, { ...cfg, values: vals.slice(0, n-1) }];
-            }));
-            setVolaClasses(tpl.classes);
-            setThresholds(sized);
-          }
-        }
-      } catch {}
+      const supabaseDefault = data.find(p => p.is_default);
+      if (supabaseDefault) {
+        // Supabase-Default hat Vorrang
+        const merged = { ...defaultThresholds, ...supabaseDefault.thresholds };
+        setThresholds(merged);
+        setActiveProfileId(supabaseDefault.id);
+      } else if (pid) {
+        // Kein Supabase-Default → Preset laden
+        applyPresetById(pid);
+        setActiveProfileId(data[0].id);
+      } else {
+        // Erstes Profil laden
+        const merged = { ...defaultThresholds, ...data[0].thresholds };
+        setThresholds(merged);
+        setActiveProfileId(data[0].id);
+      }
+    } else if (pid) {
+      // Keine Supabase-Profile → Preset laden
+      applyPresetById(pid);
     }
   };
 
@@ -1281,6 +1292,14 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const avgLevel = indicators.length > 0 ? weightedSum / totalWeight : 1;
   const overallLevel = Math.min(5, Math.max(1, Math.round(avgLevel)));
   const currentClass = volaClasses[overallLevel - 1];
+  // Derive active template name for display
+  const activeTemplateName = (() => {
+    const pid = defaultPresetId;
+    if (pid) { const t = PRESET_TEMPLATES.find(x => x.id === pid); if (t) return t.name; }
+    const ap = profiles.find(p => p.id === activeProfileId);
+    if (ap) return ap.name;
+    return null;
+  })();
 
   // Distribution
   const levelDistribution = volaClasses.map((_, i) => indicators.filter(ind => ind.level === i + 1).length);
@@ -1882,6 +1901,15 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                     }}>{vc.investPct}%</span>
                   ))}
                 </div>
+                {/* Template-Name Pill */}
+                {activeTemplateName && (
+                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)' }}>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', fontWeight: 600, letterSpacing: '0.01em' }}>{activeTemplateName}</span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
