@@ -621,7 +621,9 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [defaultPresetId, setDefaultPresetId] = useState(() => {
     try { return localStorage.getItem('volafly_default_preset') || null; } catch { return null; }
   });
-  const [activeTemplateId, setActiveTemplateId] = useState(null);
+  const [activeTemplateId, setActiveTemplateId] = useState(() => {
+    try { return localStorage.getItem('volafly_default_preset') || null; } catch { return null; }
+  });
   const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
@@ -844,6 +846,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         const merged = { ...defaultThresholds, ...supabaseDefault.thresholds };
         setThresholds(merged);
         setActiveProfileId(supabaseDefault.id);
+        setActiveTemplateId(`profile-${supabaseDefault.id}`);
       } else if (pid) {
         // Kein Supabase-Default → Preset laden
         applyPresetById(pid);
