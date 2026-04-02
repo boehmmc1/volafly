@@ -580,6 +580,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const validateAll = (draft) => {
     const errors = {};
     Object.entries(draft).forEach(([key, cfg]) => {
+      if (cfg.active === false) return; // skip inactive
       const err = validateRow(key, cfg);
       if (err) errors[key] = err;
     });
@@ -2611,9 +2612,13 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 const lastVC = draftVolaClasses[draftVolaClasses.length - 1];
                 const t4 = cfg.values[draftVolaClasses.length - 2] ?? cfg.values[cfg.values.length - 1];
                 const inputCount = draftVolaClasses.length - 1;
+                const isBinRow = (cfg.range[1] - cfg.range[0]) <= 1 && Number.isInteger(cfg.range[0]) && Number.isInteger(cfg.range[1]);
+                const colTemplate = isBinRow
+                  ? `130px 44px repeat(${draftVolaClasses.length}, 1fr) 54px 32px`
+                  : `130px 44px repeat(${inputCount}, 1fr) 70px 54px 32px`;
                 return (
                   <div key={key} style={{
-                    display: 'grid', gridTemplateColumns: `130px 44px repeat(${inputCount}, 1fr) 70px 54px 32px`, gap: '5px',
+                    display: 'grid', gridTemplateColumns: colTemplate, gap: '5px',
                     padding: '6px 4px', borderBottom: `0.5px solid ${err ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`,
                     alignItems: 'center',
                   }}>
@@ -2641,17 +2646,26 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                     {(() => {
                       const isBin = (cfg.range[1] - cfg.range[0]) <= 1 && Number.isInteger(cfg.range[0]) && Number.isInteger(cfg.range[1]);
                       if (isBin) {
-                        // Binary: render über/unter toggle per threshold column
-                        return Array.from({length: inputCount}).map((_, vi) => {
-                          const val = cfg.values[vi] ?? 1;
-                          const isUeber = val >= 1;
+                        // Binary: n toggles for ALL n classes (inputCount = n-1, plus last column merged)
+                        // Values array has n-1 entries; last class is implicit inverse
+                        // We show n toggles: first n-1 map to values[], last shows complement
+                        const allN = draftVolaClasses.length;
+                        return draftVolaClasses.map((vc, ci) => {
+                          const isLast = ci === allN - 1;
+                          // Last class: its state is derived — if last threshold is 1, last class gets whatever remains
+                          // For simplicity: last class toggle writes to values[n-2]
+                          const vi = isLast ? allN - 2 : ci;
+                          const rawVal = cfg.values[vi] ?? 1;
+                          // For last class in desc: if all thresholds >= 1, last class gets 0 (unter)
+                          // We invert display for last class
+                          const isUeber = isLast ? rawVal < 1 : rawVal >= 1;
                           return (
-                            <button key={vi}
+                            <button key={ci}
                               onClick={() => setDraftThresholds(prev => {
                                 const next = { ...prev };
                                 const vals = [...(next[key].values || [])];
                                 while (vals.length <= vi) vals.push(1);
-                                vals[vi] = isUeber ? 0 : 1;
+                                vals[vi] = isLast ? (isUeber ? 1 : 0) : (isUeber ? 0 : 1);
                                 return { ...next, [key]: { ...next[key], values: vals } };
                               })}
                               style={{ background: isUeber ? 'rgba(48,209,88,0.1)' : 'rgba(255,69,58,0.1)', border: `0.5px solid ${isUeber ? 'rgba(48,209,88,0.3)' : 'rgba(255,69,58,0.3)'}`, borderRadius: '8px', padding: '5px 4px', fontSize: '10px', fontWeight: 700, color: isUeber ? '#30D158' : '#FF453A', textAlign: 'center', width: '100%', cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -2686,18 +2700,18 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                         );
                       });
                     })()}
-                    <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: lastVC.color, background: `${lastVC.color}10`, border: `0.5px solid ${lastVC.color}30`, borderRadius: '8px', padding: '5px 3px' }}>
-                      {(() => {
-                        const isBin = (cfg.range[1] - cfg.range[0]) <= 1 && Number.isInteger(cfg.range[0]) && Number.isInteger(cfg.range[1]);
-                        if (isBin) return t4 >= 1 ? '↑ über' : '↓ unter';
-                        return cfg.dir === 'asc' ? `>${String(t4).replace('.', ',')}` : `<${String(t4).replace('.', ',')}`;
-                      })()}
-                    </div>
+                    {/* Last (Panik) column: hidden for binary (already covered above), shown for normal */}
+                    {(() => {
+                      const isBin = (cfg.range[1] - cfg.range[0]) <= 1 && Number.isInteger(cfg.range[0]) && Number.isInteger(cfg.range[1]);
+                      if (isBin) return null;
+                      return <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: lastVC.color, background: `${lastVC.color}10`, border: `0.5px solid ${lastVC.color}30`, borderRadius: '8px', padding: '5px 3px' }}>
+                        {cfg.dir === 'asc' ? `>${String(t4).replace('.', ',')}` : `<${String(t4).replace('.', ',')}`}
+                      </div>;
+                    })()}
                     <div style={{ fontSize: '9px', fontWeight: 600, textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
                       {(() => {
                         const isBin = (cfg.range[1] - cfg.range[0]) <= 1 && Number.isInteger(cfg.range[0]) && Number.isInteger(cfg.range[1]);
-                        if (isBin) return '0/1';
-                        return cfg.dir === 'asc' ? '↑ steig.' : '↓ fall.';
+                        return isBin ? 'über/unter' : (cfg.dir === 'asc' ? '↑ steig.' : '↓ fall.');
                       })()}
                     </div>
                     <button onClick={() => setDraftThresholds(prev => ({ ...prev, [key]: { ...prev[key], active: false } }))}
