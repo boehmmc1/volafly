@@ -1141,25 +1141,29 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
   // ── Anticyclical Volatility Classification ──
   // 5 classes: higher vola class = more fear = higher investment grade (anticyclical)
-  const volaClasses = [
-    { level: 1, label: 'Stille', color: '#8E8E93', investGrade: 'bis zu 40%', investPct: 40, investDesc: 'Markt zu ruhig — Complacency-Risiko' },
-    { level: 2, label: 'Ruhe', color: '#30D158', investGrade: 'bis zu 60%', investPct: 60, investDesc: 'Geringes Stressniveau — Basis-Exposure' },
-    { level: 3, label: 'Spannung', color: '#FFCC00', investGrade: 'bis zu 80%', investPct: 80, investDesc: 'Erhöhte Unsicherheit — selektiv aufbauen' },
-    { level: 4, label: 'Stress', color: '#FF9F0A', investGrade: 'bis zu 90%', investPct: 90, investDesc: 'Deutlicher Stress — antizyklisch erhöhen' },
-    { level: 5, label: 'Panik', color: '#FF453A', investGrade: 'bis zu 110%', investPct: 110, investDesc: 'Kapitulation — aggressiv investieren' },
+  const defaultVolaClasses = [
+    { label: 'Stille', color: '#8E8E93', investPct: 40 },
+    { label: 'Ruhe', color: '#30D158', investPct: 60 },
+    { label: 'Spannung', color: '#FFCC00', investPct: 80 },
+    { label: 'Stress', color: '#FF9F0A', investPct: 90 },
+    { label: 'Panik', color: '#FF453A', investPct: 110 },
   ];
+  const [volaClasses, setVolaClasses] = useState(defaultVolaClasses);
+  const [draftVolaClasses, setDraftVolaClasses] = useState(defaultVolaClasses);
 
   // Classify using config thresholds
   const classifyFromConfig = (key, value) => {
     const cfg = thresholds[key] ?? defaultThresholds[key];
     if (!cfg) return null;
-    const [t1, t2, t3, t4] = cfg.values;
+    const n = volaClasses.length;
+    // values has n-1 entries (thresholds between classes)
+    const vals = cfg.values.slice(0, n - 1);
     if (cfg.dir === 'asc') {
-      // ascending: value ≤ t1 → 1, ≤ t2 → 2, etc.
-      return value <= t1 ? 1 : value <= t2 ? 2 : value <= t3 ? 3 : value <= t4 ? 4 : 5;
+      for (let i = 0; i < vals.length; i++) { if (value <= vals[i]) return i + 1; }
+      return n;
     } else {
-      // descending: value ≥ t1 → 1, ≥ t2 → 2, etc.
-      return value >= t1 ? 1 : value >= t2 ? 2 : value >= t3 ? 3 : value >= t4 ? 4 : 5;
+      for (let i = 0; i < vals.length; i++) { if (value >= vals[i]) return i + 1; }
+      return n;
     }
   };
 
@@ -1206,7 +1210,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
   const AssessmentRow = ({ label, level, value }) => {
     const cls = volaClasses[level - 1];
-    const indInvestGrade = volaClasses[level - 1].investGrade;
+    const indInvestGrade = volaClasses[level - 1].investPct + '%';
     return (
       <div style={{
         display: 'flex', alignItems: 'center', gap: '10px',
@@ -1625,7 +1629,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             </div>
           </TT>
 
-          <TT id="goldSP">
+          <TT id="gold">
             <div
               onClick={() => window.open('https://www.tradingview.com/symbols/TVC-GOLD/?interval=D', '_blank')}
               style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', position: 'relative' }}
@@ -1637,6 +1641,16 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 {'$'}{ri.gold ? f(ri.gold, 0) : '—'}
               </div>
               <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz</div>
+            </div>
+          </TT>
+
+          <TT id="goldSP">
+            <div style={{ borderRadius: '8px', padding: '4px' }}>
+              <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>Gold / S&amp;P 500</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
+                {goldSPRatio > 0 ? f(goldSPRatio, 3) : '—'}
+              </div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>Gold ÷ SPX</div>
             </div>
           </TT>
 
@@ -1665,16 +1679,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 {'$'}{f(ri.wti, 1)}
               </div>
               <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Barrel</div>
-            </div>
-          </TT>
-
-          <TT id="goldSP">
-            <div style={{ borderRadius: '8px', padding: '4px' }}>
-              <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>Gold / S&amp;P 500</div>
-              <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
-                {goldSPRatio > 0 ? f(goldSPRatio, 3) : '—'}
-              </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>Gold ÷ SPX</div>
             </div>
           </TT>
 
@@ -1763,7 +1767,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 {currentClass.label}
               </div>
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>
-                {currentClass.investDesc}
+                {currentClass.investPct <= 60 ? 'Basis-Exposure' : currentClass.investPct <= 80 ? 'Selektiv aufbauen' : currentClass.investPct <= 90 ? 'Antizyklisch erhöhen' : currentClass.investPct >= 100 ? 'Aggressiv investieren' : 'Complacency-Risiko'}
               </div>
             </div>
 
@@ -1776,7 +1780,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 Investitionsgrad
               </div>
               <div style={{ fontSize: '52px', fontWeight: 700, color: currentClass.color, letterSpacing: '-0.04em', lineHeight: 1 }}>
-                {currentClass.investGrade}
+                {`bis zu ${currentClass.investPct}%`}
               </div>
               {/* Investitions-Skala — nur Prozentzahlen als Labels */}
               <div style={{ marginTop: '16px' }}>
@@ -1949,7 +1953,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   </button>
                 )}
                 {activeTab === 'analysis' && (
-                  <button onClick={() => { setDraftThresholds(JSON.parse(JSON.stringify(thresholds))); setValidationErrors({}); setInputTexts({}); setShowConfig(true); }}
+                  <button onClick={() => { setDraftThresholds(JSON.parse(JSON.stringify(thresholds))); setDraftVolaClasses(JSON.parse(JSON.stringify(volaClasses))); setValidationErrors({}); setInputTexts({}); setShowConfig(true); }}
                     style={{ padding: '7px 12px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: 'inherit' }}>
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
                     Grenzwerte
@@ -2097,7 +2101,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               </button>
               {/* Grenzwerte — nur auf Bewertung */}
               <button
-                onClick={() => { setDraftThresholds(JSON.parse(JSON.stringify(thresholds))); setValidationErrors({}); setInputTexts({}); setShowConfig(true); }}
+                onClick={() => { setDraftThresholds(JSON.parse(JSON.stringify(thresholds))); setDraftVolaClasses(JSON.parse(JSON.stringify(volaClasses))); setValidationErrors({}); setInputTexts({}); setShowConfig(true); }}
                 style={{ position: 'absolute', inset: 0, padding: '0 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontFamily: 'inherit', transition: 'opacity 0.15s ease', opacity: activeTab === 'analysis' ? 1 : 0, pointerEvents: activeTab === 'analysis' ? 'auto' : 'none' }}
                 onMouseEnter={e => { if (activeTab === 'analysis') { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}}
                 onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}>
@@ -2426,6 +2430,38 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               ) : (
                 /* ── Desktop: Tabelle ── */
                 <>
+              {/* ── Volatilitätsklassen-Editor ── */}
+              <div style={{ marginBottom: '16px', padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.07)' }}>
+                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>Volatilitätsklassen</div>
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+                  {draftVolaClasses.map((vc, i) => (
+                    <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '90px' }}>
+                      <input value={vc.label}
+                        onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, label: e.target.value} : c))}
+                        style={{ background: 'rgba(255,255,255,0.06)', border: `0.5px solid ${vc.color}60`, borderRadius: '8px', padding: '5px 8px', fontSize: '12px', fontWeight: 700, color: vc.color, textAlign: 'center', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <input type="number" min="0" max="200" step="1" value={vc.investPct}
+                          onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, investPct: parseInt(e.target.value)||0} : c))}
+                          style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '4px 6px', fontSize: '11px', fontWeight: 600, color: '#F5F5F7', textAlign: 'center', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                        />
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
+                      </div>
+                      {draftVolaClasses.length > 2 && (
+                        <button onClick={() => setDraftVolaClasses(prev => prev.filter((_,j) => j!==i))}
+                          style={{ background: 'rgba(255,69,58,0.1)', border: 'none', borderRadius: '6px', color: '#FF453A', cursor: 'pointer', fontSize: '11px', padding: '3px', fontFamily: 'inherit' }}>× entfernen</button>
+                      )}
+                    </div>
+                  ))}
+                  <button onClick={() => setDraftVolaClasses(prev => [...prev, { label: 'Neu', color: '#8E8E93', investPct: 50 }])}
+                    style={{ minWidth: '80px', padding: '5px 10px', borderRadius: '8px', border: '0.5px dashed rgba(255,255,255,0.2)', background: 'transparent', color: 'rgba(255,255,255,0.4)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', alignSelf: 'flex-start', marginTop: '0' }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(10,132,255,0.5)'; e.currentTarget.style.color='#0A84FF'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.2)'; e.currentTarget.style.color='rgba(255,255,255,0.4)'; }}>
+                    + Klasse
+                  </button>
+                </div>
+              </div>
+
               {/* Weight summary bar */}
               {(() => {
                 const activeEntries = Object.entries(draftThresholds).filter(([,c]) => c.active !== false);
@@ -2440,13 +2476,13 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 );
               })()}
 
-              <div style={{ display: 'grid', gridTemplateColumns: '130px 44px repeat(4, 1fr) 70px 54px 32px', gap: '5px', marginBottom: '2px', padding: '0 4px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: `130px 44px repeat(${draftVolaClasses.length - 1}, 1fr) 70px 54px 32px`, gap: '5px', marginBottom: '2px', padding: '0 4px' }}>
                 <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Indikator</div>
                 <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gew.</div>
-                {volaClasses.slice(0, 4).map((vc, i) => (
+                {draftVolaClasses.slice(0, -1).map((vc, i) => (
                   <div key={i} style={{ fontSize: '9px', color: vc.color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{vc.label}</div>
                 ))}
-                <div style={{ fontSize: '9px', color: volaClasses[4].color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{volaClasses[4].label}</div>
+                <div style={{ fontSize: '9px', color: draftVolaClasses[draftVolaClasses.length-1].color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{draftVolaClasses[draftVolaClasses.length-1].label}</div>
                 <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Richtg.</div>
                 <div/>
               </div>
@@ -2454,10 +2490,12 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               {/* Active rows */}
               {Object.entries(draftThresholds).filter(([,c]) => c.active !== false).map(([key, cfg]) => {
                 const err = validationErrors[key];
-                const t4 = cfg.values[3];
+                const lastVC = draftVolaClasses[draftVolaClasses.length - 1];
+                const t4 = cfg.values[draftVolaClasses.length - 2] ?? cfg.values[cfg.values.length - 1];
+                const inputCount = draftVolaClasses.length - 1;
                 return (
                   <div key={key} style={{
-                    display: 'grid', gridTemplateColumns: '130px 44px repeat(4, 1fr) 70px 54px 32px', gap: '5px',
+                    display: 'grid', gridTemplateColumns: `130px 44px repeat(${inputCount}, 1fr) 70px 54px 32px`, gap: '5px',
                     padding: '6px 4px', borderBottom: `0.5px solid ${err ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`,
                     alignItems: 'center',
                   }}>
@@ -2472,7 +2510,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                         </div>
                       )}
                     </div>
-                    {/* Weight input */}
                     <input type="number" min="1" max="100" step="1"
                       value={cfg.weight ?? 1}
                       onChange={e => {
@@ -2483,33 +2520,37 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
                       onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'}
                     />
-                    {cfg.values.map((val, vi) => (
-                      <input key={vi} type="text" value={getInputText(key, vi, val)}
-                        onChange={e => setInputTexts(prev => ({ ...prev, [`${key}-${vi}`]: e.target.value }))}
-                        onBlur={e => {
-                          const num = parseFloat(e.target.value.replace(',', '.'));
-                          if (!isNaN(num)) {
-                            setDraftThresholds(prev => {
-                              const next = { ...prev };
-                              next[key] = { ...next[key], values: next[key].values.map((v2, i2) => i2 === vi ? num : v2) };
-                              setTimeout(() => validateAll(next), 0);
-                              return next;
-                            });
-                          }
-                          setInputTexts(prev => { const c = { ...prev }; delete c[`${key}-${vi}`]; return c; });
-                          e.target.style.borderColor = err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.08)';
-                        }}
-                        style={{ background: err ? 'rgba(255,69,58,0.06)' : 'rgba(255,255,255,0.06)', border: `0.5px solid ${err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '8px', padding: '5px 6px', fontSize: '12px', fontWeight: 600, color: '#F5F5F7', textAlign: 'center', width: '100%', outline: 'none' }}
-                        onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
-                      />
-                    ))}
-                    <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: volaClasses[4].color, background: `${volaClasses[4].color}10`, border: `0.5px solid ${volaClasses[4].color}30`, borderRadius: '8px', padding: '5px 3px' }}>
+                    {Array.from({length: inputCount}).map((_, vi) => {
+                      const val = cfg.values[vi] ?? '';
+                      return (
+                        <input key={vi} type="text" value={getInputText(key, vi, val)}
+                          onChange={e => setInputTexts(prev => ({ ...prev, [`${key}-${vi}`]: e.target.value }))}
+                          onBlur={e => {
+                            const num = parseFloat(e.target.value.replace(',', '.'));
+                            if (!isNaN(num)) {
+                              setDraftThresholds(prev => {
+                                const next = { ...prev };
+                                const vals = [...(next[key].values || [])];
+                                while (vals.length <= vi) vals.push(0);
+                                vals[vi] = num;
+                                next[key] = { ...next[key], values: vals };
+                                setTimeout(() => validateAll(next), 0);
+                                return next;
+                              });
+                            }
+                            setInputTexts(prev => { const c = { ...prev }; delete c[`${key}-${vi}`]; return c; });
+                          }}
+                          style={{ background: err ? 'rgba(255,69,58,0.06)' : 'rgba(255,255,255,0.06)', border: `0.5px solid ${err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '8px', padding: '5px 6px', fontSize: '12px', fontWeight: 600, color: '#F5F5F7', textAlign: 'center', width: '100%', outline: 'none' }}
+                          onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
+                        />
+                      );
+                    })}
+                    <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: lastVC.color, background: `${lastVC.color}10`, border: `0.5px solid ${lastVC.color}30`, borderRadius: '8px', padding: '5px 3px' }}>
                       {cfg.dir === 'asc' ? `>${String(t4).replace('.', ',')}` : `<${String(t4).replace('.', ',')}`}
                     </div>
                     <div style={{ fontSize: '9px', fontWeight: 600, textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
                       {cfg.dir === 'asc' ? '↑ steig.' : '↓ fall.'}
                     </div>
-                    {/* Remove button */}
                     <button onClick={() => setDraftThresholds(prev => ({ ...prev, [key]: { ...prev[key], active: false } }))}
                       title="Aus Bewertung entfernen"
                       style={{ width: '26px', height: '26px', borderRadius: '50%', border: 'none', background: 'rgba(255,69,58,0.12)', color: '#FF453A', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit', flexShrink: 0 }}
@@ -2563,6 +2604,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 <button
                   onClick={() => {
                     setDraftThresholds(JSON.parse(JSON.stringify(defaultThresholds)));
+                    setDraftVolaClasses(JSON.parse(JSON.stringify(defaultVolaClasses)));
                     setValidationErrors({});
                     setInputTexts({});
                   }}
@@ -2581,9 +2623,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 </button>
                 <button
                   onClick={() => {
+                    if (draftVolaClasses.length < 2) { alert('Mindestens 2 Volatilitätsklassen erforderlich.'); return; }
                     const activeW = Object.values(draftThresholds).filter(c => c.active !== false).reduce((s,c) => s + (c.weight||0), 0);
                     if (activeW !== 100) { alert(`Gewichtungssumme ist ${activeW}% — muss genau 100% ergeben.`); return; }
                     if (validateAll(draftThresholds)) {
+                      setVolaClasses(JSON.parse(JSON.stringify(draftVolaClasses)));
                       setThresholds(JSON.parse(JSON.stringify(draftThresholds)));
                       setShowConfig(false);
                     }
