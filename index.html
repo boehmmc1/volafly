@@ -1157,11 +1157,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   // ── Anticyclical Volatility Classification ──
   // 5 classes: higher vola class = more fear = higher investment grade (anticyclical)
   const defaultVolaClasses = [
-    { label: 'Stille', color: '#8E8E93', investPct: 40 },
-    { label: 'Ruhe', color: '#30D158', investPct: 60 },
-    { label: 'Spannung', color: '#FFCC00', investPct: 80 },
-    { label: 'Stress', color: '#FF9F0A', investPct: 90 },
-    { label: 'Panik', color: '#FF453A', investPct: 110 },
+    { label: 'Stille',   color: '#8E8E93', investPct: 40,  subtitle: 'Markt zu ruhig — Complacency-Risiko',          desc: 'Der Markt ist ungewöhnlich ruhig — Vorsicht vor Selbstgefälligkeit. Investitionsgrad bis zu 40% ist angemessen.' },
+    { label: 'Ruhe',     color: '#30D158', investPct: 60,  subtitle: 'Geringes Stressniveau — Basis-Exposure',        desc: 'Geringes Stressniveau. Ein rationaler Investor hält eine solide Basis-Position von bis zu 60%.' },
+    { label: 'Spannung', color: '#FFCC00', investPct: 80,  subtitle: 'Erhöhte Unsicherheit — selektiv aufbauen',      desc: 'Erhöhte Unsicherheit im Markt. Jetzt selektiv aufbauen — bis zu 80% Investitionsgrad ist rational.' },
+    { label: 'Stress',   color: '#FF9F0A', investPct: 90,  subtitle: 'Deutlicher Stress — antizyklisch erhöhen',      desc: 'Deutlicher Stress im Markt. Ein rationaler Investor erhöht jetzt antizyklisch auf bis zu 90%.' },
+    { label: 'Panik',    color: '#FF453A', investPct: 110, subtitle: 'Kapitulation — aggressiv investieren',          desc: 'Kapitulation — maximale Angst im Markt. Historisch der beste Kaufzeitpunkt. Bis zu 110% Investitionsgrad ist rational.' },
   ];
   const [volaClasses, setVolaClasses] = useState(defaultVolaClasses);
   const [draftVolaClasses, setDraftVolaClasses] = useState(defaultVolaClasses);
@@ -1785,15 +1785,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 {currentClass.label}
               </div>
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>
-                {(() => {
-                  const pct = currentClass.investPct;
-                  const maxPct = volaClasses[volaClasses.length - 1].investPct;
-                  if (overallLevel === 1) return 'Tief investiert — Complacency-Risiko';
-                  if (overallLevel === volaClasses.length) return 'Maximale Angst — aggressiv investieren';
-                  if (pct <= maxPct * 0.5) return 'Defensiv positioniert';
-                  if (pct <= maxPct * 0.75) return 'Selektiv aufbauen';
-                  return 'Antizyklisch erhöhen';
-                })()}
+                {currentClass.subtitle || currentClass.label}
               </div>
             </div>
 
@@ -1849,21 +1841,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               transition: 'background 0.4s ease',
             }} />
             <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
-              {(() => {
-                const n = volaClasses.length;
-                const pct = currentClass.investPct;
-                const label = currentClass.label;
-                const isFirst = overallLevel === 1;
-                const isLast = overallLevel === n;
-                if (isFirst) return `Der Markt ist ungewöhnlich ruhig — Vorsicht vor Selbstgefälligkeit. Investitionsgrad bis zu ${pct}% ist angemessen.`;
-                if (isLast) return `Kapitulation — maximale Angst im Markt. Historisch der beste Kaufzeitpunkt. Bis zu ${pct}% Investitionsgrad ist rational.`;
-                const prevPct = volaClasses[overallLevel - 2].investPct;
-                const nextPct = volaClasses[overallLevel].investPct;
-                if (pct <= (volaClasses[0].investPct + volaClasses[n-1].investPct) * 0.45) {
-                  return `${label}: Erhöhte Unsicherheit — defensiv positioniert bleiben. Bis zu ${pct}% Investitionsgrad ist angemessen.`;
-                }
-                return `${label}: Jetzt selektiv aufbauen — bis zu ${pct}% Investitionsgrad ist rational.`;
-              })()}
+              {currentClass.desc || `${currentClass.label}: Investitionsgrad bis zu ${currentClass.investPct}% ist angemessen.`}
             </div>
           </div>
 
@@ -2429,8 +2407,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   {/* Header row */}
                   <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr 80px 32px', gap: '10px', alignItems: 'center', padding: '0 4px 8px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
                     <div/>
-                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Name</div>
-                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', textAlign: 'center' }}>Investition</div>
+                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Name · Kurzbeschreibung · Handlungssatz</div>
+                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', textAlign: 'center' }}>Invest.</div>
                     <div/>
                   </div>
                   {draftVolaClasses.map((vc, i) => {
@@ -2438,33 +2416,51 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                     const prevPct = i > 0 ? draftVolaClasses[i-1].investPct : -Infinity;
                     const orderErr = vc.investPct <= prevPct && i > 0;
                     return (
-                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '16px 1fr 80px 32px', gap: '10px', alignItems: 'center', padding: '8px 4px', borderBottom: `0.5px solid ${orderErr ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`, background: orderErr ? 'rgba(255,69,58,0.04)' : 'transparent', borderRadius: orderErr ? '8px' : '0' }}>
-                        {/* Color bar */}
-                        <div style={{ width: '3px', height: '22px', borderRadius: '2px', background: vc.color, justifySelf: 'center' }} />
-                        {/* Name input */}
-                        <input
-                          value={vc.label}
-                          onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, label: e.target.value} : c))}
-                          style={{ background: 'rgba(255,255,255,0.06)', border: `0.5px solid ${vc.color}40`, borderRadius: '8px', padding: '7px 10px', fontSize: '13px', fontWeight: 700, color: vc.color, outline: 'none', width: '100%', boxSizing: 'border-box' }}
-                          onFocus={e => e.target.style.borderColor=vc.color}
-                          onBlur={e => e.target.style.borderColor=`${vc.color}40`}
-                        />
-                        {/* Investitionsgrad */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: orderErr ? 'rgba(255,69,58,0.08)' : 'rgba(255,255,255,0.06)', border: `0.5px solid ${orderErr ? 'rgba(255,69,58,0.4)' : 'transparent'}`, borderRadius: '8px', padding: '6px 10px' }}>
-                          <input type="number" min="0" max="500" step="1"
-                            value={vc.investPct}
-                            onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, investPct: parseInt(e.target.value)||0} : c))}
-                            style={{ background: 'transparent', border: 'none', fontSize: '13px', fontWeight: 700, color: orderErr ? '#FF453A' : '#F5F5F7', textAlign: 'right', width: '100%', outline: 'none' }}
+                      <div key={i} style={{ padding: '10px 4px', borderBottom: `0.5px solid ${orderErr ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`, background: orderErr ? 'rgba(255,69,58,0.03)' : 'transparent' }}>
+                        {/* Row 1: color · name · investPct · × */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr 80px 32px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+                          <div style={{ width: '3px', height: '22px', borderRadius: '2px', background: vc.color, justifySelf: 'center' }} />
+                          <input value={vc.label}
+                            onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, label: e.target.value} : c))}
+                            style={{ background: 'rgba(255,255,255,0.06)', border: `0.5px solid ${vc.color}40`, borderRadius: '8px', padding: '7px 10px', fontSize: '13px', fontWeight: 700, color: vc.color, outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                            onFocus={e => e.target.style.borderColor=vc.color}
+                            onBlur={e => e.target.style.borderColor=`${vc.color}40`}
                           />
-                          <span style={{ fontSize: '11px', color: orderErr ? '#FF453A' : 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: orderErr ? 'rgba(255,69,58,0.08)' : 'rgba(255,255,255,0.06)', border: `0.5px solid ${orderErr ? 'rgba(255,69,58,0.4)' : 'transparent'}`, borderRadius: '8px', padding: '6px 10px' }}>
+                            <input type="number" min="0" max="500" step="1" value={vc.investPct}
+                              onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, investPct: parseInt(e.target.value)||0} : c))}
+                              style={{ background: 'transparent', border: 'none', fontSize: '13px', fontWeight: 700, color: orderErr ? '#FF453A' : '#F5F5F7', textAlign: 'right', width: '100%', outline: 'none' }}
+                            />
+                            <span style={{ fontSize: '11px', color: orderErr ? '#FF453A' : 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
+                          </div>
+                          {draftVolaClasses.length > 2 ? (
+                            <button onClick={() => setDraftVolaClasses(prev => prev.filter((_,j) => j!==i))}
+                              style={{ width: '26px', height: '26px', borderRadius: '50%', border: 'none', background: 'rgba(255,69,58,0.12)', color: '#FF453A', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                              onMouseEnter={e => e.currentTarget.style.background='rgba(255,69,58,0.25)'}
+                              onMouseLeave={e => e.currentTarget.style.background='rgba(255,69,58,0.12)'}>×</button>
+                          ) : <div/>}
                         </div>
-                        {/* Remove button */}
-                        {(!isLast || draftVolaClasses.length > 2) && draftVolaClasses.length > 2 ? (
-                          <button onClick={() => setDraftVolaClasses(prev => prev.filter((_,j) => j!==i))}
-                            style={{ width: '26px', height: '26px', borderRadius: '50%', border: 'none', background: 'rgba(255,69,58,0.12)', color: '#FF453A', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-                            onMouseEnter={e => e.currentTarget.style.background='rgba(255,69,58,0.25)'}
-                            onMouseLeave={e => e.currentTarget.style.background='rgba(255,69,58,0.12)'}>×</button>
-                        ) : <div/>}
+                        {/* Row 2: subtitle + desc inputs */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: '10px' }}>
+                          <div/>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                            <input value={vc.subtitle || ''}
+                              placeholder="Kurzbeschreibung (z.B. Selektiv aufbauen)"
+                              onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, subtitle: e.target.value} : c))}
+                              style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: '7px', padding: '5px 10px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                              onFocus={e => e.target.style.borderColor='rgba(255,255,255,0.2)'}
+                              onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.07)'}
+                            />
+                            <textarea value={vc.desc || ''}
+                              placeholder="Handlungssatz (z.B. Erhöhte Unsicherheit — Investitionsgrad bis zu X% ist rational.)"
+                              onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, desc: e.target.value} : c))}
+                              rows={2}
+                              style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: '7px', padding: '5px 10px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', outline: 'none', width: '100%', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit', lineHeight: 1.5 }}
+                              onFocus={e => e.target.style.borderColor='rgba(255,255,255,0.2)'}
+                              onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.07)'}
+                            />
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
@@ -2477,7 +2473,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   <button onClick={() => {
                     const colors = ['#8E8E93','#30D158','#FFCC00','#FF9F0A','#FF453A','#0A84FF','#BF5AF2'];
                     const color = colors[draftVolaClasses.length % colors.length];
-                    setDraftVolaClasses(prev => [...prev, { label: 'Neu', color, investPct: 50 }]);
+                    setDraftVolaClasses(prev => [...prev, { label: 'Neu', color, investPct: 50, subtitle: '', desc: '' }]);
                   }}
                     style={{ marginTop: '10px', width: '100%', padding: '10px', borderRadius: '10px', border: '0.5px dashed rgba(255,255,255,0.15)', background: 'transparent', color: 'rgba(255,255,255,0.35)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor='rgba(10,132,255,0.4)'; e.currentTarget.style.color='#0A84FF'; }}
