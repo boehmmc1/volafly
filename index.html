@@ -512,23 +512,22 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   // ── Editable Thresholds Config ──
   // range: [min, max] allowed for each indicator's thresholds
   const defaultThresholds = {
-    vix:          { label: 'VIX',             values: [15, 20, 30, 40],         dir: 'asc',  range: [0, 100],   weight: 10, active: true },
+    vix:          { label: 'VIX',             values: [15, 20, 30, 40],         dir: 'asc',  range: [0, 100],   weight: 7,  active: true },
     vvix:         { label: 'VVIX',            values: [85, 100, 120, 140],      dir: 'asc',  range: [0, 250],   weight: 7,  active: true },
-    vixVxv:       { label: 'VIX/VXV',         values: [0.85, 0.95, 1.00, 1.10], dir: 'asc',  range: [0.3, 2.0], weight: 8,  active: true },
-    vxn:          { label: 'VXN',             values: [18, 23, 33, 43],         dir: 'asc',  range: [0, 100],   weight: 6,  active: true },
+    vixVxv:       { label: 'VIX/VXV',         values: [0.85, 0.95, 1.00, 1.10], dir: 'asc',  range: [0.3, 2.0], weight: 7,  active: true },
+    vxn:          { label: 'VXN',             values: [18, 23, 33, 43],         dir: 'asc',  range: [0, 100],   weight: 7,  active: true },
     rvx:          { label: 'RVX',             values: [18, 23, 30, 40],         dir: 'asc',  range: [0, 100],   weight: 6,  active: true },
-    fearGreed:    { label: 'Fear & Greed',    values: [75, 55, 35, 20],         dir: 'desc', range: [0, 100],   weight: 15, active: true },
-    equityPutCall:{ label: 'Equity P/C',      values: [0.60, 0.75, 0.95, 1.10], dir: 'asc',  range: [0, 3.0],   weight: 10, active: true },
-    vx1Spread:    { label: 'VX1 – VIX Spot',  values: [2.0, 0.5, -0.5, -2.0],  dir: 'desc', range: [-15, 15],  weight: 8,  active: true },
+    fearGreed:    { label: 'Fear & Greed',    values: [75, 55, 35, 20],         dir: 'desc', range: [0, 100],   weight: 6,  active: true },
+    equityPutCall:{ label: 'Equity P/C',      values: [0.60, 0.75, 0.95, 1.10], dir: 'asc',  range: [0, 3.0],   weight: 6,  active: true },
+    vx1Spread:    { label: 'VX1 – VIX Spot',  values: [2.0, 0.5, -0.5, -2.0],  dir: 'desc', range: [-15, 15],  weight: 6,  active: true },
     vx2Spread:    { label: 'VX2 – VX1',       values: [1.0, 0.3, -0.3, -1.0],  dir: 'desc', range: [-10, 10],  weight: 6,  active: true },
-    hySpread:     { label: 'HY Credit Spread', values: [3.0, 4.0, 5.5, 8.0],   dir: 'asc',  range: [0, 25],    weight: 10, active: true },
+    hySpread:     { label: 'HY Credit Spread', values: [3.0, 4.0, 5.5, 8.0],   dir: 'asc',  range: [0, 25],    weight: 6,  active: true },
     dxy:          { label: 'DXY',              values: [94, 99, 104, 109],       dir: 'asc',  range: [70, 130],  weight: 6,  active: true },
-    goldSP:       { label: 'Gold/S&P',         values: [0.35, 0.45, 0.55, 0.70], dir: 'asc', range: [0.1, 2.0], weight: 4,  active: true },
-    wti:          { label: 'WTI Öl',           values: [60, 80, 100, 120],       dir: 'asc',  range: [20, 200],  weight: 4,  active: true },
-    yieldSpread:  { label: '10Y–2Y Spread',    values: [1.5, 0.5, 0.0, -0.5],   dir: 'desc', range: [-3, 4],    weight: 10, active: true },
-    // SPX/NDX über 200T: 1=über, 0=unter. desc: über=Stille(1), unter=Stress(5)
-    spxAbove200d: { label: 'SPX über 200T',     values: [1, 1, 0, 0],             dir: 'desc', range: [0, 1],    weight: 5,  active: true },
-    ndxAbove200d: { label: 'NDX über 200T',     values: [1, 1, 0, 0],             dir: 'desc', range: [0, 1],    weight: 5,  active: true },
+    goldSP:       { label: 'Gold/S&P',         values: [0.35, 0.45, 0.55, 0.70], dir: 'asc', range: [0.1, 2.0], weight: 6,  active: true },
+    wti:          { label: 'WTI Öl',           values: [60, 80, 100, 120],       dir: 'asc',  range: [20, 200],  weight: 6,  active: true },
+    yieldSpread:  { label: '10Y–2Y Spread',    values: [1.5, 0.5, 0.0, -0.5],   dir: 'desc', range: [-3, 4],    weight: 6,  active: true },
+    spxAbove200d: { label: 'SPX über 200T',     values: [1, 1, 0, 0],            dir: 'desc', range: [0, 1],    weight: 6,  active: true },
+    ndxAbove200d: { label: 'NDX über 200T',     values: [1, 1, 0, 0],            dir: 'desc', range: [0, 1],    weight: 6,  active: true },
   };
   const [thresholds, setThresholds] = useState(defaultThresholds);
   const [draftThresholds, setDraftThresholds] = useState(defaultThresholds);
@@ -2400,8 +2399,10 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   </div>
                   {draftVolaClasses.map((vc, i) => {
                     const isLast = i === draftVolaClasses.length - 1;
+                    const prevPct = i > 0 ? draftVolaClasses[i-1].investPct : -Infinity;
+                    const orderErr = vc.investPct <= prevPct && i > 0;
                     return (
-                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '16px 1fr 80px 32px', gap: '10px', alignItems: 'center', padding: '8px 4px', borderBottom: '0.5px solid rgba(255,255,255,0.04)' }}>
+                      <div key={i} style={{ display: 'grid', gridTemplateColumns: '16px 1fr 80px 32px', gap: '10px', alignItems: 'center', padding: '8px 4px', borderBottom: `0.5px solid ${orderErr ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`, background: orderErr ? 'rgba(255,69,58,0.04)' : 'transparent', borderRadius: orderErr ? '8px' : '0' }}>
                         {/* Color bar */}
                         <div style={{ width: '3px', height: '22px', borderRadius: '2px', background: vc.color, justifySelf: 'center' }} />
                         {/* Name input */}
@@ -2413,15 +2414,15 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                           onBlur={e => e.target.style.borderColor=`${vc.color}40`}
                         />
                         {/* Investitionsgrad */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.06)', borderRadius: '8px', padding: '6px 10px' }}>
-                          <input type="number" min="0" max="200" step="1"
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: orderErr ? 'rgba(255,69,58,0.08)' : 'rgba(255,255,255,0.06)', border: `0.5px solid ${orderErr ? 'rgba(255,69,58,0.4)' : 'transparent'}`, borderRadius: '8px', padding: '6px 10px' }}>
+                          <input type="number" min="0" max="500" step="1"
                             value={vc.investPct}
                             onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, investPct: parseInt(e.target.value)||0} : c))}
-                            style={{ background: 'transparent', border: 'none', fontSize: '13px', fontWeight: 700, color: '#F5F5F7', textAlign: 'right', width: '100%', outline: 'none' }}
+                            style={{ background: 'transparent', border: 'none', fontSize: '13px', fontWeight: 700, color: orderErr ? '#FF453A' : '#F5F5F7', textAlign: 'right', width: '100%', outline: 'none' }}
                           />
-                          <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
+                          <span style={{ fontSize: '11px', color: orderErr ? '#FF453A' : 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
                         </div>
-                        {/* Remove button — nicht für letzte Klasse wenn nur 2 übrig */}
+                        {/* Remove button */}
                         {(!isLast || draftVolaClasses.length > 2) && draftVolaClasses.length > 2 ? (
                           <button onClick={() => setDraftVolaClasses(prev => prev.filter((_,j) => j!==i))}
                             style={{ width: '26px', height: '26px', borderRadius: '50%', border: 'none', background: 'rgba(255,69,58,0.12)', color: '#FF453A', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
@@ -2431,7 +2432,12 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       </div>
                     );
                   })}
-                  {/* Add class */}
+                  {/* Live order error */}
+                  {draftVolaClasses.some((vc,i) => i > 0 && vc.investPct <= draftVolaClasses[i-1].investPct) && (
+                    <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.2)', fontSize: '11px', color: '#FF453A' }}>
+                      ↑ Investitionsgrade müssen streng aufsteigend sein — jede folgende Klasse muss einen höheren Wert haben.
+                    </div>
+                  )}
                   <button onClick={() => {
                     const colors = ['#8E8E93','#30D158','#FFCC00','#FF9F0A','#FF453A','#0A84FF','#BF5AF2'];
                     const color = colors[draftVolaClasses.length % colors.length];
@@ -2502,13 +2508,35 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               {/* Weight summary bar */}
               {(() => {
                 const activeEntries = Object.entries(draftThresholds).filter(([,c]) => c.active !== false);
+                const n = activeEntries.length;
                 const totalW = activeEntries.reduce((s,[,c]) => s + (c.weight||0), 0);
                 const ok = totalW === 100;
+                const equalW = n > 0 ? Math.floor(100 / n) : 0;
+                const isEqual = activeEntries.every(([,c]) => Math.abs((c.weight||0) - equalW) <= 1);
+                const equalize = () => {
+                  const rem = 100 % n;
+                  const keys = activeEntries.map(([k]) => k);
+                  setDraftThresholds(prev => {
+                    const next = {...prev};
+                    keys.forEach((k, i) => { next[k] = {...next[k], weight: i < rem ? equalW + 1 : equalW}; });
+                    return next;
+                  });
+                };
                 return (
                   <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px', padding:'8px 12px', borderRadius:'10px', background: ok ? 'rgba(48,209,88,0.06)' : 'rgba(255,159,10,0.06)', border:`0.5px solid ${ok ? 'rgba(48,209,88,0.2)' : 'rgba(255,159,10,0.2)'}` }}>
-                    <span style={{ fontSize:'11px', color:'rgba(255,255,255,0.4)' }}>Gewichtungssumme aktiver Indikatoren:</span>
-                    <span style={{ fontSize:'13px', fontWeight:700, color: ok ? '#30D158' : '#FF9F0A' }}>{totalW}%</span>
-                    {!ok && <span style={{ fontSize:'10px', color:'#FF9F0A', marginLeft:'4px' }}>→ muss 100% ergeben</span>}
+                    <span style={{ fontSize:'11px', color:'rgba(255,255,255,0.4)', flex:1 }}>
+                      Gewichtung: <span style={{ fontWeight:700, color: ok ? '#30D158' : '#FF9F0A' }}>{totalW}%</span>
+                      {!ok && <span style={{ color:'#FF9F0A' }}> → muss 100% ergeben</span>}
+                      {ok && isEqual && <span style={{ color:'rgba(48,209,88,0.6)', fontSize:'10px' }}> · gleichgewichtet (≈{equalW}%)</span>}
+                    </span>
+                    {!isEqual && (
+                      <button onClick={equalize}
+                        style={{ padding:'4px 10px', borderRadius:'8px', border:'0.5px solid rgba(10,132,255,0.3)', background:'rgba(10,132,255,0.08)', color:'#0A84FF', fontSize:'10px', fontWeight:600, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}
+                        onMouseEnter={e => e.currentTarget.style.background='rgba(10,132,255,0.18)'}
+                        onMouseLeave={e => e.currentTarget.style.background='rgba(10,132,255,0.08)'}>
+                        ⊜ Gleichgewichten
+                      </button>
+                    )}
                   </div>
                 );
               })()}
@@ -2650,6 +2678,13 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       const pcts = draftVolaClasses.map(c => c.investPct);
                       const dupes = pcts.filter((p,i) => pcts.indexOf(p) !== i);
                       if (dupes.length > 0) { alert(`Doppelter Investitionsgrad: ${dupes.join(', ')}% — jede Klasse muss einen eindeutigen Wert haben.`); return; }
+                      // Ascending check
+                      for (let i = 1; i < draftVolaClasses.length; i++) {
+                        if (draftVolaClasses[i].investPct <= draftVolaClasses[i-1].investPct) {
+                          alert(`Investitionsgrade müssen aufsteigend sein.\n"${draftVolaClasses[i].label}" (${draftVolaClasses[i].investPct}%) muss größer sein als "${draftVolaClasses[i-1].label}" (${draftVolaClasses[i-1].investPct}%).`);
+                          return;
+                        }
+                      }
                       // Apply classes — trim/pad threshold values arrays to n-1
                       const n = draftVolaClasses.length;
                       const adjusted = Object.fromEntries(Object.entries(draftThresholds).map(([key, cfg]) => {
