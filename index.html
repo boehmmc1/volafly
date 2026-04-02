@@ -2405,8 +2405,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               {configTab === 'classes' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                   {/* Header row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr 80px 32px', gap: '10px', alignItems: 'center', padding: '0 4px 8px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
-                    <div/>
+                  <div style={{ display: 'grid', gridTemplateColumns: '16px 28px 1fr 80px 32px', gap: '8px', alignItems: 'center', padding: '0 4px 8px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
+                    <div/><div/>
                     <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Name · Kurzbeschreibung · Handlungssatz</div>
                     <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', textAlign: 'center' }}>Invest.</div>
                     <div/>
@@ -2417,9 +2417,18 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                     const orderErr = vc.investPct <= prevPct && i > 0;
                     return (
                       <div key={i} style={{ padding: '10px 4px', borderBottom: `0.5px solid ${orderErr ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`, background: orderErr ? 'rgba(255,69,58,0.03)' : 'transparent' }}>
-                        {/* Row 1: color · name · investPct · × */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr 80px 32px', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
+                        {/* Row 1: colorbar · colorpicker · name · investPct · × */}
+                        <div style={{ display: 'grid', gridTemplateColumns: '16px 28px 1fr 80px 32px', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
                           <div style={{ width: '3px', height: '22px', borderRadius: '2px', background: vc.color, justifySelf: 'center' }} />
+                          {/* Color picker */}
+                          <div style={{ position: 'relative', width: '28px', height: '28px', borderRadius: '8px', overflow: 'hidden', border: `1.5px solid ${vc.color}60`, flexShrink: 0 }}>
+                            <div style={{ position: 'absolute', inset: 0, background: vc.color, borderRadius: '6px' }} />
+                            <input type="color" value={vc.color}
+                              onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, color: e.target.value} : c))}
+                              style={{ position: 'absolute', inset: 0, opacity: 0, width: '100%', height: '100%', cursor: 'pointer', border: 'none', padding: 0 }}
+                              title="Farbe wählen"
+                            />
+                          </div>
                           <input value={vc.label}
                             onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, label: e.target.value} : c))}
                             style={{ background: 'rgba(255,255,255,0.06)', border: `0.5px solid ${vc.color}40`, borderRadius: '8px', padding: '7px 10px', fontSize: '13px', fontWeight: 700, color: vc.color, outline: 'none', width: '100%', boxSizing: 'border-box' }}
@@ -2441,8 +2450,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                           ) : <div/>}
                         </div>
                         {/* Row 2: subtitle + desc inputs */}
-                        <div style={{ display: 'grid', gridTemplateColumns: '16px 1fr', gap: '10px' }}>
-                          <div/>
+                        <div style={{ display: 'grid', gridTemplateColumns: '16px 28px 1fr', gap: '8px' }}>
+                          <div/><div/>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                             <input value={vc.subtitle || ''}
                               placeholder="Kurzbeschreibung (z.B. Selektiv aufbauen)"
