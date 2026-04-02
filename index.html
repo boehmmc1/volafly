@@ -2623,66 +2623,83 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 </>
               ))} {/* end thresholds tab */}
 
-              {/* Global error summary */}
-              {Object.keys(validationErrors).length > 0 && (
-                <div style={{
-                  marginTop: '12px', padding: '10px 14px', borderRadius: '10px',
-                  background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.2)',
-                  fontSize: '11px', color: '#FF453A', lineHeight: 1.5,
-                }}>
-                  {Object.values(validationErrors).map((msg, i) => (
-                    <div key={i}>• {msg}</div>
-                  ))}
+
+              {/* Global error summary — only in thresholds tab */}
+              {configTab === 'thresholds' && Object.keys(validationErrors).length > 0 && (
+                <div style={{ marginTop: '12px', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.2)', fontSize: '11px', color: '#FF453A', lineHeight: 1.5 }}>
+                  {Object.values(validationErrors).map((msg, i) => <div key={i}>• {msg}</div>)}
                 </div>
               )}
 
-              {/* Aktualisieren Button + Reset */}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-                <button
-                  onClick={() => {
-                    setDraftThresholds(JSON.parse(JSON.stringify(defaultThresholds)));
-                    setDraftVolaClasses(JSON.parse(JSON.stringify(defaultVolaClasses)));
-                    setValidationErrors({});
-                    setInputTexts({});
-                  }}
-                  style={{
-                    padding: '12px 16px', borderRadius: '12px',
-                    border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer',
-                    background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)',
-                    fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap',
-                    transition: 'all 0.2s ease',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.4)'; }}
-                  title="Alle Grenzwerte auf Standardwerte zurücksetzen"
-                >
-                  ↺ Zurücksetzen
-                </button>
-                <button
-                  onClick={() => {
-                    if (draftVolaClasses.length < 2) { alert('Mindestens 2 Volatilitätsklassen erforderlich.'); return; }
-                    const activeW = Object.values(draftThresholds).filter(c => c.active !== false).reduce((s,c) => s + (c.weight||0), 0);
-                    if (activeW !== 100) { alert(`Gewichtungssumme ist ${activeW}% — muss genau 100% ergeben.`); return; }
-                    if (validateAll(draftThresholds)) {
+              {/* ── Footer: Klassen-Tab ── */}
+              {configTab === 'classes' && (
+                <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                  <button
+                    onClick={() => {
+                      setDraftVolaClasses(JSON.parse(JSON.stringify(defaultVolaClasses)));
+                    }}
+                    style={{ padding: '12px 16px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit' }}
+                    onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.4)'; }}>
+                    ↺ Zurücksetzen
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (draftVolaClasses.length < 2) { alert('Mindestens 2 Klassen erforderlich.'); return; }
+                      // Duplicate investPct check
+                      const pcts = draftVolaClasses.map(c => c.investPct);
+                      const dupes = pcts.filter((p,i) => pcts.indexOf(p) !== i);
+                      if (dupes.length > 0) { alert(`Doppelter Investitionsgrad: ${dupes.join(', ')}% — jede Klasse muss einen eindeutigen Wert haben.`); return; }
+                      // Apply classes — trim/pad threshold values arrays to n-1
+                      const n = draftVolaClasses.length;
+                      const adjusted = Object.fromEntries(Object.entries(draftThresholds).map(([key, cfg]) => {
+                        const vals = [...cfg.values];
+                        while (vals.length < n - 1) vals.push(vals[vals.length - 1] ?? 0);
+                        return [key, { ...cfg, values: vals.slice(0, n - 1) }];
+                      }));
                       setVolaClasses(JSON.parse(JSON.stringify(draftVolaClasses)));
-                      setThresholds(JSON.parse(JSON.stringify(draftThresholds)));
-                      setShowConfig(false);
-                    }
-                  }}
-                  style={{
-                    flex: 1, padding: '12px',
-                    borderRadius: '12px', border: 'none', cursor: 'pointer',
-                    background: Object.keys(validationErrors).length > 0 ? 'rgba(255,255,255,0.06)' : '#0A84FF',
-                    color: Object.keys(validationErrors).length > 0 ? 'rgba(255,255,255,0.3)' : '#fff',
-                    fontSize: '14px', fontWeight: 600,
-                    transition: 'all 0.2s ease',
-                  }}
-                  onMouseEnter={e => { if (Object.keys(validationErrors).length === 0) e.currentTarget.style.opacity = '0.85'; }}
-                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-                >
-                  Aktualisieren
-                </button>
-              </div>
+                      setDraftThresholds(adjusted);
+                      setThresholds(JSON.parse(JSON.stringify(adjusted)));
+                      setConfigTab('thresholds');
+                    }}
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer', background: '#0A84FF', color: '#fff', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit' }}
+                    onMouseEnter={e => e.currentTarget.style.opacity='0.85'}
+                    onMouseLeave={e => e.currentTarget.style.opacity='1'}>
+                    Klassen speichern →
+                  </button>
+                </div>
+              )}
+
+              {/* ── Footer: Grenzwerte-Tab ── */}
+              {configTab === 'thresholds' && (
+                <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
+                  <button
+                    onClick={() => {
+                      setDraftThresholds(JSON.parse(JSON.stringify(defaultThresholds)));
+                      setValidationErrors({});
+                      setInputTexts({});
+                    }}
+                    style={{ padding: '12px 16px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit' }}
+                    onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.4)'; }}>
+                    ↺ Zurücksetzen
+                  </button>
+                  <button
+                    onClick={() => {
+                      const activeW = Object.values(draftThresholds).filter(c => c.active !== false).reduce((s,c) => s + (c.weight||0), 0);
+                      if (activeW !== 100) { alert(`Gewichtungssumme ist ${activeW}% — muss genau 100% ergeben.`); return; }
+                      if (validateAll(draftThresholds)) {
+                        setThresholds(JSON.parse(JSON.stringify(draftThresholds)));
+                        setShowConfig(false);
+                      }
+                    }}
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer', background: Object.keys(validationErrors).length > 0 ? 'rgba(255,255,255,0.06)' : '#0A84FF', color: Object.keys(validationErrors).length > 0 ? 'rgba(255,255,255,0.3)' : '#fff', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit' }}
+                    onMouseEnter={e => { if (!Object.keys(validationErrors).length) e.currentTarget.style.opacity='0.85'; }}
+                    onMouseLeave={e => e.currentTarget.style.opacity='1'}>
+                    Grenzwerte speichern
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         )}
