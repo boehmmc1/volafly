@@ -1397,66 +1397,40 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           </div>
         </div>
 
-        {/* Yields + Spread */}
+        {/* Aktienindizes — kompakt */}
         <div style={glass}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
-            <div style={sectionLabel}>US Treasuries</div>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+          <div style={sectionLabel}>Aktienindizes</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
             {[
-              { label: '2Y', val: y.y2, id: 'y2' },
-              { label: '10Y', val: y.y10, id: 'y10' },
-              { label: '30Y', val: y.y30, id: 'y30' },
+              { label: 'S&P 500',      val: idx.spx, ma200: idx.spx200d, url: 'https://www.tradingview.com/symbols/SP-SPX/?interval=D',    sub: 'SPX' },
+              { label: 'Nasdaq 100',   val: idx.ndx, ma200: idx.ndx200d, url: 'https://www.tradingview.com/symbols/NASDAQ-NDX/?interval=D', sub: 'NDX' },
+              { label: 'Russell 2000', val: idx.rut, ma200: null,        url: 'https://www.tradingview.com/symbols/TVC-RUT/?interval=D',    sub: 'RUT' },
             ].map((item, i) => {
-              const tvEntry = TV_SYMBOLS[item.id];
+              const aboveMA = item.ma200 ? item.val > item.ma200 : null;
               return (
-                <TT key={i} id={item.id}>
-                  <div
-                    onClick={tvEntry ? () => window.open(tvEntry.tvUrl, '_blank') : undefined}
-                    style={{ cursor: tvEntry ? 'pointer' : 'default', borderRadius: '6px', padding: '4px', transition: 'background 0.15s' }}
-                    onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                  >
-                    <div style={{ ...metricLabel, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      {item.label}
-                      {tvEntry && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>}
+                <div key={i}
+                  onClick={() => window.open(item.url, '_blank')}
+                  style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>{item.label} <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+                  <div style={metricValue('#F5F5F7')}>{item.val ? item.val.toLocaleString('de-DE', {maximumFractionDigits: 0}) : '—'}</div>
+                  {aboveMA !== null && (
+                    <div style={{ marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '2px 6px', borderRadius: '5px',
+                      background: aboveMA ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)',
+                      border: `0.5px solid ${aboveMA ? 'rgba(48,209,88,0.25)' : 'rgba(255,69,58,0.25)'}`,
+                    }}>
+                      <svg width="7" height="7" viewBox="0 0 10 10" fill="none">
+                        {aboveMA ? <polyline points="1,7 5,3 9,7" stroke="#30D158" strokeWidth="1.5" strokeLinecap="round"/> : <polyline points="1,3 5,7 9,3" stroke="#FF453A" strokeWidth="1.5" strokeLinecap="round"/>}
+                      </svg>
+                      <span style={{ fontSize: '9px', fontWeight: 600, color: aboveMA ? '#30D158' : '#FF453A' }}>{aboveMA ? 'über 200T' : 'unter 200T'}</span>
                     </div>
-                    <div style={metricValue('#BF5AF2')}>{f(item.val, 2)}%</div>
-                  </div>
-                </TT>
+                  )}
+                  {aboveMA === null && <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>{item.sub}</div>}
+                </div>
               );
             })}
-          </div>
-          {/* 10Y–2Y Spread */}
-          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <TT id="yieldSpread">
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>10Y – 2Y Spread</span>
-                <span style={{ fontSize: '15px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: (y.y10 - y.y2) < 0 ? '#FF453A' : (y.y10 - y.y2) < 0.5 ? '#FF9F0A' : '#30D158' }}>
-                  {(y.y10 - y.y2) >= 0 ? '+' : ''}{f(y.y10 - y.y2, 2)}%
-                </span>
-                {(y.y10 - y.y2) < 0 && <span style={{ fontSize: '9px', color: '#FF453A', opacity: 0.7 }}>⚠ invertiert</span>}
-              </div>
-            </TT>
-          </div>
-        </div>
-
-        {/* Put/Call */}
-        <div style={glass}>
-          <div style={sectionLabel}>Put/Call Ratios</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-            <TT id="equityPC">
-              <div style={metricLabel}>Equity</div>
-              <div style={metricValue(v.equityPutCall < 0.7 ? '#30D158' : v.equityPutCall > 1.0 ? '#FF453A' : '#FFCC00')}>
-                {f(v.equityPutCall, 2)}
-              </div>
-            </TT>
-            <TT id="totalPC">
-              <div style={metricLabel}>Total</div>
-              <div style={metricValue(v.totalPutCall < 1.0 ? '#30D158' : '#FF453A')}>
-                {f(v.totalPutCall, 2)}
-              </div>
-            </TT>
           </div>
         </div>
       </div>
@@ -1497,53 +1471,22 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           })}
         </div>
       </div>
-
-
-      {/* Aktienindizes */}
-      <div style={{ ...glass, marginTop: '8px' }}>
-        <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Aktienindizes</div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-          {[
-            { label: 'S&P 500',      val: idx.spx, ma200: idx.spx200d, url: 'https://www.tradingview.com/symbols/SP-SPX/?interval=D',      sub: 'SPX' },
-            { label: 'Nasdaq 100',   val: idx.ndx, ma200: idx.ndx200d, url: 'https://www.tradingview.com/symbols/NASDAQ-NDX/?interval=D',   sub: 'NDX' },
-            { label: 'Russell 2000', val: idx.rut, ma200: null,        url: 'https://www.tradingview.com/symbols/TVC-RUT/?interval=D',      sub: 'RUT' },
-          ].map((item, i) => {
-            const aboveMA = item.ma200 ? item.val > item.ma200 : null;
-            return (
-              <div key={i}
-                onClick={() => window.open(item.url, '_blank')}
-                style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>{item.label} <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-                <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
-                  {item.val ? item.val.toLocaleString('de-DE', {maximumFractionDigits: 0}) : '—'}
-                </div>
-                {aboveMA !== null && (
-                  <div style={{ marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '2px 7px', borderRadius: '5px',
-                    background: aboveMA ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)',
-                    border: `0.5px solid ${aboveMA ? 'rgba(48,209,88,0.25)' : 'rgba(255,69,58,0.25)'}`,
-                  }}>
-                    <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
-                      {aboveMA
-                        ? <polyline points="1,7 5,3 9,7" stroke="#30D158" strokeWidth="1.5" strokeLinecap="round"/>
-                        : <polyline points="1,3 5,7 9,3" stroke="#FF453A" strokeWidth="1.5" strokeLinecap="round"/>
-                      }
-                    </svg>
-                    <span style={{ fontSize: '9px', fontWeight: 600, color: aboveMA ? '#30D158' : '#FF453A' }}>
-                      {aboveMA ? 'über 200T' : 'unter 200T'}
-                    </span>
-                  </div>
-                )}
-                {aboveMA === null && (
-                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>{item.sub}</div>
-                )}
-              </div>
-            );
-          })}
+      {/* Put/Call Ratios */}
+      <div style={{ ...glass, marginTop: '8px', marginBottom: '8px' }}>
+        <div style={sectionLabel}>Put/Call Ratios</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <TT id="equityPC">
+            <div style={metricLabel}>Equity</div>
+            <div style={metricValue(v.equityPutCall < 0.7 ? '#30D158' : v.equityPutCall > 1.0 ? '#FF453A' : '#FFCC00')}>
+              {f(v.equityPutCall, 2)}
+            </div>
+          </TT>
+          <TT id="totalPC">
+            <div style={metricLabel}>Total</div>
+            <div style={metricValue(v.totalPutCall < 1.0 ? '#30D158' : '#FF453A')}>
+              {f(v.totalPutCall, 2)}
+            </div>
+          </TT>
         </div>
       </div>
 
