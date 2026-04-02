@@ -618,6 +618,9 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   // ── Profil-Management ──
   const [profiles, setProfiles]             = useState([]);
   const [activeProfileId, setActiveProfileId] = useState(null);
+  const [defaultPresetId, setDefaultPresetId] = useState(() => {
+    try { return localStorage.getItem('volafly_default_preset') || null; } catch { return null; }
+  });
   const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
@@ -818,10 +821,29 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     if (!error && data && data.length > 0) {
       setProfiles(data);
       const defaultProfile = data.find(p => p.is_default) || data[0];
-      // Merge: alte Profile haben neue Keys noch nicht — mit defaultThresholds auffüllen
       const merged = { ...defaultThresholds, ...defaultProfile.thresholds };
       setThresholds(merged);
       setActiveProfileId(defaultProfile.id);
+    } else {
+      // No saved profiles — load default preset if set
+      try {
+        const pid = localStorage.getItem('volafly_default_preset');
+        if (pid) {
+          const tpl = PRESET_TEMPLATES.find(t => t.id === pid);
+          if (tpl) {
+            const n = tpl.classes.length;
+            const adj = Object.fromEntries(Object.entries(defaultThresholds).map(([key, cfg]) => [key, { ...cfg, active: !!(tpl.thresholds[key]) }]));
+            const eq = computeEqualWeights(adj);
+            const sized = Object.fromEntries(Object.entries(eq).map(([key, cfg]) => {
+              const vals = [...cfg.values];
+              while (vals.length < n - 1) vals.push(vals[vals.length-1] ?? 0);
+              return [key, { ...cfg, values: vals.slice(0, n-1) }];
+            }));
+            setVolaClasses(tpl.classes);
+            setThresholds(sized);
+          }
+        }
+      } catch {}
     }
   };
 
@@ -2444,56 +2466,119 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               {/* ── TAB: Templates ── */}
               {configTab === 'templates' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {PRESET_TEMPLATES.map(tpl => (
-                    <div key={tpl.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.02)' }}>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7', marginBottom: '3px' }}>{tpl.name}</div>
-                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4 }}>{tpl.desc}</div>
-                        {/* Class color dots */}
-                        <div style={{ display: 'flex', gap: '4px', marginTop: '8px' }}>
-                          {tpl.classes.map((c, i) => (
-                            <div key={i} title={c.label} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: c.color, flexShrink: 0 }} />
-                              <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{c.label}</span>
+                  {/* Section: Vorgefertigte Templates */}
+                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '2px' }}>Vorgefertigte Konfigurationen</div>
+                  {PRESET_TEMPLATES.map(tpl => {
+                    const isDefault = defaultPresetId === tpl.id;
+                    return (
+                      <div key={tpl.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', borderRadius: '12px', border: `0.5px solid ${isDefault ? 'rgba(10,132,255,0.3)' : 'rgba(255,255,255,0.07)'}`, background: isDefault ? 'rgba(10,132,255,0.05)' : 'rgba(255,255,255,0.02)' }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7' }}>{tpl.name}</span>
+                            {isDefault && <span style={{ fontSize: '9px', fontWeight: 700, color: '#0A84FF', background: 'rgba(10,132,255,0.15)', padding: '1px 6px', borderRadius: '5px', textTransform: 'uppercase', letterSpacing: '.04em' }}>Standard</span>}
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4, marginBottom: '7px' }}>{tpl.desc}</div>
+                          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                            {tpl.classes.map((c, i) => (
+                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: c.color }} />
+                                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{c.label}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flexShrink: 0 }}>
+                          <button
+                            onClick={() => {
+                              const n = tpl.classes.length;
+                              const adj = Object.fromEntries(Object.entries(defaultThresholds).map(([key, cfg]) => [key, { ...cfg, active: !!(tpl.thresholds[key]) }]));
+                              const eq = computeEqualWeights(adj);
+                              const sized = Object.fromEntries(Object.entries(eq).map(([key, cfg]) => {
+                                const vals = [...cfg.values];
+                                while (vals.length < n - 1) vals.push(vals[vals.length-1] ?? 0);
+                                return [key, { ...cfg, values: vals.slice(0, n-1) }];
+                              }));
+                              setVolaClasses(tpl.classes);
+                              setDraftVolaClasses(JSON.parse(JSON.stringify(tpl.classes)));
+                              setThresholds(sized);
+                              setDraftThresholds(JSON.parse(JSON.stringify(sized)));
+                              setValidationErrors({});
+                              setInputTexts({});
+                              setConfigTab('thresholds');
+                            }}
+                            style={{ padding: '6px 12px', borderRadius: '8px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: '#0A84FF', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                            onMouseEnter={e => e.currentTarget.style.background='rgba(10,132,255,0.18)'}
+                            onMouseLeave={e => e.currentTarget.style.background='rgba(10,132,255,0.08)'}>
+                            Laden →
+                          </button>
+                          <button
+                            onClick={() => {
+                              const newId = isDefault ? null : tpl.id;
+                              setDefaultPresetId(newId);
+                              try { if (newId) localStorage.setItem('volafly_default_preset', newId); else localStorage.removeItem('volafly_default_preset'); } catch {}
+                            }}
+                            style={{ padding: '5px 8px', borderRadius: '8px', border: `0.5px solid ${isDefault ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)'}`, background: 'transparent', color: isDefault ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', textAlign: 'center' }}
+                            onMouseEnter={e => { e.currentTarget.style.color='#F5F5F7'; e.currentTarget.style.borderColor='rgba(255,255,255,0.25)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color=isDefault?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor=isDefault?'rgba(255,255,255,0.15)':'rgba(255,255,255,0.08)'; }}>
+                            {isDefault ? '★ Standard' : '☆ Als Standard'}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Section: Eigenes Risikomanagement */}
+                  {profiles.length > 0 && (
+                    <>
+                      <div style={{ marginTop: '8px', paddingTop: '14px', borderTop: '0.5px solid rgba(255,255,255,0.07)' }}>
+                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '8px' }}>Eigenes Risikomanagement</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          {profiles.map(p => (
+                            <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', borderRadius: '10px', border: `0.5px solid ${p.is_default ? 'rgba(48,209,88,0.3)' : 'rgba(255,255,255,0.07)'}`, background: p.is_default ? 'rgba(48,209,88,0.04)' : 'rgba(255,255,255,0.02)' }}>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <span style={{ fontSize: '13px', fontWeight: 600, color: '#F5F5F7' }}>{p.name}</span>
+                                  {p.is_default && <span style={{ fontSize: '9px', fontWeight: 700, color: '#30D158', background: 'rgba(48,209,88,0.12)', padding: '1px 6px', borderRadius: '5px', textTransform: 'uppercase', letterSpacing: '.04em' }}>Standard</span>}
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
+                                <button
+                                  onClick={() => {
+                                    const merged = { ...defaultThresholds, ...p.thresholds };
+                                    setThresholds(merged);
+                                    setDraftThresholds(computeEqualWeights(JSON.parse(JSON.stringify(merged))));
+                                    setActiveProfileId(p.id);
+                                    setValidationErrors({});
+                                    setInputTexts({});
+                                    setConfigTab('thresholds');
+                                    setShowConfig(false);
+                                  }}
+                                  style={{ padding: '5px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                                  onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
+                                  onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.5)'; }}>
+                                  Laden
+                                </button>
+                                {!p.is_default && (
+                                  <button
+                                    onClick={() => setDefaultProfile(p.id)}
+                                    style={{ padding: '5px 10px', borderRadius: '8px', border: '0.5px solid rgba(48,209,88,0.2)', background: 'rgba(48,209,88,0.06)', color: '#30D158', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                                    onMouseEnter={e => e.currentTarget.style.background='rgba(48,209,88,0.14)'}
+                                    onMouseLeave={e => e.currentTarget.style.background='rgba(48,209,88,0.06)'}>
+                                    Als Standard
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           ))}
                         </div>
                       </div>
-                      <button
-                        onClick={() => {
-                          const newClasses = tpl.classes;
-                          const n = newClasses.length;
-                          // Build adjusted thresholds: activate only template's indicators, deactivate rest
-                          const adjusted = Object.fromEntries(Object.entries(defaultThresholds).map(([key, cfg]) => {
-                            const active = !!(tpl.thresholds[key]);
-                            return [key, { ...cfg, active }];
-                          }));
-                          const equalized = computeEqualWeights(adjusted);
-                          // Trim/pad values to n-1
-                          const sized = Object.fromEntries(Object.entries(equalized).map(([key, cfg]) => {
-                            const vals = [...cfg.values];
-                            while (vals.length < n - 1) vals.push(vals[vals.length - 1] ?? 0);
-                            return [key, { ...cfg, values: vals.slice(0, n - 1) }];
-                          }));
-                          setVolaClasses(newClasses);
-                          setDraftVolaClasses(JSON.parse(JSON.stringify(newClasses)));
-                          setThresholds(sized);
-                          setDraftThresholds(JSON.parse(JSON.stringify(sized)));
-                          setValidationErrors({});
-                          setInputTexts({});
-                          setConfigTab('thresholds');
-                        }}
-                        style={{ padding: '7px 14px', borderRadius: '10px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: '#0A84FF', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', flexShrink: 0 }}
-                        onMouseEnter={e => e.currentTarget.style.background='rgba(10,132,255,0.18)'}
-                        onMouseLeave={e => e.currentTarget.style.background='rgba(10,132,255,0.08)'}>
-                        Laden →
-                      </button>
+                    </>
+                  )}
+                  {profiles.length === 0 && (
+                    <div style={{ marginTop: '8px', paddingTop: '14px', borderTop: '0.5px solid rgba(255,255,255,0.07)', fontSize: '11px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: '16px' }}>
+                      Eigene Konfigurationen erscheinen hier — speichere eine über den Risikomanagement-Bereich.
                     </div>
-                  ))}
-                  {/* Save current as template hint */}
-                  <div style={{ marginTop: '8px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>Eigene Konfiguration als Template → kommt bald</span>
-                  </div>
+                  )}
                 </div>
               )}
 
