@@ -2750,10 +2750,10 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               ))} {/* end thresholds tab */}
 
 
-              {/* Global error summary — only in thresholds tab */}
-              {configTab === 'thresholds' && Object.keys(validationErrors).length > 0 && (
+              {/* Global error summary — only active indicators */}
+              {configTab === 'thresholds' && Object.entries(validationErrors).filter(([k]) => draftThresholds[k]?.active !== false).length > 0 && (
                 <div style={{ marginTop: '12px', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.2)', fontSize: '11px', color: '#FF453A', lineHeight: 1.5 }}>
-                  {Object.values(validationErrors).map((msg, i) => <div key={i}>• {msg}</div>)}
+                  {Object.entries(validationErrors).filter(([k]) => draftThresholds[k]?.active !== false).map(([k, msg], i) => <div key={i}>• {msg}</div>)}
                 </div>
               )}
 
@@ -2827,8 +2827,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                         setShowConfig(false);
                       }
                     }}
-                    style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer', background: Object.keys(validationErrors).length > 0 ? 'rgba(255,255,255,0.06)' : '#0A84FF', color: Object.keys(validationErrors).length > 0 ? 'rgba(255,255,255,0.3)' : '#fff', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit' }}
-                    onMouseEnter={e => { if (!Object.keys(validationErrors).length) e.currentTarget.style.opacity='0.85'; }}
+                    style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                      background: Object.entries(validationErrors).filter(([k]) => draftThresholds[k]?.active !== false).length > 0 ? 'rgba(255,255,255,0.06)' : '#0A84FF',
+                      color: Object.entries(validationErrors).filter(([k]) => draftThresholds[k]?.active !== false).length > 0 ? 'rgba(255,255,255,0.3)' : '#fff',
+                      fontSize: '14px', fontWeight: 600, fontFamily: 'inherit' }}
+                    onMouseEnter={e => { if (!Object.entries(validationErrors).filter(([k]) => draftThresholds[k]?.active !== false).length) e.currentTarget.style.opacity='0.85'; }}
                     onMouseLeave={e => e.currentTarget.style.opacity='1'}>
                     Grenzwerte speichern
                   </button>
