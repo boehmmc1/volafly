@@ -502,6 +502,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   }, []);
   const [showConfig, setShowConfig] = useState(false);
   const [configTab, setConfigTab] = useState('thresholds');
+  const [pendingColors, setPendingColors] = useState({});
   const [showInfo, setShowInfo] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
     try { return !localStorage.getItem('volafly_onboarded_v2'); } catch { return true; }
@@ -2402,9 +2403,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               </div>
 
               {/* ── TAB: Klassen ── */}
-              {configTab === 'classes' && (() => {
-                const [pendingColors, setPendingColors] = React.useState({});
-                return (
+              {configTab === 'classes' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                   {/* Header row */}
                   <div style={{ display: 'grid', gridTemplateColumns: '16px 28px 1fr 80px 32px', gap: '8px', alignItems: 'center', padding: '0 4px 8px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
@@ -2506,7 +2505,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                     Die letzte Klasse gilt für alle Werte oberhalb des letzten Grenzwerts. Reihenfolge = aufsteigend von Stille zu Panik.
                   </div>
                 </div>
-              );})()}
+              )}
 
               {/* ── TAB: Grenzwerte ── */}
               {configTab === 'thresholds' && (isMobile ? (
