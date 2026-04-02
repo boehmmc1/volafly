@@ -621,6 +621,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [defaultPresetId, setDefaultPresetId] = useState(() => {
     try { return localStorage.getItem('volafly_default_preset') || null; } catch { return null; }
   });
+  const [activeTemplateId, setActiveTemplateId] = useState(null);
   const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
@@ -826,6 +827,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     }));
     setVolaClasses(tpl.classes);
     setThresholds(sized);
+    setActiveTemplateId(pid);
   };
 
   const loadProfiles = async () => {
@@ -1294,11 +1296,14 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const currentClass = volaClasses[overallLevel - 1];
   // Derive active template name for display
   const activeTemplateName = (() => {
-    const pid = defaultPresetId;
-    if (pid) { const t = PRESET_TEMPLATES.find(x => x.id === pid); if (t) return t.name; }
-    const ap = profiles.find(p => p.id === activeProfileId);
-    if (ap) return ap.name;
-    return null;
+    if (!activeTemplateId) return null;
+    if (activeTemplateId.startsWith('profile-')) {
+      const pid = activeTemplateId.replace('profile-', '');
+      const p = profiles.find(x => x.id === pid);
+      return p ? p.name : null;
+    }
+    const t = PRESET_TEMPLATES.find(x => x.id === activeTemplateId);
+    return t ? t.name : null;
   })();
 
   // Distribution
@@ -1866,7 +1871,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 {currentClass.label}
               </div>
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>
-                {currentClass.subtitle || currentClass.label}
+                {currentClass.subtitle || null}
               </div>
             </div>
 
@@ -1931,7 +1936,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               transition: 'background 0.4s ease',
             }} />
             <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
-              {currentClass.desc || `${currentClass.label}: Investitionsgrad bis zu ${currentClass.investPct}% ist angemessen.`}
+              {currentClass.desc || null}
             </div>
           </div>
 
@@ -2532,6 +2537,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                               setDraftThresholds(JSON.parse(JSON.stringify(sized)));
                               setValidationErrors({});
                               setInputTexts({});
+                              setActiveTemplateId(tpl.id);
                               setConfigTab('thresholds');
                             }}
                             style={{ padding: '6px 12px', borderRadius: '8px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: '#0A84FF', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
@@ -2576,6 +2582,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                                     setThresholds(merged);
                                     setDraftThresholds(computeEqualWeights(JSON.parse(JSON.stringify(merged))));
                                     setActiveProfileId(p.id);
+                                    setActiveTemplateId(`profile-${p.id}`);
                                     setValidationErrors({});
                                     setInputTexts({});
                                     setConfigTab('thresholds');
@@ -3008,6 +3015,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       const equalized = computeEqualWeights(adjusted);
                       setDraftThresholds(equalized);
                       setThresholds(JSON.parse(JSON.stringify(equalized)));
+                      setActiveTemplateId(null);
                       setConfigTab('thresholds');
                     }}
                     style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer', background: '#0A84FF', color: '#fff', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit' }}
@@ -3038,6 +3046,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       if (activeW !== 100) { alert(`Gewichtungssumme ist ${activeW}% — muss genau 100% ergeben.`); return; }
                       if (validateAll(draftThresholds)) {
                         setThresholds(JSON.parse(JSON.stringify(draftThresholds)));
+                        setActiveTemplateId(null);
                         setShowConfig(false);
                       }
                     }}
