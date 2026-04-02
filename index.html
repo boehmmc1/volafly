@@ -1469,22 +1469,20 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               </TT>
             );
           })}
-        </div>
-      </div>
-      {/* Put/Call Ratios */}
-      <div style={{ ...glass, marginTop: '8px', marginBottom: '8px' }}>
-        <div style={sectionLabel}>Put/Call Ratios</div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          {/* Divider */}
+          <div style={{ width: '0.5px', background: 'rgba(255,255,255,0.08)', margin: '4px 0', alignSelf: 'stretch' }} />
+          {/* Equity P/C */}
           <TT id="equityPC">
-            <div style={metricLabel}>Equity</div>
-            <div style={metricValue(v.equityPutCall < 0.7 ? '#30D158' : v.equityPutCall > 1.0 ? '#FF453A' : '#FFCC00')}>
-              {f(v.equityPutCall, 2)}
+            <div style={{ textAlign: 'center', padding: '8px 4px', borderRadius: '8px' }}>
+              <div style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: '4px' }}>Equity P/C</div>
+              <div style={metricValue(v.equityPutCall < 0.7 ? '#30D158' : v.equityPutCall > 1.0 ? '#FF453A' : '#FFCC00')}>{f(v.equityPutCall, 2)}</div>
             </div>
           </TT>
+          {/* Total P/C */}
           <TT id="totalPC">
-            <div style={metricLabel}>Total</div>
-            <div style={metricValue(v.totalPutCall < 1.0 ? '#30D158' : '#FF453A')}>
-              {f(v.totalPutCall, 2)}
+            <div style={{ textAlign: 'center', padding: '8px 4px', borderRadius: '8px' }}>
+              <div style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: '4px' }}>Total P/C</div>
+              <div style={metricValue(v.totalPutCall < 1.0 ? '#30D158' : '#FF453A')}>{f(v.totalPutCall, 2)}</div>
             </div>
           </TT>
         </div>
@@ -1507,15 +1505,17 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             const allVals = [v.vix, v.vx1, v.vx2, v.vx3, v.vx4, v.vx5];
             const rawMin = Math.min(...allVals);
             const rawMax = Math.max(...allVals);
-            const pad = (rawMax - rawMin) * 0.2 || 2;
-            const yMin = Math.floor((rawMin - pad) / 2) * 2;
-            const yMax = Math.ceil((rawMax + pad) / 2) * 2;
+            const range = rawMax - rawMin || 1;
+            const pad = Math.max(range * 0.25, 0.5);
+            const niceStep = range < 3 ? 0.5 : range < 8 ? 1 : 2;
+            const yMin = Math.floor((rawMin - pad) / niceStep) * niceStep;
+            const yMax = Math.ceil((rawMax + pad) / niceStep) * niceStep;
             const yRange = yMax - yMin;
             const chartH = 180;
             const yBase = 215;
             const toY = (val) => yBase - ((val - yMin) / yRange) * chartH;
-            // nice grid lines: ~5 steps
-            const step = Math.ceil(yRange / 5 / 2) * 2 || 2;
+            // nice grid lines: ~4-5 steps
+            const step = niceStep;
             const gridVals = [];
             for (let g = Math.ceil(yMin / step) * step; g <= yMax; g += step) gridVals.push(g);
             return (
