@@ -511,26 +511,20 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   // ── Editable Thresholds Config ──
   // range: [min, max] allowed for each indicator's thresholds
   const defaultThresholds = {
-    vix:          { label: 'VIX',             values: [15, 20, 30, 40],         dir: 'asc',  range: [0, 100] },
-    vvix:         { label: 'VVIX',            values: [85, 100, 120, 140],      dir: 'asc',  range: [0, 250] },
-    vixVxv:       { label: 'VIX/VXV',         values: [0.85, 0.95, 1.00, 1.10], dir: 'asc',  range: [0.3, 2.0] },
-    vxn:          { label: 'VXN',             values: [18, 23, 33, 43],         dir: 'asc',  range: [0, 100] },
-    rvx:          { label: 'RVX',             values: [18, 23, 30, 40],         dir: 'asc',  range: [0, 100] },
-    fearGreed:    { label: 'Fear & Greed',    values: [75, 55, 35, 20],         dir: 'desc', range: [0, 100] },
-    equityPutCall:{ label: 'Equity P/C',      values: [0.60, 0.75, 0.95, 1.10], dir: 'asc',  range: [0, 3.0] },
-    vx1Spread:    { label: 'VX1 – VIX Spot',  values: [2.0, 0.5, -0.5, -2.0],  dir: 'desc', range: [-15, 15] },
-    vx2Spread:    { label: 'VX2 – VX1',       values: [1.0, 0.3, -0.3, -1.0],  dir: 'desc', range: [-10, 10] },
-    // ── Neue Indikatoren ──
-    // HY Spread: Allzeittief 2,41% (2007), GFC-Peak 21,82% (2008), COVID-Peak 10,87% (2020)
-    hySpread:     { label: 'HY Credit Spread', values: [3.0, 4.0, 5.5, 8.0],   dir: 'asc',  range: [0, 25] },
-    // DXY: COVID-Spike 103, 2022 Fed-Peak 114,78 — hoher DXY = Risk-Off = höhere Klasse
-    dxy:          { label: 'DXY',              values: [94, 99, 104, 109],       dir: 'asc',  range: [70, 130] },
-    // Gold/SP: 2021 Bull-Peak 0,37 — COVID-Panik 0,65 — GFC 1,14
-    goldSP:       { label: 'Gold/S&P',         values: [0.35, 0.45, 0.55, 0.70], dir: 'asc',  range: [0.1, 2.0] },
-    // WTI: <60 = Rezessionssorge, 60-80 = normal, 80-100 = erhöht, >100 = Schock
-    wti:          { label: 'WTI Öl',           values: [60, 80, 100, 120],       dir: 'asc',  range: [20, 200] },
-    // 10Y-2Y Spread: negativ = invertiert = Rezessionsindikator (dir: desc = tiefer Wert = mehr Stress)
-    yieldSpread:  { label: '10Y–2Y Spread',    values: [1.5, 0.5, 0.0, -0.5],   dir: 'desc', range: [-3, 4] },
+    vix:          { label: 'VIX',             values: [15, 20, 30, 40],         dir: 'asc',  range: [0, 100],   weight: 10, active: true },
+    vvix:         { label: 'VVIX',            values: [85, 100, 120, 140],      dir: 'asc',  range: [0, 250],   weight: 7,  active: true },
+    vixVxv:       { label: 'VIX/VXV',         values: [0.85, 0.95, 1.00, 1.10], dir: 'asc',  range: [0.3, 2.0], weight: 8,  active: true },
+    vxn:          { label: 'VXN',             values: [18, 23, 33, 43],         dir: 'asc',  range: [0, 100],   weight: 6,  active: true },
+    rvx:          { label: 'RVX',             values: [18, 23, 30, 40],         dir: 'asc',  range: [0, 100],   weight: 6,  active: true },
+    fearGreed:    { label: 'Fear & Greed',    values: [75, 55, 35, 20],         dir: 'desc', range: [0, 100],   weight: 15, active: true },
+    equityPutCall:{ label: 'Equity P/C',      values: [0.60, 0.75, 0.95, 1.10], dir: 'asc',  range: [0, 3.0],   weight: 10, active: true },
+    vx1Spread:    { label: 'VX1 – VIX Spot',  values: [2.0, 0.5, -0.5, -2.0],  dir: 'desc', range: [-15, 15],  weight: 8,  active: true },
+    vx2Spread:    { label: 'VX2 – VX1',       values: [1.0, 0.3, -0.3, -1.0],  dir: 'desc', range: [-10, 10],  weight: 6,  active: true },
+    hySpread:     { label: 'HY Credit Spread', values: [3.0, 4.0, 5.5, 8.0],   dir: 'asc',  range: [0, 25],    weight: 10, active: true },
+    dxy:          { label: 'DXY',              values: [94, 99, 104, 109],       dir: 'asc',  range: [70, 130],  weight: 6,  active: true },
+    goldSP:       { label: 'Gold/S&P',         values: [0.35, 0.45, 0.55, 0.70], dir: 'asc', range: [0.1, 2.0], weight: 4,  active: true },
+    wti:          { label: 'WTI Öl',           values: [60, 80, 100, 120],       dir: 'asc',  range: [20, 200],  weight: 4,  active: true },
+    yieldSpread:  { label: '10Y–2Y Spread',    values: [1.5, 0.5, 0.0, -0.5],   dir: 'desc', range: [-3, 4],    weight: 10, active: true },
   };
   const [thresholds, setThresholds] = useState(defaultThresholds);
   const [draftThresholds, setDraftThresholds] = useState(defaultThresholds);
@@ -1172,24 +1166,26 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
   // Individual indicator assessments
   const indicators = [
-    { group: 'Volatilität', label: 'VIX', level: classifyFromConfig('vix', v.vix), value: f(v.vix) },
-    { group: 'Volatilität', label: 'RVX', level: classifyFromConfig('rvx', v.rvx), value: f(v.rvx) },
-    { group: 'Volatilität', label: 'VXN', level: classifyFromConfig('vxn', v.vxn), value: f(v.vxn) },
-    { group: 'Volatilität', label: 'VVIX', level: classifyFromConfig('vvix', v.vvix), value: f(v.vvix) },
-    { group: 'Struktur', label: 'VIX/VXV', level: classifyFromConfig('vixVxv', vixRatio), value: f(vixRatio, 3) },
-    { group: 'Struktur', label: 'VX1 – VIX Spot', level: classifyFromConfig('vx1Spread', vx1Spread), value: (vx1Spread >= 0 ? '+' : '') + f(vx1Spread, 2) },
-    { group: 'Struktur', label: 'VX2 – VX1', level: classifyFromConfig('vx2Spread', vx2Spread), value: (vx2Spread >= 0 ? '+' : '') + f(vx2Spread, 2) },
-    { group: 'Sentiment', label: 'Fear & Greed', level: classifyFromConfig('fearGreed', v.fearGreed), value: String(v.fearGreed) },
-    { group: 'Sentiment', label: 'Equity P/C', level: classifyFromConfig('equityPutCall', v.equityPutCall), value: f(v.equityPutCall, 2) },
-    { group: 'Kapitalfluss', label: 'HY Credit Spread', level: classifyFromConfig('hySpread', ri.hySpread), value: f(ri.hySpread, 2) + '%' },
-    { group: 'Kapitalfluss', label: 'DXY', level: classifyFromConfig('dxy', ri.dxy), value: f(ri.dxy, 1) },
-    { group: 'Kapitalfluss', label: 'Gold/S&P', level: classifyFromConfig('goldSP', ri.goldSP), value: f(ri.goldSP, 3) },
-    { group: 'Kapitalfluss', label: 'WTI Öl', level: classifyFromConfig('wti', ri.wti), value: '$' + f(ri.wti, 1) },
-    { group: 'Zinsen', label: '10Y–2Y Spread', level: classifyFromConfig('yieldSpread', y.y10 - y.y2), value: (y.y10 - y.y2 >= 0 ? '+' : '') + f(y.y10 - y.y2, 2) + '%' },
-  ].filter(ind => ind.level !== null);
+    { group: 'Volatilität', label: 'VIX', key: 'vix', level: classifyFromConfig('vix', v.vix), value: f(v.vix) },
+    { group: 'Volatilität', label: 'RVX', key: 'rvx', level: classifyFromConfig('rvx', v.rvx), value: f(v.rvx) },
+    { group: 'Volatilität', label: 'VXN', key: 'vxn', level: classifyFromConfig('vxn', v.vxn), value: f(v.vxn) },
+    { group: 'Volatilität', label: 'VVIX', key: 'vvix', level: classifyFromConfig('vvix', v.vvix), value: f(v.vvix) },
+    { group: 'Struktur', label: 'VIX/VXV', key: 'vixVxv', level: classifyFromConfig('vixVxv', vixRatio), value: f(vixRatio, 3) },
+    { group: 'Struktur', label: 'VX1 – VIX Spot', key: 'vx1Spread', level: classifyFromConfig('vx1Spread', vx1Spread), value: (vx1Spread >= 0 ? '+' : '') + f(vx1Spread, 2) },
+    { group: 'Struktur', label: 'VX2 – VX1', key: 'vx2Spread', level: classifyFromConfig('vx2Spread', vx2Spread), value: (vx2Spread >= 0 ? '+' : '') + f(vx2Spread, 2) },
+    { group: 'Sentiment', label: 'Fear & Greed', key: 'fearGreed', level: classifyFromConfig('fearGreed', v.fearGreed), value: String(v.fearGreed) },
+    { group: 'Sentiment', label: 'Equity P/C', key: 'equityPutCall', level: classifyFromConfig('equityPutCall', v.equityPutCall), value: f(v.equityPutCall, 2) },
+    { group: 'Kapitalfluss', label: 'HY Credit Spread', key: 'hySpread', level: classifyFromConfig('hySpread', ri.hySpread), value: f(ri.hySpread, 2) + '%' },
+    { group: 'Kapitalfluss', label: 'DXY', key: 'dxy', level: classifyFromConfig('dxy', ri.dxy), value: f(ri.dxy, 1) },
+    { group: 'Kapitalfluss', label: 'Gold/S&P', key: 'goldSP', level: classifyFromConfig('goldSP', ri.goldSP), value: f(ri.goldSP, 3) },
+    { group: 'Kapitalfluss', label: 'WTI Öl', key: 'wti', level: classifyFromConfig('wti', ri.wti), value: '$' + f(ri.wti, 1) },
+    { group: 'Zinsen', label: '10Y–2Y Spread', key: 'yieldSpread', level: classifyFromConfig('yieldSpread', y.y10 - y.y2), value: (y.y10 - y.y2 >= 0 ? '+' : '') + f(y.y10 - y.y2, 2) + '%' },
+  ].filter(ind => ind.level !== null && (thresholds[ind.key]?.active !== false));
 
   // Weighted average → overall vola class
-  const avgLevel = indicators.length > 0 ? indicators.reduce((sum, ind) => sum + ind.level, 0) / indicators.length : 1;
+  const totalWeight = indicators.reduce((sum, ind) => sum + (thresholds[ind.key]?.weight ?? 1), 0) || 1;
+  const weightedSum = indicators.reduce((sum, ind) => sum + ind.level * (thresholds[ind.key]?.weight ?? 1), 0);
+  const avgLevel = indicators.length > 0 ? weightedSum / totalWeight : 1;
   const overallLevel = Math.min(5, Math.max(1, Math.round(avgLevel)));
   const currentClass = volaClasses[overallLevel - 1];
 
@@ -2408,79 +2404,68 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               ) : (
                 /* ── Desktop: Tabelle ── */
                 <>
-              <div style={{ display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 80px 60px', gap: '6px', marginBottom: '2px', padding: '0 4px' }}>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Indikator</div>
-                {volaClasses.slice(0, 4).map((vc, i) => (
-                  <div key={i} style={{ fontSize: '9px', color: vc.color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {vc.label}
+              {/* Weight summary bar */}
+              {(() => {
+                const activeEntries = Object.entries(draftThresholds).filter(([,c]) => c.active !== false);
+                const totalW = activeEntries.reduce((s,[,c]) => s + (c.weight||0), 0);
+                const ok = totalW === 100;
+                return (
+                  <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px', padding:'8px 12px', borderRadius:'10px', background: ok ? 'rgba(48,209,88,0.06)' : 'rgba(255,159,10,0.06)', border:`0.5px solid ${ok ? 'rgba(48,209,88,0.2)' : 'rgba(255,159,10,0.2)'}` }}>
+                    <span style={{ fontSize:'11px', color:'rgba(255,255,255,0.4)' }}>Gewichtungssumme aktiver Indikatoren:</span>
+                    <span style={{ fontSize:'13px', fontWeight:700, color: ok ? '#30D158' : '#FF9F0A' }}>{totalW}%</span>
+                    {!ok && <span style={{ fontSize:'10px', color:'#FF9F0A', marginLeft:'4px' }}>→ muss 100% ergeben</span>}
                   </div>
+                );
+              })()}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '130px 44px repeat(4, 1fr) 70px 54px 32px', gap: '5px', marginBottom: '2px', padding: '0 4px' }}>
+                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Indikator</div>
+                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gew.</div>
+                {volaClasses.slice(0, 4).map((vc, i) => (
+                  <div key={i} style={{ fontSize: '9px', color: vc.color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{vc.label}</div>
                 ))}
-                <div style={{ fontSize: '9px', color: volaClasses[4].color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  {volaClasses[4].label}
-                </div>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Richtung</div>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 80px 60px', gap: '6px', marginBottom: '8px', padding: '0 4px' }}>
-                <div/>
-                {['Max-Grenzwert', 'Max-Grenzwert', 'Max-Grenzwert', 'Max-Grenzwert'].map((t, i) => (
-                  <div key={i} style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>{t}</div>
-                ))}
-                <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>alles darüber</div>
+                <div style={{ fontSize: '9px', color: volaClasses[4].color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{volaClasses[4].label}</div>
+                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Richtg.</div>
                 <div/>
               </div>
 
-              {/* Rows */}
-              {Object.entries(draftThresholds).map(([key, cfg]) => {
+              {/* Active rows */}
+              {Object.entries(draftThresholds).filter(([,c]) => c.active !== false).map(([key, cfg]) => {
                 const err = validationErrors[key];
                 const t4 = cfg.values[3];
                 return (
                   <div key={key} style={{
-                    display: 'grid', gridTemplateColumns: '140px repeat(4, 1fr) 80px 60px', gap: '6px',
-                    padding: '8px 4px', borderBottom: `0.5px solid ${err ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`,
-                    alignItems: 'center', position: 'relative',
+                    display: 'grid', gridTemplateColumns: '130px 44px repeat(4, 1fr) 70px 54px 32px', gap: '5px',
+                    padding: '6px 4px', borderBottom: `0.5px solid ${err ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`,
+                    alignItems: 'center',
                   }}>
-                    {/* Label with tooltip */}
-                    <div
-                      style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F7', cursor: 'help', position: 'relative' }}
-                      onMouseEnter={() => setTooltipKey(key)}
-                      onMouseLeave={() => setTooltipKey(null)}
-                    >
-                      {cfg.label}
-                      {err && <span style={{ color: '#FF453A', fontSize: '10px', marginLeft: '4px' }}>!</span>}
-
-                      {/* Tooltip */}
+                    <div style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F7', cursor: 'help', position: 'relative' }}
+                      onMouseEnter={() => setTooltipKey(key)} onMouseLeave={() => setTooltipKey(null)}>
+                      {cfg.label}{err && <span style={{ color: '#FF453A', fontSize: '10px', marginLeft: '4px' }}>!</span>}
                       {tooltipKey === key && (
-                        <div style={{
-                          position: 'absolute', bottom: '100%', left: 0, marginBottom: '6px',
-                          background: '#2C2C2E', border: '0.5px solid rgba(255,255,255,0.12)',
-                          borderRadius: '10px', padding: '8px 12px', zIndex: 10,
-                          minWidth: '180px', boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-                        }}>
+                        <div style={{ position: 'absolute', bottom: '100%', left: 0, marginBottom: '6px', background: '#2C2C2E', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '10px', padding: '8px 12px', zIndex: 10, minWidth: '180px', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}>
                           <div style={{ fontSize: '11px', fontWeight: 600, color: '#F5F5F7', marginBottom: '4px' }}>{cfg.label}</div>
-                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>
-                            Erlaubter Bereich: <span style={{ color: '#0A84FF', fontWeight: 600 }}>
-                              {String(cfg.range[0]).replace('.', ',')} – {String(cfg.range[1]).replace('.', ',')}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', marginTop: '2px' }}>
-                            {cfg.dir === 'asc' ? 'Werte müssen aufsteigend sein' : 'Werte müssen absteigend sein'}
-                          </div>
+                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.4 }}>Bereich: <span style={{ color: '#0A84FF', fontWeight: 600 }}>{String(cfg.range[0]).replace('.', ',')} – {String(cfg.range[1]).replace('.', ',')}</span></div>
                           {err && <div style={{ fontSize: '10px', color: '#FF453A', marginTop: '4px' }}>{err}</div>}
                         </div>
                       )}
                     </div>
-
+                    {/* Weight input */}
+                    <input type="number" min="1" max="100" step="1"
+                      value={cfg.weight ?? 1}
+                      onChange={e => {
+                        const w = Math.max(1, Math.min(100, parseInt(e.target.value) || 1));
+                        setDraftThresholds(prev => ({ ...prev, [key]: { ...prev[key], weight: w } }));
+                      }}
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '5px 4px', fontSize: '12px', fontWeight: 700, color: '#0A84FF', textAlign: 'center', width: '100%', outline: 'none' }}
+                      onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
+                      onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.1)'}
+                    />
                     {cfg.values.map((val, vi) => (
-                      <input
-                        key={vi}
-                        type="text"
-                        value={getInputText(key, vi, val)}
-                        onChange={(e) => {
-                          setInputTexts(prev => ({ ...prev, [`${key}-${vi}`]: e.target.value }));
-                        }}
-                        onBlur={(e) => {
-                          const raw = e.target.value.replace(',', '.');
-                          const num = parseFloat(raw);
+                      <input key={vi} type="text" value={getInputText(key, vi, val)}
+                        onChange={e => setInputTexts(prev => ({ ...prev, [`${key}-${vi}`]: e.target.value }))}
+                        onBlur={e => {
+                          const num = parseFloat(e.target.value.replace(',', '.'));
                           if (!isNaN(num)) {
                             setDraftThresholds(prev => {
                               const next = { ...prev };
@@ -2489,54 +2474,51 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                               return next;
                             });
                           }
-                          setInputTexts(prev => {
-                            const copy = { ...prev };
-                            delete copy[`${key}-${vi}`];
-                            return copy;
-                          });
+                          setInputTexts(prev => { const c = { ...prev }; delete c[`${key}-${vi}`]; return c; });
                           e.target.style.borderColor = err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.08)';
                         }}
-                        style={{
-                          background: err ? 'rgba(255,69,58,0.06)' : 'rgba(255,255,255,0.06)',
-                          border: `0.5px solid ${err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.08)'}`,
-                          borderRadius: '8px',
-                          padding: '6px 8px',
-                          fontSize: '13px', fontWeight: 600,
-                          color: '#F5F5F7',
-                          textAlign: 'center',
-                          fontVariantNumeric: 'tabular-nums',
-                          width: '100%',
-                          outline: 'none',
-                        }}
-                        onFocus={e => e.target.style.borderColor = 'rgba(10,132,255,0.5)'}
+                        style={{ background: err ? 'rgba(255,69,58,0.06)' : 'rgba(255,255,255,0.06)', border: `0.5px solid ${err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '8px', padding: '5px 6px', fontSize: '12px', fontWeight: 600, color: '#F5F5F7', textAlign: 'center', width: '100%', outline: 'none' }}
+                        onFocus={e => e.target.style.borderColor='rgba(10,132,255,0.5)'}
                       />
                     ))}
-                    {/* Panik — static, everything beyond t4 */}
-                    <div style={{
-                      textAlign: 'center', fontSize: '11px', fontWeight: 600,
-                      color: volaClasses[4].color,
-                      background: `${volaClasses[4].color}10`,
-                      border: `0.5px solid ${volaClasses[4].color}30`,
-                      borderRadius: '8px', padding: '6px 4px',
-                    }}>
-                      {cfg.dir === 'asc' ? `> ${String(t4).replace('.', ',')}` : `< ${String(t4).replace('.', ',')}`}
+                    <div style={{ textAlign: 'center', fontSize: '10px', fontWeight: 600, color: volaClasses[4].color, background: `${volaClasses[4].color}10`, border: `0.5px solid ${volaClasses[4].color}30`, borderRadius: '8px', padding: '5px 3px' }}>
+                      {cfg.dir === 'asc' ? `>${String(t4).replace('.', ',')}` : `<${String(t4).replace('.', ',')}`}
                     </div>
-                    <div style={{
-                      fontSize: '9px', fontWeight: 600, textAlign: 'center',
-                      color: 'rgba(255,255,255,0.3)',
-                      padding: '4px',
-                      background: 'rgba(255,255,255,0.03)',
-                      borderRadius: '6px',
-                    }}>
+                    <div style={{ fontSize: '9px', fontWeight: 600, textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
                       {cfg.dir === 'asc' ? '↑ steig.' : '↓ fall.'}
                     </div>
+                    {/* Remove button */}
+                    <button onClick={() => setDraftThresholds(prev => ({ ...prev, [key]: { ...prev[key], active: false } }))}
+                      title="Aus Bewertung entfernen"
+                      style={{ width: '26px', height: '26px', borderRadius: '50%', border: 'none', background: 'rgba(255,69,58,0.12)', color: '#FF453A', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit', flexShrink: 0 }}
+                      onMouseEnter={e => e.currentTarget.style.background='rgba(255,69,58,0.25)'}
+                      onMouseLeave={e => e.currentTarget.style.background='rgba(255,69,58,0.12)'}>
+                      ×
+                    </button>
                   </div>
                 );
               })}
 
-              <div style={{ marginTop: '16px', fontSize: '10px', color: 'rgba(255,255,255,0.25)', lineHeight: 1.5 }}>
-                <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↑ steigend:</strong> Werte müssen aufsteigend und unterschiedlich sein<br />
-                <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↓ fallend:</strong> Werte müssen absteigend und unterschiedlich sein
+              {/* Inactive indicators */}
+              {Object.entries(draftThresholds).some(([,c]) => c.active === false) && (
+                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>Nicht aktiv — zum Hinzufügen klicken</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {Object.entries(draftThresholds).filter(([,c]) => c.active === false).map(([key, cfg]) => (
+                      <button key={key}
+                        onClick={() => setDraftThresholds(prev => ({ ...prev, [key]: { ...prev[key], active: true } }))}
+                        style={{ padding: '5px 12px', borderRadius: '20px', border: '0.5px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.45)', fontSize: '11px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '5px' }}
+                        onMouseEnter={e => { e.currentTarget.style.background='rgba(10,132,255,0.1)'; e.currentTarget.style.color='#0A84FF'; e.currentTarget.style.borderColor='rgba(10,132,255,0.3)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.45)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.12)'; }}>
+                        + {cfg.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ marginTop: '12px', fontSize: '10px', color: 'rgba(255,255,255,0.25)', lineHeight: 1.5 }}>
+                <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↑ steigend:</strong> Werte müssen aufsteigend und unterschiedlich sein · <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↓ fallend:</strong> absteigend
               </div>
                 </>
               )} {/* end desktop/mobile branch */}
@@ -2577,6 +2559,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 </button>
                 <button
                   onClick={() => {
+                    const activeW = Object.values(draftThresholds).filter(c => c.active !== false).reduce((s,c) => s + (c.weight||0), 0);
+                    if (activeW !== 100) { alert(`Gewichtungssumme ist ${activeW}% — muss genau 100% ergeben.`); return; }
                     if (validateAll(draftThresholds)) {
                       setThresholds(JSON.parse(JSON.stringify(draftThresholds)));
                       setShowConfig(false);
