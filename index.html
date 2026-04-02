@@ -1397,6 +1397,50 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           </div>
         </div>
 
+        {/* Yields + Spread */}
+        <div style={glass}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+            <div style={sectionLabel}>US Treasuries</div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+            {[
+              { label: '2Y', val: y.y2, id: 'y2' },
+              { label: '10Y', val: y.y10, id: 'y10' },
+              { label: '30Y', val: y.y30, id: 'y30' },
+            ].map((item, i) => {
+              const tvEntry = TV_SYMBOLS[item.id];
+              return (
+                <TT key={i} id={item.id}>
+                  <div
+                    onClick={tvEntry ? () => window.open(tvEntry.tvUrl, '_blank') : undefined}
+                    style={{ cursor: tvEntry ? 'pointer' : 'default', borderRadius: '6px', padding: '4px', transition: 'background 0.15s' }}
+                    onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <div style={{ ...metricLabel, display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      {item.label}
+                      {tvEntry && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>}
+                    </div>
+                    <div style={metricValue('#BF5AF2')}>{f(item.val, 2)}%</div>
+                  </div>
+                </TT>
+              );
+            })}
+          </div>
+          {/* 10Y–2Y Spread */}
+          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <TT id="yieldSpread">
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>10Y – 2Y Spread</span>
+                <span style={{ fontSize: '15px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: (y.y10 - y.y2) < 0 ? '#FF453A' : (y.y10 - y.y2) < 0.5 ? '#FF9F0A' : '#30D158' }}>
+                  {(y.y10 - y.y2) >= 0 ? '+' : ''}{f(y.y10 - y.y2, 2)}%
+                </span>
+                {(y.y10 - y.y2) < 0 && <span style={{ fontSize: '9px', color: '#FF453A', opacity: 0.7 }}>⚠ invertiert</span>}
+              </div>
+            </TT>
+          </div>
+        </div>
+
         {/* Put/Call */}
         <div style={glass}>
           <div style={sectionLabel}>Put/Call Ratios</div>
@@ -1675,6 +1719,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           </TT>
 
         </div>
+      </div>
       </div>
 
     </>
