@@ -525,6 +525,9 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     goldSP:       { label: 'Gold/S&P',         values: [0.35, 0.45, 0.55, 0.70], dir: 'asc', range: [0.1, 2.0], weight: 4,  active: true },
     wti:          { label: 'WTI Öl',           values: [60, 80, 100, 120],       dir: 'asc',  range: [20, 200],  weight: 4,  active: true },
     yieldSpread:  { label: '10Y–2Y Spread',    values: [1.5, 0.5, 0.0, -0.5],   dir: 'desc', range: [-3, 4],    weight: 10, active: true },
+    // SPX/NDX über 200T: 1=über, 0=unter. desc: über=Stille(1), unter=Stress(5)
+    spxAbove200d: { label: 'SPX über 200T',     values: [1, 1, 0, 0],             dir: 'desc', range: [0, 1],    weight: 5,  active: true },
+    ndxAbove200d: { label: 'NDX über 200T',     values: [1, 1, 0, 0],             dir: 'desc', range: [0, 1],    weight: 5,  active: true },
   };
   const [thresholds, setThresholds] = useState(defaultThresholds);
   const [draftThresholds, setDraftThresholds] = useState(defaultThresholds);
@@ -569,15 +572,15 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   };
   const [marketData, setMarketData] = useState({
     volatilityMetrics: {
-      rvx: 19.8, vxn: 19.49, vix: 15.06, vvix: 102.15, vxv: 18.02,
-      fearGreed: 45, equityPutCall: 0.68, totalPutCall: 0.92,
-      skewIndex: 143.78, moveIndex: 61.35, leftTailVol: 22.1,
-      vx1: 16.8, vx2: 17.3, vx3: 17.9, vx4: 18.4, vx5: 18.8
+      rvx: 0, vxn: 0, vix: 0, vvix: 0, vxv: 0,
+      fearGreed: 0, equityPutCall: 0, totalPutCall: 0,
+      skewIndex: 0, moveIndex: 0, leftTailVol: 0,
+      vx1: 0, vx2: 0, vx3: 0, vx4: 0, vx5: 0
     },
-    yieldCurve: { y2: 4.17, y10: 4.165, y30: 4.56 },
-    movingAverages: { breadth: { above5day: 52.4, above20day: 64.6, above50day: 68.2, above200day: 60.0 } },
-    riskIndicators: { hySpread: 3.45, dxy: 104.2, goldSP: 0.52, gold: 3200, silver: 32, wti: 72.5 },
-    indices: { spx: 5200, ndx: 18000, rut: 2000, spx200d: 5300, ndx200d: 19000 }
+    yieldCurve: { y2: 0, y10: 0, y30: 0 },
+    movingAverages: { breadth: { above5day: 0, above20day: 0, above50day: 0, above200day: 0 } },
+    riskIndicators: { hySpread: 0, dxy: 0, goldSP: 0, gold: 0, silver: 0, wti: 0 },
+    indices: { spx: 0, ndx: 0, rut: 0, spx200d: 0, ndx200d: 0 }
   });
   const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsmLGq2ejgt-yg-ER16AuBC2cjPmHJLa4voisbpgmo3qpNMo7LMNus01PLp6etdn2CJb9724Bp6y-d/pub?gid=0&single=true&output=csv';
 
@@ -1164,6 +1167,13 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const vx1Spread = v.vx1 - v.vix;
   const vx2Spread = v.vx2 - v.vx1;
 
+  // Gold / S&P 500 live ratio
+  const goldSPRatio = (idx.spx > 0 && ri.gold > 0) ? ri.gold / idx.spx : ri.goldSP;
+
+  // SPX/NDX above 200D: 0 = below, 1 = above (for threshold: desc, threshold[0]=1 means above=Stille)
+  const spxAbove200d = (idx.spx > 0 && idx.spx200d > 0) ? (idx.spx > idx.spx200d ? 1 : 0) : null;
+  const ndxAbove200d = (idx.ndx > 0 && idx.ndx200d > 0) ? (idx.ndx > idx.ndx200d ? 1 : 0) : null;
+
   // Individual indicator assessments
   const indicators = [
     { group: 'Volatilität', label: 'VIX', key: 'vix', level: classifyFromConfig('vix', v.vix), value: f(v.vix) },
@@ -1177,9 +1187,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
     { group: 'Sentiment', label: 'Equity P/C', key: 'equityPutCall', level: classifyFromConfig('equityPutCall', v.equityPutCall), value: f(v.equityPutCall, 2) },
     { group: 'Kapitalfluss', label: 'HY Credit Spread', key: 'hySpread', level: classifyFromConfig('hySpread', ri.hySpread), value: f(ri.hySpread, 2) + '%' },
     { group: 'Kapitalfluss', label: 'DXY', key: 'dxy', level: classifyFromConfig('dxy', ri.dxy), value: f(ri.dxy, 1) },
-    { group: 'Kapitalfluss', label: 'Gold/S&P', key: 'goldSP', level: classifyFromConfig('goldSP', ri.goldSP), value: f(ri.goldSP, 3) },
+    { group: 'Kapitalfluss', label: 'Gold/S&P', key: 'goldSP', level: classifyFromConfig('goldSP', goldSPRatio), value: f(goldSPRatio, 3) },
     { group: 'Kapitalfluss', label: 'WTI Öl', key: 'wti', level: classifyFromConfig('wti', ri.wti), value: '$' + f(ri.wti, 1) },
     { group: 'Zinsen', label: '10Y–2Y Spread', key: 'yieldSpread', level: classifyFromConfig('yieldSpread', y.y10 - y.y2), value: (y.y10 - y.y2 >= 0 ? '+' : '') + f(y.y10 - y.y2, 2) + '%' },
+    ...(spxAbove200d !== null ? [{ group: 'Aktienmarkt', label: 'SPX über 200T', key: 'spxAbove200d', level: classifyFromConfig('spxAbove200d', spxAbove200d), value: spxAbove200d === 1 ? 'Ja' : 'Nein' }] : []),
+    ...(ndxAbove200d !== null ? [{ group: 'Aktienmarkt', label: 'NDX über 200T', key: 'ndxAbove200d', level: classifyFromConfig('ndxAbove200d', ndxAbove200d), value: ndxAbove200d === 1 ? 'Ja' : 'Nein' }] : []),
   ].filter(ind => ind.level !== null && (thresholds[ind.key]?.active !== false));
 
   // Weighted average → overall vola class
@@ -1581,7 +1593,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         <div style={{ marginBottom: '12px' }}>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Makrosignale</div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px' }}>
 
           <TT id="hySpread">
             <div
@@ -1653,6 +1665,16 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 {'$'}{f(ri.wti, 1)}
               </div>
               <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Barrel</div>
+            </div>
+          </TT>
+
+          <TT id="goldSP">
+            <div style={{ borderRadius: '8px', padding: '4px' }}>
+              <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>Gold / S&amp;P 500</div>
+              <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
+                {goldSPRatio > 0 ? f(goldSPRatio, 3) : '—'}
+              </div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>Gold ÷ SPX</div>
             </div>
           </TT>
 
