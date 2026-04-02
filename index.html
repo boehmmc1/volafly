@@ -492,6 +492,45 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
   );
 };
 
+const PRESET_TEMPLATES = [
+  {
+    id: 'antizykliker',
+    name: 'Der Antizykliker',
+    desc: '5 Klassen · VIX & Sentiment-fokussiert · kauft bei Panik, reduziert bei Euphorie',
+    classes: [
+      { label: 'Stille',   color: '#8E8E93', investPct: 30,  subtitle: 'Markt zu ruhig — Complacency-Risiko',       desc: 'Der Markt ist ungewöhnlich ruhig. Complacency ist die größte Gefahr — Investitionsgrad bis zu 30% ist angemessen.' },
+      { label: 'Ruhe',     color: '#30D158', investPct: 55,  subtitle: 'Geringes Stressniveau — Basis-Exposure',     desc: 'Normales Umfeld mit geringem Stressniveau. Solide Basis-Position von bis zu 55%.' },
+      { label: 'Spannung', color: '#FFCC00', investPct: 80,  subtitle: 'Erhöhte Unsicherheit — selektiv aufbauen',   desc: 'Erhöhte Unsicherheit — antizyklisch erste Positionen aufbauen. Bis zu 80%.' },
+      { label: 'Stress',   color: '#FF9F0A', investPct: 100, subtitle: 'Deutlicher Stress — aggressiv erhöhen',      desc: 'Deutlicher Stress im Markt. Antizykliker erhöhen jetzt auf bis zu 100%.' },
+      { label: 'Panik',    color: '#FF453A', investPct: 120, subtitle: 'Kapitulation — maximale Position',           desc: 'Kapitulation und maximale Angst — historisch bester Kaufzeitpunkt. Bis zu 120% für mutige Investoren.' },
+    ],
+    thresholds: { vix: true, vvix: true, fearGreed: true, equityPutCall: true, vx1Spread: true, vx2Spread: true, hySpread: true, spxAbove200d: true },
+  },
+  {
+    id: 'momentum',
+    name: 'Der Momentum-Investor',
+    desc: '3 Klassen · Trend & Breadth-fokussiert · folgt dem Markt, meidet Turbulenzen',
+    classes: [
+      { label: 'Trend',    color: '#30D158', investPct: 100, subtitle: 'Klarer Aufwärtstrend — voll investiert',     desc: 'Klarer Aufwärtstrend bestätigt. Momentum-Investor ist voll investiert bis zu 100%.' },
+      { label: 'Neutral',  color: '#FFCC00', investPct: 60,  subtitle: 'Unklarer Trend — selektiv positioniert',    desc: 'Trend ist unklarer — selektiv positioniert bleiben. Bis zu 60%.' },
+      { label: 'Crash',    color: '#FF453A', investPct: 20,  subtitle: 'Abwärtstrend — defensiv positioniert',      desc: 'Abwärtstrend aktiv — Kapitalschutz hat Priorität. Maximal 20% Exposure.' },
+    ],
+    thresholds: { vix: true, vixVxv: true, vx1Spread: true, spxAbove200d: true, ndxAbove200d: true },
+  },
+  {
+    id: 'risikoManager',
+    name: 'Der Risiko-Manager',
+    desc: '4 Klassen · Spread & Makro-fokussiert · Kapitalerhalt als oberstes Ziel',
+    classes: [
+      { label: 'Grün',     color: '#30D158', investPct: 70,  subtitle: 'Niedriges Risiko — solide Position',        desc: 'Risikoumfeld ist günstig. Solide Position von bis zu 70% ist angemessen.' },
+      { label: 'Gelb',     color: '#FFCC00', investPct: 50,  subtitle: 'Erhöhtes Risiko — defensiver werden',       desc: 'Erhöhtes Risikoumfeld — Position auf bis zu 50% reduzieren.' },
+      { label: 'Orange',   color: '#FF9F0A', investPct: 30,  subtitle: 'Hohes Risiko — stark reduzieren',           desc: 'Hohes Risikoniveau — stark auf bis zu 30% reduzieren und Absicherungen prüfen.' },
+      { label: 'Rot',      color: '#FF453A', investPct: 10,  subtitle: 'Extremes Risiko — fast cash',              desc: 'Extremes Risikoumfeld — nahezu vollständig aus dem Markt heraus. Maximal 10%.' },
+    ],
+    thresholds: { hySpread: true, dxy: true, yieldSpread: true, moveIndex: true, vix: true, goldSP: true },
+  },
+];
+
 const MarketPivot = ({ user, supabase: sbClient }) => {
   const [activeTab, setActiveTab] = useState('data');
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 700);
@@ -1207,44 +1246,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const [draftVolaClasses, setDraftVolaClasses] = useState(defaultVolaClasses);
 
   // ── Vorgefertigte Templates ──
-  const PRESET_TEMPLATES = [
-    {
-      id: 'antizykliker',
-      name: 'Der Antizykliker',
-      desc: '5 Klassen · VIX & Sentiment-fokussiert · kauft bei Panik, reduziert bei Euphorie',
-      classes: [
-        { label: 'Stille',   color: '#8E8E93', investPct: 30,  subtitle: 'Markt zu ruhig — Complacency-Risiko',       desc: 'Der Markt ist ungewöhnlich ruhig. Complacency ist die größte Gefahr — Investitionsgrad bis zu 30% ist angemessen.' },
-        { label: 'Ruhe',     color: '#30D158', investPct: 55,  subtitle: 'Geringes Stressniveau — Basis-Exposure',     desc: 'Normales Umfeld mit geringem Stressniveau. Solide Basis-Position von bis zu 55%.' },
-        { label: 'Spannung', color: '#FFCC00', investPct: 80,  subtitle: 'Erhöhte Unsicherheit — selektiv aufbauen',   desc: 'Erhöhte Unsicherheit — antizyklisch erste Positionen aufbauen. Bis zu 80%.' },
-        { label: 'Stress',   color: '#FF9F0A', investPct: 100, subtitle: 'Deutlicher Stress — aggressiv erhöhen',      desc: 'Deutlicher Stress im Markt. Antizykliker erhöhen jetzt auf bis zu 100%.' },
-        { label: 'Panik',    color: '#FF453A', investPct: 120, subtitle: 'Kapitulation — maximale Position',           desc: 'Kapitulation und maximale Angst — historisch bester Kaufzeitpunkt. Bis zu 120% für mutige Investoren.' },
-      ],
-      thresholds: { vix: true, vvix: true, fearGreed: true, equityPutCall: true, vx1Spread: true, vx2Spread: true, hySpread: true, spxAbove200d: true },
-    },
-    {
-      id: 'momentum',
-      name: 'Der Momentum-Investor',
-      desc: '3 Klassen · Trend & Breadth-fokussiert · folgt dem Markt, meidet Turbulenzen',
-      classes: [
-        { label: 'Trend',    color: '#30D158', investPct: 100, subtitle: 'Klarer Aufwärtstrend — voll investiert',     desc: 'Klarer Aufwärtstrend bestätigt. Momentum-Investor ist voll investiert bis zu 100%.' },
-        { label: 'Neutral',  color: '#FFCC00', investPct: 60,  subtitle: 'Unklarer Trend — selektiv positioniert',    desc: 'Trend ist unklarer — selektiv positioniert bleiben. Bis zu 60%.' },
-        { label: 'Crash',    color: '#FF453A', investPct: 20,  subtitle: 'Abwärtstrend — defensiv positioniert',      desc: 'Abwärtstrend aktiv — Kapitalschutz hat Priorität. Maximal 20% Exposure.' },
-      ],
-      thresholds: { vix: true, vixVxv: true, vx1Spread: true, spxAbove200d: true, ndxAbove200d: true },
-    },
-    {
-      id: 'risikoManager',
-      name: 'Der Risiko-Manager',
-      desc: '4 Klassen · Spread & Makro-fokussiert · Kapitalerhalt als oberstes Ziel',
-      classes: [
-        { label: 'Grün',     color: '#30D158', investPct: 70,  subtitle: 'Niedriges Risiko — solide Position',        desc: 'Risikoumfeld ist günstig. Solide Position von bis zu 70% ist angemessen.' },
-        { label: 'Gelb',     color: '#FFCC00', investPct: 50,  subtitle: 'Erhöhtes Risiko — defensiver werden',       desc: 'Erhöhtes Risikoumfeld — Position auf bis zu 50% reduzieren.' },
-        { label: 'Orange',   color: '#FF9F0A', investPct: 30,  subtitle: 'Hohes Risiko — stark reduzieren',           desc: 'Hohes Risikoniveau — stark auf bis zu 30% reduzieren und Absicherungen prüfen.' },
-        { label: 'Rot',      color: '#FF453A', investPct: 10,  subtitle: 'Extremes Risiko — fast cash',              desc: 'Extremes Risikoumfeld — nahezu vollständig aus dem Markt heraus. Maximal 10%.' },
-      ],
-      thresholds: { hySpread: true, dxy: true, yieldSpread: true, moveIndex: true, vix: true, goldSP: true },
-    },
-  ];
   const classifyFromConfig = (key, value) => {
     const cfg = thresholds[key] ?? defaultThresholds[key];
     if (!cfg) return null;
@@ -2541,7 +2542,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                               setValidationErrors({});
                               setInputTexts({});
                               setActiveTemplateId(tpl.id);
-                              setConfigTab('thresholds');
+                              setShowConfig(false);
+                              setActiveTab('analysis');
                             }}
                             style={{ padding: '6px 12px', borderRadius: '8px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: '#0A84FF', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
                             onMouseEnter={e => e.currentTarget.style.background='rgba(10,132,255,0.18)'}
@@ -3059,7 +3061,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       fontSize: '14px', fontWeight: 600, fontFamily: 'inherit' }}
                     onMouseEnter={e => { if (!Object.entries(validationErrors).filter(([k]) => draftThresholds[k]?.active !== false).length) e.currentTarget.style.opacity='0.85'; }}
                     onMouseLeave={e => e.currentTarget.style.opacity='1'}>
-                    Grenzwerte speichern
+                    Grenzwerte übernehmen
                   </button>
                 </div>
               )}
@@ -3222,3 +3224,4 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   </script>
 </body>
 </html>
+
