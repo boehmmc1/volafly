@@ -529,8 +529,20 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     spxAbove200d: { label: 'SPX über 200T',     values: [1, 1, 0, 0],            dir: 'desc', range: [0, 1],    weight: 6,  active: true },
     ndxAbove200d: { label: 'NDX über 200T',     values: [1, 1, 0, 0],            dir: 'desc', range: [0, 1],    weight: 6,  active: true },
   };
-  const [thresholds, setThresholds] = useState(defaultThresholds);
-  const [draftThresholds, setDraftThresholds] = useState(defaultThresholds);
+  const computeEqualWeights = (draft) => {
+    const activeKeys = Object.keys(draft).filter(k => draft[k].active !== false);
+    const n = activeKeys.length;
+    if (n === 0) return draft;
+    const base = Math.floor(100 / n);
+    const rem = 100 % n;
+    return Object.fromEntries(Object.entries(draft).map(([k, v], _) => {
+      if (v.active === false) return [k, v];
+      const idx = activeKeys.indexOf(k);
+      return [k, { ...v, weight: idx < rem ? base + 1 : base }];
+    }));
+  };
+  const [thresholds, setThresholds] = useState(() => computeEqualWeights(defaultThresholds));
+  const [draftThresholds, setDraftThresholds] = useState(() => computeEqualWeights(defaultThresholds));
   const [tooltipKey, setTooltipKey] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
   // Raw text per input cell so users can freely type commas
@@ -548,13 +560,16 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     if (vals.some(v2 => v2 < min || v2 > max)) {
       return `${cfg.label}: Werte müssen zwischen ${String(min).replace('.', ',')} und ${String(max).replace('.', ',')} liegen`;
     }
-    if (cfg.dir === 'asc') {
-      for (let i = 1; i < vals.length; i++) {
-        if (vals[i] <= vals[i - 1]) return `${cfg.label}: Werte müssen strikt aufsteigend sein`;
-      }
-    } else {
-      for (let i = 1; i < vals.length; i++) {
-        if (vals[i] >= vals[i - 1]) return `${cfg.label}: Werte müssen strikt absteigend sein`;
+    const isBinary = (max - min) <= 1 && Number.isInteger(min) && Number.isInteger(max);
+    if (!isBinary) {
+      if (cfg.dir === 'asc') {
+        for (let i = 1; i < vals.length; i++) {
+          if (vals[i] <= vals[i - 1]) return `${cfg.label}: Werte müssen strikt aufsteigend sein`;
+        }
+      } else {
+        for (let i = 1; i < vals.length; i++) {
+          if (vals[i] >= vals[i - 1]) return `${cfg.label}: Werte müssen strikt absteigend sein`;
+        }
       }
     }
     return null;
@@ -1761,13 +1776,21 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 lineHeight: 1, fontVariantNumeric: 'tabular-nums',
                 animation: 'volafly-pulse 0.4s ease',
               }}>
-                {overallLevel}<span style={{ fontSize: '26px', color: 'rgba(255,255,255,0.18)', fontWeight: 500, marginLeft: '4px' }}>/5</span>
+                {overallLevel}<span style={{ fontSize: '26px', color: 'rgba(255,255,255,0.18)', fontWeight: 500, marginLeft: '4px' }}>/{volaClasses.length}</span>
               </div>
               <div style={{ fontSize: '20px', fontWeight: 600, color: currentClass.color, marginTop: '8px', letterSpacing: '-0.01em' }}>
                 {currentClass.label}
               </div>
               <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>
-                {currentClass.investPct <= 60 ? 'Basis-Exposure' : currentClass.investPct <= 80 ? 'Selektiv aufbauen' : currentClass.investPct <= 90 ? 'Antizyklisch erhöhen' : currentClass.investPct >= 100 ? 'Aggressiv investieren' : 'Complacency-Risiko'}
+                {(() => {
+                  const pct = currentClass.investPct;
+                  const maxPct = volaClasses[volaClasses.length - 1].investPct;
+                  if (overallLevel === 1) return 'Tief investiert — Complacency-Risiko';
+                  if (overallLevel === volaClasses.length) return 'Maximale Angst — aggressiv investieren';
+                  if (pct <= maxPct * 0.5) return 'Defensiv positioniert';
+                  if (pct <= maxPct * 0.75) return 'Selektiv aufbauen';
+                  return 'Antizyklisch erhöhen';
+                })()}
               </div>
             </div>
 
@@ -1823,11 +1846,21 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               transition: 'background 0.4s ease',
             }} />
             <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6 }}>
-              {overallLevel === 1 && 'Der Markt ist ungewöhnlich ruhig — Vorsicht vor Selbstgefälligkeit. Basis-Exposure von bis zu 40% ist angemessen.'}
-              {overallLevel === 2 && 'Geringes Stressniveau. Ein rationaler Investor hält eine solide Basis-Position von bis zu 60%.'}
-              {overallLevel === 3 && 'Erhöhte Unsicherheit. Jetzt selektiv aufbauen — bis zu 80% Investitionsgrad ist rational.'}
-              {overallLevel === 4 && 'Deutlicher Stress im Markt. Ein rationaler Investor erhöht jetzt antizyklisch auf bis zu 90%.'}
-              {overallLevel === 5 && 'Kapitulation — maximale Angst. Historisch der beste Kaufzeitpunkt. Bis zu 110% für aggressive Investoren.'}
+              {(() => {
+                const n = volaClasses.length;
+                const pct = currentClass.investPct;
+                const label = currentClass.label;
+                const isFirst = overallLevel === 1;
+                const isLast = overallLevel === n;
+                if (isFirst) return `Der Markt ist ungewöhnlich ruhig — Vorsicht vor Selbstgefälligkeit. Investitionsgrad bis zu ${pct}% ist angemessen.`;
+                if (isLast) return `Kapitulation — maximale Angst im Markt. Historisch der beste Kaufzeitpunkt. Bis zu ${pct}% Investitionsgrad ist rational.`;
+                const prevPct = volaClasses[overallLevel - 2].investPct;
+                const nextPct = volaClasses[overallLevel].investPct;
+                if (pct <= (volaClasses[0].investPct + volaClasses[n-1].investPct) * 0.45) {
+                  return `${label}: Erhöhte Unsicherheit — defensiv positioniert bleiben. Bis zu ${pct}% Investitionsgrad ist angemessen.`;
+                }
+                return `${label}: Jetzt selektiv aufbauen — bis zu ${pct}% Investitionsgrad ist rational.`;
+              })()}
             </div>
           </div>
 
@@ -1897,7 +1930,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                             background: `${volaClasses[gl - 1].color}15`,
                             color: volaClasses[gl - 1].color,
                           }}>
-                            {gl}/5
+                            {gl}/{volaClasses.length}
                           </div>
                         );
                       })()}
@@ -2693,8 +2726,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                         return [key, { ...cfg, values: vals.slice(0, n - 1) }];
                       }));
                       setVolaClasses(JSON.parse(JSON.stringify(draftVolaClasses)));
-                      setDraftThresholds(adjusted);
-                      setThresholds(JSON.parse(JSON.stringify(adjusted)));
+                      const equalized = computeEqualWeights(adjusted);
+                      setDraftThresholds(equalized);
+                      setThresholds(JSON.parse(JSON.stringify(equalized)));
                       setConfigTab('thresholds');
                     }}
                     style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer', background: '#0A84FF', color: '#fff', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit' }}
@@ -2710,7 +2744,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                   <button
                     onClick={() => {
-                      setDraftThresholds(JSON.parse(JSON.stringify(defaultThresholds)));
+                      setDraftThresholds(computeEqualWeights(JSON.parse(JSON.stringify(defaultThresholds))));
                       setValidationErrors({});
                       setInputTexts({});
                     }}
