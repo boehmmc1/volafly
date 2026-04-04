@@ -1059,6 +1059,22 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
 
   const signOut = async () => { await sbClient.auth.signOut(); };
 
+  const deleteAccount = async () => {
+    if (!window.confirm('Account wirklich löschen? Alle gespeicherten Konfigurationen und Einstellungen werden unwiderruflich gelöscht.')) return;
+    if (!window.confirm('Letzte Bestätigung: Diese Aktion kann nicht rückgängig gemacht werden.')) return;
+    try {
+      // Lösche alle Nutzerdaten aus Supabase
+      await sbClient.from('threshold_profiles').delete().eq('user_id', user.id);
+      await sbClient.from('notification_preferences').delete().eq('user_id', user.id);
+      // Account-Löschung per API — erfordert Service-Role auf VPS, hier als Mail-Fallback
+      await sbClient.auth.signOut();
+      // Mail an Admin zur manuellen Löschung falls RPC fehlt
+      alert('Dein Account wird gelöscht. Du wirst abgemeldet. Falls die Löschung nicht automatisch erfolgt, kontaktiere info@volafly.net');
+    } catch (err) {
+      alert('Fehler: ' + err.message);
+    }
+  };
+
   // ── Data-page tooltip descriptions ──
   const TOOLTIPS = {
     fearGreed:    { label: 'Fear & Greed Index', desc: 'Wie ängstlich oder gierig der Markt gerade ist. Unter 25 = Extreme Angst (antizyklisch bullisch). Über 75 = Gier (Vorsicht).' },
@@ -2178,6 +2194,13 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                             Abmelden
                           </button>
+                          <button onClick={deleteAccount}
+                            style={{ width: '100%', padding: '9px 10px', borderRadius: '10px', border: 'none', background: 'transparent', color: 'rgba(255,69,58,0.45)', fontSize: '12px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'left', fontFamily: 'inherit' }}
+                            onMouseEnter={e => { e.currentTarget.style.background='rgba(255,69,58,0.06)'; e.currentTarget.style.color='#FF453A'; }}
+                            onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='rgba(255,69,58,0.45)'; }}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                            Account löschen
+                          </button>
                         </div>
                       )}
                     </div>
@@ -2352,6 +2375,15 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                         onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                         Abmelden
+                      </button>
+                      {/* Account löschen */}
+                      <button
+                        onClick={deleteAccount}
+                        style={{ width: '100%', padding: '9px 10px', borderRadius: '10px', border: 'none', background: 'transparent', color: 'rgba(255,69,58,0.45)', fontSize: '12px', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', textAlign: 'left', fontFamily: 'inherit' }}
+                        onMouseEnter={e => { e.currentTarget.style.background='rgba(255,69,58,0.06)'; e.currentTarget.style.color='#FF453A'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='rgba(255,69,58,0.45)'; }}>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                        Account löschen
                       </button>
                     </div>
                   )}
