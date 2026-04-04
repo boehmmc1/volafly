@@ -23,7 +23,8 @@
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel">
+  <script src="templates.js"></script>
+<script type="text/babel">
     // ── Supabase ──────────────────────────────────────────────────────────
     // 👉 HIER deine Supabase-Werte eintragen:
     const SUPABASE_URL  = 'https://jiycewpqjcvjbykcxaqi.supabase.co';
@@ -491,44 +492,7 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
   );
 };
 
-const PRESET_TEMPLATES = [
-  {
-    id: 'antizykliker',
-    name: 'Der Antizykliker',
-    desc: '5 Klassen · VIX & Sentiment-fokussiert · kauft bei Panik, reduziert bei Euphorie',
-    classes: [
-      { label: 'Stille',   color: '#8E8E93', investPct: 30,  subtitle: 'Markt zu ruhig — Complacency-Risiko',       desc: 'Der Markt ist ungewöhnlich ruhig. Complacency ist die größte Gefahr — Investitionsgrad bis zu 30% ist angemessen.' },
-      { label: 'Ruhe',     color: '#30D158', investPct: 55,  subtitle: 'Geringes Stressniveau — Basis-Exposure',     desc: 'Normales Umfeld mit geringem Stressniveau. Solide Basis-Position von bis zu 55%.' },
-      { label: 'Spannung', color: '#FFCC00', investPct: 80,  subtitle: 'Erhöhte Unsicherheit — selektiv aufbauen',   desc: 'Erhöhte Unsicherheit — antizyklisch erste Positionen aufbauen. Bis zu 80%.' },
-      { label: 'Stress',   color: '#FF9F0A', investPct: 100, subtitle: 'Deutlicher Stress — aggressiv erhöhen',      desc: 'Deutlicher Stress im Markt. Antizykliker erhöhen jetzt auf bis zu 100%.' },
-      { label: 'Panik',    color: '#FF453A', investPct: 120, subtitle: 'Kapitulation — maximale Position',           desc: 'Kapitulation und maximale Angst — historisch bester Kaufzeitpunkt. Bis zu 120% für mutige Investoren.' },
-    ],
-    thresholds: { vix: true, vvix: true, fearGreed: true, equityPutCall: true, vx1Spread: true, vx2Spread: true, hySpread: true, spxAbove200d: true },
-  },
-  {
-    id: 'momentum',
-    name: 'Der Momentum-Investor',
-    desc: '3 Klassen · Trend & Breadth-fokussiert · folgt dem Markt, meidet Turbulenzen',
-    classes: [
-      { label: 'Trend',    color: '#30D158', investPct: 100, subtitle: 'Klarer Aufwärtstrend — voll investiert',     desc: 'Klarer Aufwärtstrend bestätigt. Momentum-Investor ist voll investiert bis zu 100%.' },
-      { label: 'Neutral',  color: '#FFCC00', investPct: 60,  subtitle: 'Unklarer Trend — selektiv positioniert',    desc: 'Trend ist unklarer — selektiv positioniert bleiben. Bis zu 60%.' },
-      { label: 'Crash',    color: '#FF453A', investPct: 20,  subtitle: 'Abwärtstrend — defensiv positioniert',      desc: 'Abwärtstrend aktiv — Kapitalschutz hat Priorität. Maximal 20% Exposure.' },
-    ],
-    thresholds: { vix: true, vixVxv: true, vx1Spread: true, spxAbove200d: true, ndxAbove200d: true },
-  },
-  {
-    id: 'risikoManager',
-    name: 'Der Risiko-Manager',
-    desc: '4 Klassen · Spread & Makro-fokussiert · Kapitalerhalt als oberstes Ziel',
-    classes: [
-      { label: 'Grün',   color: '#30D158', investPct: 40,  subtitle: 'Niedriges Risiko — defensiv positioniert',    desc: 'Risikoumfeld ist ruhig, aber Kapitalschutz hat Vorrang. Maximal 40% investiert.' },
-      { label: 'Gelb',   color: '#FFCC00', investPct: 60,  subtitle: 'Erhöhtes Risiko — selektiv aufbauen',         desc: 'Erhöhtes Risikoumfeld — erste antizyklische Positionen aufbauen. Bis zu 60%.' },
-      { label: 'Orange', color: '#FF9F0A', investPct: 80,  subtitle: 'Hohes Risiko — antizyklisch erhöhen',         desc: 'Hohes Risikoniveau — Risiko-Manager erhöht antizyklisch auf bis zu 80%.' },
-      { label: 'Rot',    color: '#FF453A', investPct: 100, subtitle: 'Extremes Risiko — maximale Position',         desc: 'Extremes Risikoumfeld mit Kapitulation — historisch bester Kaufzeitpunkt. Bis zu 100%.' },
-    ],
-    thresholds: { hySpread: true, dxy: true, yieldSpread: true, moveIndex: true, vix: true, goldSP: true },
-  },
-];
+const PRESET_TEMPLATES = window.VOLAFLY_TEMPLATES;
 
 const MarketPivot = ({ user, supabase: sbClient }) => {
   const [activeTab, setActiveTab] = useState('data');
