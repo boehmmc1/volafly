@@ -2691,9 +2691,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   {draftVolaClasses.map((vc, i) => {
                     const isLast = i === draftVolaClasses.length - 1;
                     const prevPct = i > 0 ? draftVolaClasses[i-1].investPct : -Infinity;
-                    const orderErr = vc.investPct <= prevPct && i > 0;
                     return (
-                      <div key={i} style={{ padding: '10px 4px', borderBottom: `0.5px solid ${orderErr ? 'rgba(255,69,58,0.2)' : 'rgba(255,255,255,0.04)'}`, background: orderErr ? 'rgba(255,69,58,0.03)' : 'transparent' }}>
+                      <div key={i} style={{ padding: '10px 4px', borderBottom: '0.5px solid rgba(255,255,255,0.04)', background: 'transparent' }}>
                         {/* Row 1: colorbar · colorpicker · name · investPct · × */}
                         <div style={{ display: 'grid', gridTemplateColumns: '16px auto 1fr 80px 32px', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
                           <div style={{ width: '3px', height: '22px', borderRadius: '2px', background: vc.color, justifySelf: 'center' }} />
@@ -2723,12 +2722,12 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                             onFocus={e => e.target.style.borderColor=vc.color}
                             onBlur={e => e.target.style.borderColor=`${vc.color}40`}
                           />
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: orderErr ? 'rgba(255,69,58,0.08)' : 'rgba(255,255,255,0.06)', border: `0.5px solid ${orderErr ? 'rgba(255,69,58,0.4)' : 'transparent'}`, borderRadius: '8px', padding: '6px 10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(255,255,255,0.06)', border: `0.5px solid ${'transparent'}`, borderRadius: '8px', padding: '6px 10px' }}>
                             <input type="number" min="0" max="500" step="1" value={vc.investPct}
                               onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, investPct: parseInt(e.target.value)||0} : c))}
-                              style={{ background: 'transparent', border: 'none', fontSize: '13px', fontWeight: 700, color: orderErr ? '#FF453A' : '#F5F5F7', textAlign: 'right', width: '100%', outline: 'none' }}
+                              style={{ background: 'transparent', border: 'none', fontSize: '13px', fontWeight: 700, color: '#F5F5F7', textAlign: 'right', width: '100%', outline: 'none' }}
                             />
-                            <span style={{ fontSize: '11px', color: orderErr ? '#FF453A' : 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
                           </div>
                           {draftVolaClasses.length > 2 ? (
                             <button onClick={() => setDraftVolaClasses(prev => prev.filter((_,j) => j!==i))}
@@ -2761,12 +2760,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       </div>
                     );
                   })}
-                  {/* Live order error */}
-                  {draftVolaClasses.some((vc,i) => i > 0 && vc.investPct <= draftVolaClasses[i-1].investPct) && (
-                    <div style={{ marginTop: '8px', padding: '8px 12px', borderRadius: '8px', background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.2)', fontSize: '11px', color: '#FF453A' }}>
-                      ↑ Investitionsgrade müssen streng aufsteigend sein — jede folgende Klasse muss einen höheren Wert haben.
-                    </div>
-                  )}
                   <button onClick={() => {
                     const colors = ['#8E8E93','#30D158','#FFCC00','#FF9F0A','#FF453A','#0A84FF','#BF5AF2'];
                     const color = colors[draftVolaClasses.length % colors.length];
@@ -3060,17 +3053,10 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   <button
                     onClick={() => {
                       if (draftVolaClasses.length < 2) { alert('Mindestens 2 Klassen erforderlich.'); return; }
-                      // Duplicate investPct check
+                      // Duplicate investPct check only — keine Pflicht zu aufsteigender Reihenfolge
                       const pcts = draftVolaClasses.map(c => c.investPct);
                       const dupes = pcts.filter((p,i) => pcts.indexOf(p) !== i);
                       if (dupes.length > 0) { alert(`Doppelter Investitionsgrad: ${dupes.join(', ')}% — jede Klasse muss einen eindeutigen Wert haben.`); return; }
-                      // Ascending check
-                      for (let i = 1; i < draftVolaClasses.length; i++) {
-                        if (draftVolaClasses[i].investPct <= draftVolaClasses[i-1].investPct) {
-                          alert(`Investitionsgrade müssen aufsteigend sein.\n"${draftVolaClasses[i].label}" (${draftVolaClasses[i].investPct}%) muss größer sein als "${draftVolaClasses[i-1].label}" (${draftVolaClasses[i-1].investPct}%).`);
-                          return;
-                        }
-                      }
                       // Apply classes — trim/pad threshold values arrays to n-1
                       const n = draftVolaClasses.length;
                       const adjusted = Object.fromEntries(Object.entries(draftThresholds).map(([key, cfg]) => {
@@ -3155,12 +3141,24 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       />
                       <button
                         onClick={async () => {
-                          if (!newTemplateName.trim()) return;
-                          setNewProfileName(newTemplateName.trim());
-                          await saveProfile();
-                          setSaveTemplateMsg({ type: 'success', text: `„${newTemplateName.trim()}" gespeichert` });
-                          setNewTemplateName('');
-                          setTimeout(() => { setSaveTemplateMsg(null); setShowSaveTemplate(false); setShowConfig(false); }, 1800);
+                          const name = newTemplateName.trim();
+                          if (!name) return;
+                          setProfileLoading(true);
+                          const isFirst = profiles.length === 0;
+                          const { data, error } = await sbClient
+                            .from('threshold_profiles')
+                            .insert({ user_id: user.id, name, thresholds, is_default: isFirst })
+                            .select().single();
+                          setProfileLoading(false);
+                          if (!error && data) {
+                            setProfiles(prev => [data, ...prev]);
+                            setActiveProfileId(data.id);
+                            setSaveTemplateMsg({ type: 'success', text: `„${name}" gespeichert` });
+                            setNewTemplateName('');
+                            setTimeout(() => { setSaveTemplateMsg(null); setShowSaveTemplate(false); setShowConfig(false); }, 1800);
+                          } else {
+                            setSaveTemplateMsg({ type: 'error', text: 'Fehler beim Speichern' });
+                          }
                         }}
                         disabled={!newTemplateName.trim() || profileLoading}
                         style={{ padding: '9px 16px', borderRadius: '10px', border: 'none', cursor: newTemplateName.trim() ? 'pointer' : 'default', background: newTemplateName.trim() ? '#30D158' : 'rgba(255,255,255,0.08)', color: newTemplateName.trim() ? '#000' : 'rgba(255,255,255,0.25)', fontSize: '13px', fontWeight: 600, fontFamily: 'inherit', whiteSpace: 'nowrap' }}>
