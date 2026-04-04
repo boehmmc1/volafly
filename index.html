@@ -349,7 +349,7 @@
 
 
 
-const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowProfilePanel, setShowConfig, setDraftThresholds, setValidationErrors, setInputTexts, thresholds, onFinish, fromInfo }) => {
+const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowProfilePanel, setShowConfig, setConfigTab, setDraftThresholds, setValidationErrors, setInputTexts, thresholds, onFinish, fromInfo }) => {
   const [neverShow, setNeverShow] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 700);
   React.useEffect(() => {
@@ -358,18 +358,43 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
     return () => window.removeEventListener('resize', fn);
   }, []);
 
-  // Schritt 0 = Intro-Screen (wie das ?-Modal), Schritte 1-4 = Guided Tour
+  // Schritt 0 = Intro-Screen, Schritte 1–5 = Guided Tour
   const isIntro = onboardStep === 0;
 
   const tourSteps = [
-    { title: 'Marktlage — deine Rohdaten', desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch geladen.', cta: 'Zur Bewertung →', badge: 'Marktlage' },
-    { title: 'Bewertung — die Interpretation', desc: 'Volafly klassifiziert alle Indikatoren in 5 Stufen (Stille → Panik) und leitet daraus einen Investitionsgrad ab. Je mehr Stress, desto höher die empfohlene Investitionsquote.', cta: 'Konfiguration anpassen →', badge: 'Bewertung' },
-    { title: 'Konfiguration anpassen', desc: 'Hier siehst du alle Schwellenwerte. Passe sie an und speichere sie als eigene Konfiguration.', cta: 'Risikomanagement speichern →', badge: 'Bewertung → Grenzwerte' },
-    { title: 'Benachrichtigungen speichern', desc: 'Speichere deine Grenzwerte als Konfiguration — z.B. "Konservativ" oder "Aggressiv". Mehrere Profile möglich, eines als Standard setzen.', cta: 'Loslegen', badge: 'Bewertung → Risikomanagement' },
+    {
+      title: 'Marktlage — deine Rohdaten',
+      desc: 'Hier siehst du alle Indikatoren in Echtzeit: VIX, Fear & Greed, Credit Spreads, Breadth und mehr. Die Daten werden automatisch geladen.',
+      cta: 'Zur Bewertung →',
+      badge: 'Marktlage',
+    },
+    {
+      title: 'Bewertung — dein individuelles Risikomanagement',
+      desc: 'Volafly wertet alle Indikatoren auf Basis deiner persönlichen Konfiguration aus und leitet daraus einen Investitionsgrad ab. Die Anzahl der Klassen, ihre Farben und Schwellenwerte sind vollständig individuell.',
+      cta: 'Konfiguration wählen →',
+      badge: 'Bewertung',
+    },
+    {
+      title: 'Konfiguration wählen',
+      desc: 'Du hast zwei Möglichkeiten: ein vorgefertigtes Template laden — sofort einsatzbereit — oder deine eigene Konfiguration mit individuellen Klassen und Grenzwerten definieren.',
+      cta: 'Risikobericht →',
+      badge: 'Grenzwerte anpassen',
+    },
+    {
+      title: 'Zusendung des Risikomanagementberichts',
+      desc: 'Aktiviere den wöchentlichen Risikobericht und du erhältst jeden Montag eine persönliche Auswertung per Mail — auf Basis deiner aktiven Konfiguration.',
+      cta: 'Konfiguration einrichten →',
+      badge: 'Benachrichtigungen',
+    },
+    {
+      title: 'Jetzt Konfiguration einrichten',
+      desc: 'Wähle ein Template oder definiere deine eigene Konfiguration. Dieser Schritt ist die Grundlage für alle Bewertungen und Berichte.',
+      cta: 'Zur Konfiguration →',
+      badge: 'Wichtig',
+      isAction: true,
+    },
   ];
-  const totalSteps = 1 + tourSteps.length; // Intro + 4 Tour-Schritte
-
-  // Tour-Schritt (0-basiert ab onboardStep=1)
+  const totalSteps = 1 + tourSteps.length;
   const tourIdx = onboardStep - 1;
 
   React.useEffect(() => {
@@ -390,17 +415,26 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
       setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
       setValidationErrors({});
       setInputTexts({});
+      setConfigTab('start');
       setShowConfig(true);
     } else if (onboardStep === 4) {
       setShowConfig(false);
       setActiveTab('analysis');
       setTimeout(() => setShowProfilePanel(true), 80);
+    } else if (onboardStep === 5) {
+      setShowProfilePanel(false);
+      setActiveTab('analysis');
+      setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
+      setValidationErrors({});
+      setInputTexts({});
+      setConfigTab('templates');
+      setShowConfig(true);
     }
   }, [onboardStep]);
 
   const saveAndClose = () => {
     if (neverShow) {
-      try { localStorage.setItem('volafly_onboarded_v2', '1'); } catch {}
+      try { localStorage.setItem('volafly_onboarded_v3', '1'); } catch {}
     }
     setShowConfig(false);
     setShowProfilePanel(false);
@@ -411,6 +445,9 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
     if (onboardStep < totalSteps - 1) {
       setOnboardStep(onboardStep + 1);
     } else {
+      // Letzter Schritt: Config öffnen und Onboarding beenden
+      setShowConfig(true);
+      setConfigTab('templates');
       saveAndClose();
     }
   };
@@ -482,8 +519,12 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
         <div style={{ fontSize: '17px', fontWeight: 700, color: '#F5F5F7', marginBottom: '10px', letterSpacing: '-0.01em' }}>{step.title}</div>
         <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, marginBottom: '24px' }}>{step.desc}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <button onClick={saveAndClose} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Überspringen</button>
-          <button onClick={handleNext} style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: '0 4px 12px rgba(10,132,255,0.3)' }}>
+          {step.isAction ? (
+            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic' }}>Dieser Schritt ist wichtig für deine Auswertung.</span>
+          ) : (
+            <button onClick={saveAndClose} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Überspringen</button>
+          )}
+          <button onClick={handleNext} style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: step.isAction ? '#30D158' : '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: step.isAction ? '0 4px 12px rgba(48,209,88,0.3)' : '0 4px 12px rgba(10,132,255,0.3)' }}>
             {step.cta}
           </button>
         </div>
@@ -511,7 +552,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [pendingColors, setPendingColors] = useState({});
   const [showInfo, setShowInfo] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
-    try { return !localStorage.getItem('volafly_onboarded_v2'); } catch { return true; }
+    try { return !localStorage.getItem('volafly_onboarded_v3'); } catch { return true; }
   });
   const [onboardingFromInfo, setOnboardingFromInfo] = useState(false);
   const [onboardStep, setOnboardStep] = useState(0);
@@ -642,9 +683,10 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     loadProfiles();
   }, []);
 
-  // Google Sheets automatisch laden beim Mount
+  // Google Sheets automatisch laden beim Mount — kurzer Delay damit alle States initialisiert sind
   useEffect(() => {
-    fetchFromSheets();
+    const timer = setTimeout(() => fetchFromSheets(true), 300);
+    return () => clearTimeout(timer);
   }, []);
 
   // RFC-4180-kompatibler CSV-Parser: versteht quoted fields mit Kommas/Semikolons darin
@@ -795,15 +837,20 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     });
   };
 
-  const fetchFromSheets = async () => {
+  const fetchFromSheets = async (isAutoLoad = false, retryCount = 0) => {
     setFetchLoading(true);
     try {
       const res = await fetch(SHEETS_URL);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const text = await res.text();
-      // Debug: zeige erste Zeile und erkannten Separator
       const firstLine = text.split(/\r?\n/)[0] || '';
       const detectedSep = firstLine.includes(';') ? ';' : ',';
+      // Leere Antwort → einmal automatisch retry nach 1.5s
+      if (!firstLine.trim() && retryCount < 2) {
+        setFetchLoading(false);
+        setTimeout(() => fetchFromSheets(isAutoLoad, retryCount + 1), 1500);
+        return;
+      }
       const { data, descs } = parseSheetsCsv(text);
       const known = ['VIX','RVX','VXN','VVIX','VXV','Fear_Greed_Index','Equity_Put_Call_Ratio',
         'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
@@ -811,7 +858,15 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
         'HY_Spread','DXY','Gold_SP_Ratio','Gold','Silver','WTI','SPX','NDX','RUT','SPX_200D','NDX_200D'];
       const found = known.filter(k => data[k] !== undefined);
-      if (found.length === 0) throw new Error(`Keine bekannten Felder gefunden (Sep: "${detectedSep}", Header: "${firstLine.slice(0,60)}")`);
+      if (found.length === 0) {
+        // Beim Auto-Load: retry statt Fehler zeigen
+        if (isAutoLoad && retryCount < 2) {
+          setFetchLoading(false);
+          setTimeout(() => fetchFromSheets(true, retryCount + 1), 1500);
+          return;
+        }
+        throw new Error(`Keine bekannten Felder gefunden (Sep: "${detectedSep}", Header: "${firstLine.slice(0,60)}")`);
+      }
       applySheetData(data);
       if (Object.keys(descs).length > 0) setSheetDescs(descs);
       setLastImportDate(new Date());
@@ -3282,6 +3337,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           setActiveTab={setActiveTab}
           setShowProfilePanel={setShowProfilePanel}
           setShowConfig={setShowConfig}
+          setConfigTab={setConfigTab}
           setDraftThresholds={setDraftThresholds}
           setValidationErrors={setValidationErrors}
           setInputTexts={setInputTexts}
