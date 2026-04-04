@@ -507,6 +507,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [saveTemplateMsg, setSaveTemplateMsg] = useState(null);
+  const [expandedTplId, setExpandedTplId] = useState(null);
   const [pendingColors, setPendingColors] = useState({});
   const [showInfo, setShowInfo] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -2536,51 +2537,125 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '2px' }}>Vorgefertigte Konfigurationen</div>
                   {PRESET_TEMPLATES.map(tpl => {
                     const isDefault = defaultPresetId === tpl.id;
+                    const isExpanded = expandedTplId === tpl.id;
+                    // Build indicator bars from tpl.thresholds
+                    const bars = Object.entries(tpl.thresholds).map(([key, val]) => {
+                      if (!val || val === true) return null;
+                      const cfg = val;
+                      const n = tpl.classes.length;
+                      const colors = tpl.classes.map(c => c.color);
+                      const displayColors = cfg.dir === 'desc' ? [...colors].reverse() : colors;
+                      const labels = cfg.values || [];
+                      const labelMap = { vix:'VIX', vvix:'VVIX', vixVxv:'VIX/VXV', vxn:'VXN', rvx:'RVX', fearGreed:'Fear & Greed', equityPutCall:'Equity P/C', vx1Spread:'VX1–VIX', vx2Spread:'VX2–VX1', hySpread:'HY Spread', dxy:'DXY', goldSP:'Gold/S&P', wti:'WTI', yieldSpread:'10Y–2Y', spxAbove200d:'SPX 200T', ndxAbove200d:'NDX 200T' };
+                      return { key, label: labelMap[key] || key, dir: cfg.dir, values: labels, colors: displayColors, n };
+                    }).filter(Boolean);
                     return (
-                      <div key={tpl.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px', borderRadius: '12px', border: `0.5px solid ${isDefault ? 'rgba(10,132,255,0.3)' : 'rgba(255,255,255,0.07)'}`, background: isDefault ? 'rgba(10,132,255,0.05)' : 'rgba(255,255,255,0.02)' }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
-                            <span style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7' }}>{tpl.name}</span>
-                            {isDefault && <span style={{ fontSize: '9px', fontWeight: 700, color: '#0A84FF', background: 'rgba(10,132,255,0.15)', padding: '1px 6px', borderRadius: '5px', textTransform: 'uppercase', letterSpacing: '.04em' }}>Standard</span>}
+                      <div key={tpl.id} style={{ borderRadius: '12px', border: `0.5px solid ${isDefault ? 'rgba(10,132,255,0.3)' : 'rgba(255,255,255,0.07)'}`, background: isDefault ? 'rgba(10,132,255,0.05)' : 'rgba(255,255,255,0.02)', overflow: 'hidden' }}>
+                        {/* Card header */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 14px' }}>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+                              <span style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7' }}>{tpl.name}</span>
+                              {isDefault && <span style={{ fontSize: '9px', fontWeight: 700, color: '#0A84FF', background: 'rgba(10,132,255,0.15)', padding: '1px 6px', borderRadius: '5px', textTransform: 'uppercase', letterSpacing: '.04em' }}>Standard</span>}
+                            </div>
+                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4, marginBottom: '7px' }}>{tpl.desc}</div>
+                            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
+                              {tpl.classes.map((c, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                  <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: c.color }} />
+                                  <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{c.label}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                          <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4, marginBottom: '7px' }}>{tpl.desc}</div>
-                          <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                            {tpl.classes.map((c, i) => (
-                              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: c.color }} />
-                                <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{c.label}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flexShrink: 0 }}>
+                            <button
+                              onClick={() => {
+                                applyPresetById(tpl.id);
+                                setDraftVolaClasses(JSON.parse(JSON.stringify(tpl.classes)));
+                                setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
+                                setValidationErrors({});
+                                setInputTexts({});
+                                setShowConfig(false);
+                                setActiveTab('analysis');
+                              }}
+                              style={{ padding: '6px 12px', borderRadius: '8px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: '#0A84FF', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
+                              onMouseEnter={e => e.currentTarget.style.background='rgba(10,132,255,0.18)'}
+                              onMouseLeave={e => e.currentTarget.style.background='rgba(10,132,255,0.08)'}>
+                              Laden →
+                            </button>
+                            <button
+                              onClick={() => setExpandedTplId(isExpanded ? null : tpl.id)}
+                              style={{ padding: '5px 8px', borderRadius: '8px', border: `0.5px solid ${isExpanded ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'}`, background: isExpanded ? 'rgba(255,255,255,0.08)' : 'transparent', color: isExpanded ? '#F5F5F7' : 'rgba(255,255,255,0.3)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', textAlign: 'center' }}
+                              onMouseEnter={e => { e.currentTarget.style.color='#F5F5F7'; e.currentTarget.style.borderColor='rgba(255,255,255,0.2)'; }}
+                              onMouseLeave={e => { e.currentTarget.style.color=isExpanded?'#F5F5F7':'rgba(255,255,255,0.3)'; e.currentTarget.style.borderColor=isExpanded?'rgba(255,255,255,0.2)':'rgba(255,255,255,0.08)'; }}>
+                              {isExpanded ? '▲ Schließen' : '▼ Konfiguration'}
+                            </button>
+                            <button
+                              onClick={() => {
+                                const newId = isDefault ? null : tpl.id;
+                                setDefaultPresetId(newId);
+                                try { if (newId) localStorage.setItem('volafly_default_preset', newId); else localStorage.removeItem('volafly_default_preset'); } catch {}
+                              }}
+                              style={{ padding: '5px 8px', borderRadius: '8px', border: `0.5px solid ${isDefault ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)'}`, background: 'transparent', color: isDefault ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', textAlign: 'center' }}
+                              onMouseEnter={e => { e.currentTarget.style.color='#F5F5F7'; e.currentTarget.style.borderColor='rgba(255,255,255,0.25)'; }}
+                              onMouseLeave={e => { e.currentTarget.style.color=isDefault?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor=isDefault?'rgba(255,255,255,0.15)':'rgba(255,255,255,0.08)'; }}>
+                              {isDefault ? '★ Standard' : '☆ Als Standard'}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Expandable config view */}
+                        {isExpanded && bars.length > 0 && (
+                          <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.07)', padding: '14px 14px 16px', background: 'rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em' }}>Grenzwerte</div>
+                            {bars.map(bar => (
+                              <div key={bar.key}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                                  <span style={{ fontSize: '11px', fontWeight: 600, color: '#F5F5F7' }}>{bar.label}</span>
+                                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)' }}>{bar.dir === 'asc' ? '↑ steigend' : '↓ fallend'}</span>
+                                </div>
+                                {/* Color bar */}
+                                <div style={{ display: 'flex', gap: '1px', height: '6px', borderRadius: '4px', overflow: 'hidden' }}>
+                                  {bar.colors.map((col, i) => (
+                                    <div key={i} style={{ flex: 1, background: col }} />
+                                  ))}
+                                </div>
+                                {/* Value labels */}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                                  {[...bar.values, ''].map((v, i) => {
+                                    const isLast = i === bar.values.length;
+                                    const isFirst = i === 0;
+                                    const displayVal = isFirst ? (bar.dir === 'asc' ? `<${v}` : `>${v}`) :
+                                                       isLast ? (bar.dir === 'asc' ? `>${bar.values[bar.values.length-1]}` : `<${bar.values[bar.values.length-1]}`) :
+                                                       String(v);
+                                    return (
+                                      <span key={i} style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textAlign: i === 0 ? 'left' : i === bar.values.length ? 'right' : 'center', flex: 1 }}>
+                                        {i < bar.values.length ? String(bar.values[i]) : ''}
+                                      </span>
+                                    );
+                                  })}
+                                </div>
+                                {/* Class labels under each segment */}
+                                <div style={{ display: 'flex', marginTop: '1px' }}>
+                                  {bar.colors.map((col, i) => {
+                                    const cls = bar.dir === 'desc' ? tpl.classes[bar.n - 1 - i] : tpl.classes[i];
+                                    return (
+                                      <div key={i} style={{ flex: 1, textAlign: 'center' }}>
+                                        <span style={{ fontSize: '9px', color: col, fontWeight: 600 }}>{cls?.label}</span>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             ))}
                           </div>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flexShrink: 0 }}>
-                          <button
-                            onClick={() => {
-                              applyPresetById(tpl.id);
-                              setDraftVolaClasses(JSON.parse(JSON.stringify(tpl.classes)));
-                              setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
-                              setValidationErrors({});
-                              setInputTexts({});
-                              setShowConfig(false);
-                              setActiveTab('analysis');
-                            }}
-                            style={{ padding: '6px 12px', borderRadius: '8px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.08)', color: '#0A84FF', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' }}
-                            onMouseEnter={e => e.currentTarget.style.background='rgba(10,132,255,0.18)'}
-                            onMouseLeave={e => e.currentTarget.style.background='rgba(10,132,255,0.08)'}>
-                            Laden →
-                          </button>
-                          <button
-                            onClick={() => {
-                              const newId = isDefault ? null : tpl.id;
-                              setDefaultPresetId(newId);
-                              try { if (newId) localStorage.setItem('volafly_default_preset', newId); else localStorage.removeItem('volafly_default_preset'); } catch {}
-                            }}
-                            style={{ padding: '5px 8px', borderRadius: '8px', border: `0.5px solid ${isDefault ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)'}`, background: 'transparent', color: isDefault ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', textAlign: 'center' }}
-                            onMouseEnter={e => { e.currentTarget.style.color='#F5F5F7'; e.currentTarget.style.borderColor='rgba(255,255,255,0.25)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.color=isDefault?'rgba(255,255,255,0.5)':'rgba(255,255,255,0.2)'; e.currentTarget.style.borderColor=isDefault?'rgba(255,255,255,0.15)':'rgba(255,255,255,0.08)'; }}>
-                            {isDefault ? '★ Standard' : '☆ Als Standard'}
-                          </button>
-                        </div>
+                        )}
+                        {isExpanded && bars.length === 0 && (
+                          <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.07)', padding: '12px 14px', background: 'rgba(0,0,0,0.15)', fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
+                            Dieses Template nutzt Standard-Grenzwerte.
+                          </div>
+                        )}
                       </div>
                     );
                   })}
