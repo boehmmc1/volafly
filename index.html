@@ -2540,14 +2540,21 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                     const isExpanded = expandedTplId === tpl.id;
                     // Build indicator bars from tpl.thresholds
                     const bars = Object.entries(tpl.thresholds).map(([key, val]) => {
-                      if (!val || val === true) return null;
-                      const cfg = val;
+                      if (!val) return null;
                       const n = tpl.classes.length;
+                      const def = defaultThresholds[key];
+                      if (!def) return null;
+                      // val === true → use default values; val is object → use its values
+                      const cfg = val === true ? def : { ...def, ...val };
+                      const rawVals = cfg.values || def.values || [];
+                      // trim/pad to n-1 values
+                      const vals = [...rawVals];
+                      while (vals.length < n - 1) vals.push(vals[vals.length-1] ?? 0);
+                      const trimmed = vals.slice(0, n - 1);
                       const colors = tpl.classes.map(c => c.color);
                       const displayColors = cfg.dir === 'desc' ? [...colors].reverse() : colors;
-                      const labels = cfg.values || [];
                       const labelMap = { vix:'VIX', vvix:'VVIX', vixVxv:'VIX/VXV', vxn:'VXN', rvx:'RVX', fearGreed:'Fear & Greed', equityPutCall:'Equity P/C', vx1Spread:'VX1–VIX', vx2Spread:'VX2–VX1', hySpread:'HY Spread', dxy:'DXY', goldSP:'Gold/S&P', wti:'WTI', yieldSpread:'10Y–2Y', spxAbove200d:'SPX 200T', ndxAbove200d:'NDX 200T' };
-                      return { key, label: labelMap[key] || key, dir: cfg.dir, values: labels, colors: displayColors, n };
+                      return { key, label: labelMap[key] || key, dir: cfg.dir, values: trimmed, colors: displayColors, n };
                     }).filter(Boolean);
                     return (
                       <div key={tpl.id} style={{ borderRadius: '12px', border: `0.5px solid ${isDefault ? 'rgba(10,132,255,0.3)' : 'rgba(255,255,255,0.07)'}`, background: isDefault ? 'rgba(10,132,255,0.05)' : 'rgba(255,255,255,0.02)', overflow: 'hidden' }}>
