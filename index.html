@@ -445,10 +445,14 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
     if (onboardStep < totalSteps - 1) {
       setOnboardStep(onboardStep + 1);
     } else {
-      // Letzter Schritt: Config mit Start-Screen öffnen, Onboarding beenden
+      // Letzter Schritt: Onboarding beenden, Config-Modal mit Start-Tab öffnen
+      if (neverShow) {
+        try { localStorage.setItem('volafly_onboarded_v3', '1'); } catch {}
+      }
+      setShowProfilePanel(false);
       setConfigTab('start');
       setShowConfig(true);
-      saveAndClose();
+      onFinish();
     }
   };
 
