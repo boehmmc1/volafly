@@ -89,19 +89,16 @@ window.VOLAFLY_TEMPLATES = [
   {
     id: 'momentum',
     name: 'Der Momentum-Investor',
-    desc: '3 Klassen · Trend & Breadth-fokussiert · folgt dem Markt, meidet Turbulenzen',
+    desc: '2 Klassen · VIX & gleitende Durchschnitte · folgt dem Markt, meidet Turbulenzen',
     classes: [
-      { label: 'Trend',   color: '#30D158', investPct: 100, subtitle: 'Klarer Aufwärtstrend — voll investiert',   desc: 'Klarer Aufwärtstrend bestätigt. Momentum-Investor ist voll investiert bis zu 100%.' },
-      { label: 'Neutral', color: '#FFCC00', investPct: 60,  subtitle: 'Unklarer Trend — selektiv positioniert',  desc: 'Trend ist unklarer — selektiv positioniert bleiben. Bis zu 60%.' },
-      { label: 'Crash',   color: '#FF453A', investPct: 20,  subtitle: 'Abwärtstrend — defensiv positioniert',    desc: 'Abwärtstrend aktiv — Kapitalschutz hat Priorität. Maximal 20% Exposure.' },
+      { label: 'Trend',          color: '#30D158', investPct: 100, subtitle: 'Klarer Aufwärtstrend — voll investiert',   desc: 'VIX unter 20, Indizes über gleitenden Durchschnitten. Momentum-Investor ist voll investiert bis zu 100%.' },
+      { label: 'Raus aus Markt', color: '#FF453A', investPct: 20,  subtitle: 'Abwärtstrend — defensiv positioniert',    desc: 'VIX über 20 oder Indizes unter gleitenden Durchschnitten. Kapitalschutz hat Priorität. Maximal 20% Exposure.' },
     ],
     thresholds: {
-      // 3 Klassen = 2 Grenzwerte pro Indikator
-      vix:          { values: [20, 30],       dir: 'asc'  },
-      vixVxv:       { values: [0.95, 1.05],   dir: 'asc'  },
-      vx1Spread:    { values: [0.5, -1.0],    dir: 'desc' },
-      spxAbove200d: { values: [1, 0],         dir: 'desc' },
-      ndxAbove200d: { values: [1, 0],         dir: 'desc' },
+      // 2 Klassen = 1 Grenzwert pro Indikator
+      vix:          { values: [20],  dir: 'asc'  },
+      spxAbove200d: { values: [1],   dir: 'desc' },
+      ndxAbove200d: { values: [1],   dir: 'desc' },
     },
   },
 
