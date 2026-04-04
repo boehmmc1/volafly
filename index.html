@@ -825,15 +825,30 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     const tpl = PRESET_TEMPLATES.find(t => t.id === pid);
     if (!tpl) return;
     const n = tpl.classes.length;
-    const adj = Object.fromEntries(Object.entries(defaultThresholds).map(([key, cfg]) => [key, { ...cfg, active: !!(tpl.thresholds[key]) }]));
-    const eq = computeEqualWeights(adj);
-    const sized = Object.fromEntries(Object.entries(eq).map(([key, cfg]) => {
-      const vals = [...cfg.values];
+    // Merge: defaultThresholds als Basis, dann Template-Werte drüber
+    const merged = Object.fromEntries(Object.entries(defaultThresholds).map(([key, def]) => {
+      const tplVal = tpl.thresholds[key];
+      if (!tplVal) return [key, { ...def, active: false }];
+      // Falls Template nur true enthält → nur aktivieren, Default-Werte behalten
+      if (tplVal === true) {
+        const vals = [...def.values];
+        while (vals.length < n - 1) vals.push(vals[vals.length-1] ?? 0);
+        return [key, { ...def, active: true, values: vals.slice(0, n-1) }];
+      }
+      // Falls Template vollständige Definition enthält → übernehmen
+      const vals = [...(tplVal.values || def.values)];
       while (vals.length < n - 1) vals.push(vals[vals.length-1] ?? 0);
-      return [key, { ...cfg, values: vals.slice(0, n-1) }];
+      return [key, {
+        ...def,
+        active: true,
+        values: vals.slice(0, n-1),
+        dir: tplVal.dir || def.dir,
+        weight: tplVal.weight || def.weight,
+      }];
     }));
+    const equalized = computeEqualWeights(merged);
     setVolaClasses(tpl.classes);
-    setThresholds(sized);
+    setThresholds(equalized);
     setActiveTemplateId(pid);
   };
 
@@ -2541,21 +2556,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', flexShrink: 0 }}>
                           <button
                             onClick={() => {
-                              const n = tpl.classes.length;
-                              const adj = Object.fromEntries(Object.entries(defaultThresholds).map(([key, cfg]) => [key, { ...cfg, active: !!(tpl.thresholds[key]) }]));
-                              const eq = computeEqualWeights(adj);
-                              const sized = Object.fromEntries(Object.entries(eq).map(([key, cfg]) => {
-                                const vals = [...cfg.values];
-                                while (vals.length < n - 1) vals.push(vals[vals.length-1] ?? 0);
-                                return [key, { ...cfg, values: vals.slice(0, n-1) }];
-                              }));
-                              setVolaClasses(tpl.classes);
+                              applyPresetById(tpl.id);
                               setDraftVolaClasses(JSON.parse(JSON.stringify(tpl.classes)));
-                              setThresholds(sized);
-                              setDraftThresholds(JSON.parse(JSON.stringify(sized)));
+                              setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
                               setValidationErrors({});
                               setInputTexts({});
-                              setActiveTemplateId(tpl.id);
                               setShowConfig(false);
                               setActiveTab('analysis');
                             }}
