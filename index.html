@@ -427,7 +427,7 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
       setDraftThresholds(JSON.parse(JSON.stringify(thresholds)));
       setValidationErrors({});
       setInputTexts({});
-      setConfigTab('templates');
+      setConfigTab('start');
       setShowConfig(true);
     }
   }, [onboardStep]);
@@ -445,9 +445,9 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
     if (onboardStep < totalSteps - 1) {
       setOnboardStep(onboardStep + 1);
     } else {
-      // Letzter Schritt: Config öffnen und Onboarding beenden
+      // Letzter Schritt: Config mit Start-Screen öffnen, Onboarding beenden
+      setConfigTab('start');
       setShowConfig(true);
-      setConfigTab('templates');
       saveAndClose();
     }
   };
