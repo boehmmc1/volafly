@@ -30,7 +30,7 @@
  *   vix: {
  *     values: [15, 20, 30, 40],
  *     // Anzahl Werte = Anzahl Klassen minus 1
- *     // Beispiel: 5 Klassen = 4 Grenzwerte, 3 Klassen = 2 Grenzwerte
+ *     // Beispiel: 5 Klassen = 4 Grenzwerte, 2 Klassen = 1 Grenzwert
  *     dir: 'asc',
  *     // 'asc'  = höherer Wert -> höhere Stress-Klasse  (z.B. VIX)
  *     // 'desc' = niedrigerer Wert -> höhere Stress-Klasse (z.B. Fear & Greed)
@@ -62,11 +62,11 @@
 
 window.VOLAFLY_TEMPLATES = [
 
-  // ── Template 1: Der Antizykliker ──────────────────────────────────────────
+  // ── Template 1: Der rationale Investor ───────────────────────────────────
   {
     id: 'antizykliker',
-    name: 'Der Antizykliker',
-    desc: '5 Klassen · VIX & Sentiment-fokussiert · kauft Angst, verkauft Gier',
+    name: 'Der rationale Investor',
+    desc: '5 Klassen · VIX & Sentiment-fokussiert · kauft die Angst der anderen, lässt sich nicht von Gier anstecken',
     classes: [
       { label: 'Stille',   color: '#8E8E93', investPct: 30,  subtitle: 'Niedriges Risiko — defensiv positioniert',  desc: 'Märkte sind ruhig. Antizykliker wartet geduldig mit 30% Investitionsgrad.' },
       { label: 'Ruhe',     color: '#30D158', investPct: 55,  subtitle: 'Normales Umfeld — solide Basis',             desc: 'Normales Marktumfeld. Solide Basis-Position von bis zu 55% ist angemessen.' },
@@ -91,35 +91,14 @@ window.VOLAFLY_TEMPLATES = [
     name: 'Der Momentum-Investor',
     desc: '2 Klassen · VIX & gleitende Durchschnitte · folgt dem Markt, meidet Turbulenzen',
     classes: [
-      { label: 'Trend',          color: '#30D158', investPct: 100, subtitle: 'Klarer Aufwärtstrend — voll investiert',   desc: 'VIX unter 20, Indizes über gleitenden Durchschnitten. Momentum-Investor ist voll investiert bis zu 100%.' },
-      { label: 'Raus aus Markt', color: '#FF453A', investPct: 20,  subtitle: 'Abwärtstrend — defensiv positioniert',    desc: 'VIX über 20 oder Indizes unter gleitenden Durchschnitten. Kapitalschutz hat Priorität. Maximal 20% Exposure.' },
+      { label: 'Trend',          color: '#30D158', investPct: 100, subtitle: 'Klarer Aufwärtstrend — voll investiert', desc: 'VIX unter 20, Indizes über gleitenden Durchschnitten. Momentum-Investor ist voll investiert bis zu 100%.' },
+      { label: 'Raus aus Markt', color: '#FF453A', investPct: 0,   subtitle: 'Abwärtstrend — defensiv positioniert',   desc: 'VIX über 20 oder Indizes unter gleitenden Durchschnitten. Kapitalschutz hat Priorität.' },
     ],
     thresholds: {
       // 2 Klassen = 1 Grenzwert pro Indikator
-      vix:          { values: [20],  dir: 'asc'  },
-      spxAbove200d: { values: [1],   dir: 'desc' },
-      ndxAbove200d: { values: [1],   dir: 'desc' },
-    },
-  },
-
-  // ── Template 3: Der Risiko-Manager ───────────────────────────────────────
-  {
-    id: 'risikoManager',
-    name: 'Der Risiko-Manager',
-    desc: '4 Klassen · Spread & Makro-fokussiert · Kapitalerhalt als oberstes Ziel',
-    classes: [
-      { label: 'Grün',   color: '#30D158', investPct: 40,  subtitle: 'Niedriges Risiko — defensiv positioniert', desc: 'Risikoumfeld ist ruhig, aber Kapitalschutz hat Vorrang. Maximal 40% investiert.' },
-      { label: 'Gelb',   color: '#FFCC00', investPct: 60,  subtitle: 'Erhöhtes Risiko — selektiv aufbauen',      desc: 'Erhöhtes Risikoumfeld — erste antizyklische Positionen aufbauen. Bis zu 60%.' },
-      { label: 'Orange', color: '#FF9F0A', investPct: 80,  subtitle: 'Hohes Risiko — antizyklisch erhöhen',      desc: 'Hohes Risikoniveau — Risiko-Manager erhöht antizyklisch auf bis zu 80%.' },
-      { label: 'Rot',    color: '#FF453A', investPct: 100, subtitle: 'Extremes Risiko — maximale Position',      desc: 'Extremes Risikoumfeld mit Kapitulation — historisch bester Kaufzeitpunkt. Bis zu 100%.' },
-    ],
-    thresholds: {
-      // 4 Klassen = 3 Grenzwerte pro Indikator
-      hySpread:    { values: [3.0, 5.0, 8.0],      dir: 'asc'  },
-      dxy:         { values: [97, 102, 108],        dir: 'asc'  },
-      yieldSpread: { values: [1.0, 0.0, -0.5],     dir: 'desc' },
-      vix:         { values: [18, 28, 40],          dir: 'asc'  },
-      goldSP:      { values: [0.40, 0.55, 0.70],   dir: 'asc'  },
+      vix:          { values: [20], dir: 'asc'  },
+      spxAbove200d: { values: [1],  dir: 'desc' },
+      ndxAbove200d: { values: [1],  dir: 'desc' },
     },
   },
 
