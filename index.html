@@ -1964,7 +1964,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   macroColor = '#FF9F0A'; macroText = 'Inflationsangst';
                 }
 
-                const Scale = ({ leftColor, leftLabel, rightColor, rightLabel, signalColor, signalText }) => (
+                const Scale = ({ leftColor, rightColor, signalColor, signalText }) => (
                   <div style={{ marginTop: '8px' }}>
                     <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', marginBottom: '4px' }}>
                       <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '21%', borderRadius: '2px 0 0 2px', background: leftColor }} />
@@ -1973,9 +1973,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       <div style={{ position: 'absolute', top: '-3px', left: `${pct}%`, transform: 'translateX(-50%)', width: '2px', height: '10px', background: '#F5F5F7', borderRadius: '1px' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '9px', color: leftColor, fontWeight: 600 }}>{leftLabel}</span>
+                      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 500 }}>$35</span>
                       <span style={{ fontSize: '9px', color: signalColor, fontWeight: 600 }}>{signalText}</span>
-                      <span style={{ fontSize: '9px', color: rightColor, fontWeight: 600 }}>{rightLabel}</span>
+                      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 500 }}>$90</span>
                     </div>
                   </div>
                 );
@@ -1983,9 +1983,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 return (
                   <div style={{ marginTop: '8px' }}>
                     <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: '2px' }}>Antizyklisch</div>
-                    <Scale leftColor="#30D158" leftLabel="Öl kaufen" rightColor="#FF453A" rightLabel="Öl verkaufen" signalColor={tradeColor} signalText={tradeText} />
+                    <Scale leftColor="#30D158" rightColor="#FF453A" signalColor={tradeColor} signalText={tradeText} />
                     <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginTop: '8px', marginBottom: '2px' }}>Gesamtwirtschaft</div>
-                    <Scale leftColor="#FF453A" leftLabel="Rezessionsangst" rightColor="#FF9F0A" rightLabel="Inflationsangst" signalColor={macroColor} signalText={macroText} />
+                    <Scale leftColor="#FF453A" rightColor="#FF9F0A" signalColor={macroColor} signalText={macroText} />
                   </div>
                 );
               })()}
