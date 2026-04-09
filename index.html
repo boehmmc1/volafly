@@ -1459,7 +1459,14 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
     const base = TOOLTIPS[id];
     const csvKey = TOOLTIP_CSV_KEY[id];
     const sheetDesc = csvKey ? sheetDescs[csvKey] : undefined;
-    const tip = base ? { ...base, desc: sheetDesc ?? base.desc } : null;
+    const tip = base ? {
+      ...base,
+      desc: (sheetDesc && sheetDesc !== base.desc)
+        ? (base.desc.includes('\n\n')
+            ? base.desc  // already has custom sections → keep ours
+            : sheetDesc + (base.desc ? '\n\n' + base.desc : ''))
+        : base.desc
+    } : null;
     return (
       <div
         style={{ position: 'relative', display: 'inline-block', width: '100%' }}
@@ -1906,9 +1913,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 return (
                   <div style={{ marginTop: '10px' }}>
                     <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', marginBottom: '5px' }}>
-                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '42%', borderRadius: '2px 0 0 2px', background: '#FF9F0A' }} />
-                      <div style={{ position: 'absolute', left: '42%', top: 0, height: '100%', width: '26%', background: 'rgba(255,255,255,0.2)' }} />
-                      <div style={{ position: 'absolute', left: '68%', top: 0, height: '100%', width: '32%', borderRadius: '0 2px 2px 0', background: '#FFD60A' }} />
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '21%', borderRadius: '2px 0 0 2px', background: '#FF9F0A' }} />
+                      <div style={{ position: 'absolute', left: '21%', top: 0, height: '100%', width: '26%', background: 'rgba(255,255,255,0.2)' }} />
+                      <div style={{ position: 'absolute', left: '47%', top: 0, height: '100%', width: '53%', borderRadius: '0 2px 2px 0', background: '#FFD60A' }} />
                       <div style={{ position: 'absolute', top: '-3px', left: `${pct}%`, transform: 'translateX(-50%)', width: '2px', height: '10px', background: '#F5F5F7', borderRadius: '1px' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
