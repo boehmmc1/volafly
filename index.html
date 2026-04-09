@@ -1112,7 +1112,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     hySpread:     { label: 'HY Credit Spread', desc: 'Risikoaufschlag für Hochzinsanleihen vs. Staatsanleihen. Frühindikator — weitet sich oft Wochen vor dem VIX aus. Über 5% = Stress.' },
     dxy:          { label: 'US Dollar (DXY)', desc: 'Stärke des USD gegenüber 6 Währungen. Steigt in Risk-Off-Phasen als Flucht in sichere Häfen.\n\nFür europäische Investoren: Unter 95 sind US-Wertpapiere in Euro günstig — Kaufsignal. Über 103 bringt der Rückumtausch in Euro mehr — Verkaufssignal.' },
     goldSP:       { label: 'S&P 500 / Gold Ratio', desc: 'S&P 500 geteilt durch Gold. Ein hoher Wert zeigt, dass Aktien teuer relativ zu Gold sind — Gold wird als Absicherung attraktiver.\n\nUnter 1,0 sind Aktien günstig relativ zu Gold — Gold verkaufen. Über 2,0 sind Aktien historisch teuer — Gold kaufen.' },
-    wti:          { label: 'WTI Crude Oil', desc: 'Öl ist ein zyklisches Asset — sein Preis spiegelt die globale Wirtschaftsdynamik wider, nicht direkt die Aktienmärkte.\n\nUnter $60 signalisiert schwache Nachfrage und Rezessionsangst. Zwischen $60 und $90 liegt ein gesundes, wirtschaftsfreundliches Niveau. Über $90 steigt das Stagflationsrisiko — hohe Energiekosten belasten Unternehmen und Konsum.' },
+    wti:          { label: 'WTI Crude Oil', desc: 'Öl ist ein zyklisches Asset — sein Preis spiegelt die globale Wirtschaftsdynamik wider, nicht direkt die Aktienmärkte.\n\nUnter $35 signalisiert extreme Nachfrageschwäche — antizyklisch kaufenswert. Zwischen $35 und $90 liegt ein gesundes Niveau ohne klares Signal. Über $90 steigt die Inflationsgefahr und Unternehmenskosten werden belastet.' },
     yieldSpread:  { label: '10Y – 2Y Spread', desc: 'Zinsstrukturkurve. Negativ (invertiert) = historisch zuverlässigster Rezessionsfrühindikator. Positiv und steigend = Erholung.' },
   };
 
@@ -1942,21 +1942,21 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Barrel</div>
               {ri.wti > 0 && (() => {
                 const wti = ri.wti;
-                const pct = Math.min(100, Math.max(0, ((wti - 30) / (130 - 30)) * 100));
+                const pct = Math.min(100, Math.max(0, ((wti - 10) / (130 - 10)) * 100));
 
-                // Skala 1: Antizyklischer Öl-Handel
+                // Antizyklisch: Kauf unter $35, Verkauf über $90
                 let tradeColor, tradeText;
-                if (wti < 60) {
+                if (wti < 35) {
                   tradeColor = '#30D158'; tradeText = 'Öl kaufen';
                 } else if (wti <= 90) {
-                  tradeColor = 'rgba(255,255,255,0.35)'; tradeText = 'Kein klares Signal';
+                  tradeColor = 'rgba(255,255,255,0.35)'; tradeText = 'Neutral';
                 } else {
                   tradeColor = '#FF453A'; tradeText = 'Öl verkaufen';
                 }
 
-                // Skala 2: Gesamtwirtschaft
+                // Gesamtwirtschaft
                 let macroColor, macroText;
-                if (wti < 60) {
+                if (wti < 35) {
                   macroColor = '#FF453A'; macroText = 'Rezessionsangst';
                 } else if (wti <= 90) {
                   macroColor = '#30D158'; macroText = 'Gesundes Niveau';
@@ -1964,12 +1964,12 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   macroColor = '#FF9F0A'; macroText = 'Inflationsangst';
                 }
 
-                const Scale = ({ leftColor, leftLabel, midLabel, rightColor, rightLabel, signalColor, signalText }) => (
+                const Scale = ({ leftColor, leftLabel, rightColor, rightLabel, signalColor, signalText }) => (
                   <div style={{ marginTop: '8px' }}>
                     <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', marginBottom: '4px' }}>
-                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '30%', borderRadius: '2px 0 0 2px', background: leftColor }} />
-                      <div style={{ position: 'absolute', left: '30%', top: 0, height: '100%', width: '30%', background: 'rgba(255,255,255,0.2)' }} />
-                      <div style={{ position: 'absolute', left: '60%', top: 0, height: '100%', width: '40%', borderRadius: '0 2px 2px 0', background: rightColor }} />
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '21%', borderRadius: '2px 0 0 2px', background: leftColor }} />
+                      <div style={{ position: 'absolute', left: '21%', top: 0, height: '100%', width: '46%', background: 'rgba(255,255,255,0.18)' }} />
+                      <div style={{ position: 'absolute', left: '67%', top: 0, height: '100%', width: '33%', borderRadius: '0 2px 2px 0', background: rightColor }} />
                       <div style={{ position: 'absolute', top: '-3px', left: `${pct}%`, transform: 'translateX(-50%)', width: '2px', height: '10px', background: '#F5F5F7', borderRadius: '1px' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1983,9 +1983,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 return (
                   <div style={{ marginTop: '8px' }}>
                     <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: '2px' }}>Antizyklisch</div>
-                    <Scale leftColor="#30D158" leftLabel="Öl kaufen" midLabel="Gesundes Niveau" rightColor="#FF453A" rightLabel="Öl verkaufen" signalColor={tradeColor} signalText={tradeText} />
+                    <Scale leftColor="#30D158" leftLabel="Öl kaufen" rightColor="#FF453A" rightLabel="Öl verkaufen" signalColor={tradeColor} signalText={tradeText} />
                     <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginTop: '8px', marginBottom: '2px' }}>Gesamtwirtschaft</div>
-                    <Scale leftColor="#FF453A" leftLabel="Rezession" midLabel="Gesundes Niveau" rightColor="#FF9F0A" rightLabel="Inflation" signalColor={macroColor} signalText={macroText} />
+                    <Scale leftColor="#FF453A" leftLabel="Rezessionsangst" rightColor="#FF9F0A" rightLabel="Inflationsangst" signalColor={macroColor} signalText={macroText} />
                   </div>
                 );
               })()}
