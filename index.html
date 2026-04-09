@@ -1111,7 +1111,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     vx5vx1:       { label: 'VX5 – VX1', desc: 'Gesamtsteigung der Kurve. Stark positiv = Markt erwartet Normalisierung.' },
     hySpread:     { label: 'HY Credit Spread', desc: 'Risikoaufschlag für Hochzinsanleihen vs. Staatsanleihen. Frühindikator — weitet sich oft Wochen vor dem VIX aus. Über 5% = Stress.' },
     dxy:          { label: 'US Dollar (DXY)', desc: 'Stärke des USD gegenüber 6 Währungen. Steigt in Risk-Off-Phasen — bestätigt echte Flucht in sichere Häfen.\n\nFür europäische Investoren: Niedriger DXY → schwacher Dollar → US-Aktien sind in Euro günstig → Kaufzeitpunkt. Hoher DXY → starker Dollar → bestehende US-Positionen bringen beim Rückumtausch mehr Euro → Verkaufszeitpunkt.' },
-    goldSP:       { label: 'Gold / S&P Ratio', desc: 'Gold geteilt durch S&P 500. Steigt das Ratio, flieht Kapital aus Aktien in Gold — ein klares Risk-Off-Signal.' },
+    goldSP:       { label: 'S&P 500 / Gold Ratio', desc: 'S&P 500 geteilt durch Gold. Hoher Wert = Aktien teuer relativ zu Gold → Gold als Absicherung attraktiv. Niedriger Wert = Aktien günstig relativ zu Gold.\n\nHistorische Extreme: ~0.2 (Goldpeak 2011), ~5 (Dotcom-Hoch 2000). Aktuell typisch: 1–2.' },
     wti:          { label: 'WTI Crude Oil', desc: 'Rohölpreis (West Texas Intermediate). Steigt Öl stark bei fallenden Aktien = stagflationärer Schock. Fällt Öl stark = Rezessionsangst.' },
     yieldSpread:  { label: '10Y – 2Y Spread', desc: 'Zinsstrukturkurve. Negativ (invertiert) = historisch zuverlässigster Rezessionsfrühindikator. Positiv und steigend = Erholung.' },
   };
@@ -1353,7 +1353,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const vx2Spread = v.vx2 - v.vx1;
 
   // Gold / S&P 500 live ratio
-  const goldSPRatio = (idx.spx > 0 && ri.gold > 0) ? ri.gold / idx.spx : ri.goldSP;
+  const goldSPRatio = (idx.spx > 0 && ri.gold > 0) ? idx.spx / ri.gold : (ri.goldSP > 0 ? 1 / ri.goldSP : 0);
 
   // SPX/NDX above 200D: 0 = below, 1 = above (for threshold: desc, threshold[0]=1 means above=Stille)
   const spxAbove200d = (idx.spx > 0 && idx.spx200d > 0) ? (idx.spx > idx.spx200d ? 1 : 0) : null;
@@ -1879,11 +1879,46 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
 
           <TT id="goldSP">
             <div style={{ borderRadius: '8px', padding: '4px' }}>
-              <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>Gold / S&amp;P 500</div>
+              <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>S&amp;P 500 / Gold</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
-                {goldSPRatio > 0 ? f(goldSPRatio, 3) : '—'}
+                {goldSPRatio > 0 ? f(goldSPRatio, 2) : '—'}
               </div>
-              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>Gold ÷ SPX</div>
+              <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>SPX ÷ Gold</div>
+              {goldSPRatio > 0 && (() => {
+                // S&P/Gold historische Logik:
+                // < 1.0  → Aktien günstig vs. Gold → Gold verkaufen, Aktien kaufen
+                // 1.0–2.0 → neutral (aktuell ~1.43)
+                // > 2.0  → Aktien teuer vs. Gold → Gold als Absicherung kaufen
+                // Historische Extreme: ~0.2 (2011 Goldpeak), ~5 (2000 Dotcom)
+                const ratio = goldSPRatio;
+                const pct = Math.min(100, Math.max(0, ((ratio - 0.2) / (4.0 - 0.2)) * 100));
+                let signalColor, signalText;
+                if (ratio < 1.0) {
+                  signalColor = '#FF9F0A';
+                  signalText = 'Gold verkaufen';
+                } else if (ratio <= 2.0) {
+                  signalColor = 'rgba(255,255,255,0.35)';
+                  signalText = 'Neutral';
+                } else {
+                  signalColor = '#FFD60A';
+                  signalText = 'Gold kaufen';
+                }
+                return (
+                  <div style={{ marginTop: '10px' }}>
+                    <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', marginBottom: '5px' }}>
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '42%', borderRadius: '2px 0 0 2px', background: '#FF9F0A' }} />
+                      <div style={{ position: 'absolute', left: '42%', top: 0, height: '100%', width: '26%', background: 'rgba(255,255,255,0.2)' }} />
+                      <div style={{ position: 'absolute', left: '68%', top: 0, height: '100%', width: '32%', borderRadius: '0 2px 2px 0', background: '#FFD60A' }} />
+                      <div style={{ position: 'absolute', top: '-3px', left: `${pct}%`, transform: 'translateX(-50%)', width: '2px', height: '10px', background: '#F5F5F7', borderRadius: '1px' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '9px', color: '#FF9F0A', fontWeight: 600 }}>Gold verk.</span>
+                      <span style={{ fontSize: '9px', color: signalColor, fontWeight: 600 }}>{signalText}</span>
+                      <span style={{ fontSize: '9px', color: '#FFD60A', fontWeight: 600 }}>Gold kauf.</span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </TT>
 
