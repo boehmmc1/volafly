@@ -1944,7 +1944,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 const wti = ri.wti;
                 const pct = Math.min(100, Math.max(0, ((wti - 10) / (130 - 10)) * 100));
 
-                // Antizyklisch: Kauf unter $35, Verkauf über $90
                 let tradeColor, tradeText;
                 if (wti < 35) {
                   tradeColor = '#30D158'; tradeText = 'Öl kaufen';
@@ -1954,7 +1953,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   tradeColor = '#FF453A'; tradeText = 'Öl verkaufen';
                 }
 
-                // Gesamtwirtschaft
                 let macroColor, macroText;
                 if (wti < 35) {
                   macroColor = '#FF453A'; macroText = 'Rezessionsangst';
@@ -1964,28 +1962,33 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   macroColor = '#FF9F0A'; macroText = 'Inflationsangst';
                 }
 
-                const Scale = ({ leftColor, rightColor, signalColor, signalText }) => (
+                return (
                   <div style={{ marginTop: '8px' }}>
-                    <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', marginBottom: '4px' }}>
-                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '21%', borderRadius: '2px 0 0 2px', background: leftColor }} />
-                      <div style={{ position: 'absolute', left: '21%', top: 0, height: '100%', width: '46%', background: 'rgba(255,255,255,0.18)' }} />
-                      <div style={{ position: 'absolute', left: '67%', top: 0, height: '100%', width: '33%', borderRadius: '0 2px 2px 0', background: rightColor }} />
+                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: '3px' }}>Antizyklisch</div>
+                    <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', marginBottom: '5px' }}>
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '21%', borderRadius: '2px 0 0 2px', background: '#30D158' }} />
+                      <div style={{ position: 'absolute', left: '21%', top: 0, height: '100%', width: '46%', background: 'rgba(255,255,255,0.2)' }} />
+                      <div style={{ position: 'absolute', left: '67%', top: 0, height: '100%', width: '33%', borderRadius: '0 2px 2px 0', background: '#FF453A' }} />
                       <div style={{ position: 'absolute', top: '-3px', left: `${pct}%`, transform: 'translateX(-50%)', width: '2px', height: '10px', background: '#F5F5F7', borderRadius: '1px' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 500 }}>$35</span>
-                      <span style={{ fontSize: '9px', color: signalColor, fontWeight: 600 }}>{signalText}</span>
-                      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 500 }}>$90</span>
+                      <span style={{ fontSize: '9px', color: '#30D158', fontWeight: 600 }}>Öl kaufen</span>
+                      <span style={{ fontSize: '9px', color: tradeColor, fontWeight: 600 }}>{tradeText}</span>
+                      <span style={{ fontSize: '9px', color: '#FF453A', fontWeight: 600 }}>Öl verkaufen</span>
                     </div>
-                  </div>
-                );
 
-                return (
-                  <div style={{ marginTop: '8px' }}>
-                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: '2px' }}>Antizyklisch</div>
-                    <Scale leftColor="#30D158" rightColor="#FF453A" signalColor={tradeColor} signalText={tradeText} />
-                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginTop: '8px', marginBottom: '2px' }}>Gesamtwirtschaft</div>
-                    <Scale leftColor="#FF453A" rightColor="#FF9F0A" signalColor={macroColor} signalText={macroText} />
+                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginTop: '10px', marginBottom: '3px' }}>Gesamtwirtschaft</div>
+                    <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', marginBottom: '5px' }}>
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '21%', borderRadius: '2px 0 0 2px', background: '#FF453A' }} />
+                      <div style={{ position: 'absolute', left: '21%', top: 0, height: '100%', width: '46%', background: 'rgba(255,255,255,0.2)' }} />
+                      <div style={{ position: 'absolute', left: '67%', top: 0, height: '100%', width: '33%', borderRadius: '0 2px 2px 0', background: '#FF9F0A' }} />
+                      <div style={{ position: 'absolute', top: '-3px', left: `${pct}%`, transform: 'translateX(-50%)', width: '2px', height: '10px', background: '#F5F5F7', borderRadius: '1px' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '9px', color: '#FF453A', fontWeight: 600 }}>Rezessionsangst</span>
+                      <span style={{ fontSize: '9px', color: macroColor, fontWeight: 600 }}>{macroText}</span>
+                      <span style={{ fontSize: '9px', color: '#FF9F0A', fontWeight: 600 }}>Inflationsangst</span>
+                    </div>
                   </div>
                 );
               })()}
