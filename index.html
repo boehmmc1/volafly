@@ -1822,7 +1822,6 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 const pct = hy < 2.8 ? Math.min(30, (hy / 2.8) * 30) : hy < 5 ? 30 + ((hy - 2.8) / (5 - 2.8)) * 30 : Math.min(100, 60 + ((hy - 5) / 7) * 40);
                 return (
                   <div style={{ marginTop: '8px' }}>
-                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: '2px' }}>Risikobereitschaft</div>
                     <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', marginBottom: '4px' }}>
                       <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '30%', borderRadius: '2px 0 0 2px', background: '#30D158' }} />
                       <div style={{ position: 'absolute', left: '30%', top: 0, height: '100%', width: '30%', background: 'rgba(255,255,255,0.2)' }} />
