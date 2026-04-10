@@ -1520,9 +1520,21 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             </div>
           </TT>
 
+          <div
+            onClick={() => window.open('https://www.tradingview.com/chart/?symbol=TVC%3ASILVER&interval=D', '_blank')}
+            style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+          >
+            <div style={metricLabel}>Silber</div>
+            <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
+              {'$'}{ri.silver ? f(ri.silver, 2) : '—'}
+            </div>
+            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz</div>
+          </div>
+
           <TT id="wti">
             <div>
-              <div style={metricLabel}>WTI Crude Oil</div>
               <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
                 {'$'}{f(ri.wti, 1)}
               </div>
