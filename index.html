@@ -1651,11 +1651,13 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         {/* Aktienindizes — kompakt */}
         <div style={glass}>
           <div style={sectionLabel}>Aktienindizes</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             {[
-              { label: 'S&P 500',      val: idx.spx, ma200: idx.spx200d, url: 'https://www.tradingview.com/symbols/SP-SPX/?interval=D',    sub: 'SPX' },
-              { label: 'Nasdaq 100',   val: idx.ndx, ma200: idx.ndx200d, url: 'https://www.tradingview.com/symbols/NASDAQ-NDX/?interval=D', sub: 'NDX' },
-              { label: 'Russell 2000', val: idx.rut, ma200: null,        url: 'https://www.tradingview.com/symbols/TVC-RUT/?interval=D',    sub: 'RUT' },
+              { label: 'S&P 500',    val: idx.spx, ma200: idx.spx200d, url: 'https://www.tradingview.com/symbols/SP-SPX/?interval=D',    sub: 'SPX' },
+              { label: 'Nasdaq 100', val: idx.ndx, ma200: idx.ndx200d, url: 'https://www.tradingview.com/symbols/NASDAQ-NDX/?interval=D', sub: 'NDX' },
+              /* RUSSELL 2000 — auskommentiert, bei Bedarf wieder einblenden
+              { label: 'Russell 2000', val: idx.rut, ma200: null, url: 'https://www.tradingview.com/symbols/TVC-RUT/?interval=D', sub: 'RUT' },
+              */
             ].map((item, i) => {
               const aboveMA = item.ma200 ? item.val > item.ma200 : null;
               return (
@@ -1666,7 +1668,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
                   <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>{item.label} <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-                  <div style={metricValue('#F5F5F7')}>{item.val ? item.val.toLocaleString('de-DE', {maximumFractionDigits: 0}) : '—'}</div>
+                  <div style={{ fontSize: '28px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>{item.val ? item.val.toLocaleString('de-DE', {maximumFractionDigits: 0}) : '—'}</div>
                   {aboveMA !== null && (
                     <div style={{ marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '2px 6px', borderRadius: '5px',
                       background: aboveMA ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)',
@@ -1836,7 +1838,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         <div style={{ marginBottom: '12px' }}>
           <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Makrosignale</div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
 
           <TT id="hySpread">
             <div
@@ -1967,6 +1969,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             </div>
           </TT>
 
+          {/* SILBER — auskommentiert, bei Bedarf wieder einblenden
           <div
             onClick={() => window.open('https://www.tradingview.com/chart/?symbol=TVC%3ASILVER&interval=D', '_blank')}
             style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
@@ -1979,6 +1982,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             </div>
             <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz</div>
           </div>
+          */}
 
           <TT id="wti">
             <div
