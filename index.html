@@ -1601,7 +1601,49 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               );
             })}
           </div>
-          {/* 10Y–2Y Spread */}
+          {/* Treasury Gesamtskala */}
+          {(y.y2 > 0 || y.y10 > 0 || y.y30 > 0) && (() => {
+            const yieldPct = v => v < 3.5 ? Math.max(0, (v / 3.5) * 30) : v < 5 ? 30 + ((v - 3.5) / 1.5) * 30 : Math.min(100, 60 + ((v - 5) / 4) * 40);
+            const markerCol = v => v < 3.5 ? '#30D158' : v < 5 ? 'rgba(245,245,247,0.7)' : '#FF453A';
+            const vals = [y.y2, y.y10, y.y30].filter(v => v > 0);
+            const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
+            const zoneColor = avg < 3.5 ? '#30D158' : avg < 5 ? 'rgba(255,255,255,0.35)' : '#FF453A';
+            const zoneLabel = avg < 3.5 ? 'Günstig' : avg < 5 ? 'Neutral' : 'Belastend';
+            const entries = [
+              { label: '2Y',  val: y.y2,  opacity: 0.5, weight: 400 },
+              { label: '10Y', val: y.y10, opacity: 1.0, weight: 600 },
+              { label: '30Y', val: y.y30, opacity: 0.7, weight: 400 },
+            ].filter(e => e.val > 0);
+            return (
+              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em' }}>Aktienfreundlichkeit</span>
+                  <span style={{ fontSize: '9px', color: zoneColor, fontWeight: 600 }}>{zoneLabel}</span>
+                </div>
+                <div style={{ position: 'relative', height: '4px', borderRadius: '2px', overflow: 'visible', marginBottom: '20px', background: 'rgba(255,255,255,0.06)' }}>
+                  <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '30%', borderRadius: '2px 0 0 2px', background: '#30D158', opacity: 0.7 }} />
+                  <div style={{ position: 'absolute', left: '30%', top: 0, height: '100%', width: '30%', background: 'rgba(255,255,255,0.18)' }} />
+                  <div style={{ position: 'absolute', left: '60%', top: 0, height: '100%', width: '40%', borderRadius: '0 2px 2px 0', background: '#FF453A', opacity: 0.7 }} />
+                  {entries.map((e, i) => (
+                    <div key={i}>
+                      <div style={{ position: 'absolute', top: '-4px', left: `${yieldPct(e.val)}%`, transform: 'translateX(-50%)', width: e.label === '10Y' ? '2px' : '1.5px', height: '12px', background: markerCol(e.val), borderRadius: '1px', opacity: e.opacity }} />
+                      <div style={{ position: 'absolute', top: '14px', left: `${yieldPct(e.val)}%`, transform: 'translateX(-50%)', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontSize: '8px', color: `rgba(255,255,255,${e.opacity * 0.6})`, fontWeight: e.weight, lineHeight: 1.3 }}>{e.label}</div>
+                        <div style={{ fontSize: '8px', color: `rgba(255,255,255,${e.opacity * 0.5})`, lineHeight: 1.3 }}>{f(e.val, 2)}%</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '9px', color: '#30D158', fontWeight: 600 }}>Günstig</span>
+                  <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>Neutral</span>
+                  <span style={{ fontSize: '9px', color: '#FF453A', fontWeight: 600 }}>Belastend</span>
+                </div>
+              </div>
+            );
+          })()}
+
+                    {/* 10Y–2Y Spread */}
           <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <TT id="yieldSpread">
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
