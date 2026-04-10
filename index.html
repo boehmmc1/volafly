@@ -1817,6 +1817,26 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                 {f(ri.hySpread, 2)}<span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: '3px' }}>%</span>
               </div>
               <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>ICE BofA OAS</div>
+              {ri.hySpread > 0 && (() => {
+                const hy = ri.hySpread;
+                const pct = hy < 2.8 ? Math.min(30, (hy / 2.8) * 30) : hy < 5 ? 30 + ((hy - 2.8) / (5 - 2.8)) * 30 : Math.min(100, 60 + ((hy - 5) / 7) * 40);
+                return (
+                  <div style={{ marginTop: '8px' }}>
+                    <div style={{ fontSize: '8px', color: 'rgba(255,255,255,0.2)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: '2px' }}>Risikobereitschaft</div>
+                    <div style={{ position: 'relative', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.08)', marginBottom: '4px' }}>
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: '30%', borderRadius: '2px 0 0 2px', background: '#30D158' }} />
+                      <div style={{ position: 'absolute', left: '30%', top: 0, height: '100%', width: '30%', background: 'rgba(255,255,255,0.2)' }} />
+                      <div style={{ position: 'absolute', left: '60%', top: 0, height: '100%', width: '40%', borderRadius: '0 2px 2px 0', background: '#FF453A' }} />
+                      <div style={{ position: 'absolute', top: '-3px', left: `${pct}%`, transform: 'translateX(-50%)', width: '2px', height: '10px', background: '#F5F5F7', borderRadius: '1px' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '9px', color: '#30D158', fontWeight: 600 }}>Euphorie</span>
+                      <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>Neutral</span>
+                      <span style={{ fontSize: '9px', color: '#FF453A', fontWeight: 600 }}>Panik</span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           </TT>
 
