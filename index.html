@@ -3421,6 +3421,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                     onClick={() => {
                       setClassesError('');
                       if (draftVolaClasses.length < 2) { setClassesError('Mindestens 2 Klassen erforderlich.'); return; }
+                      if (draftVolaClasses.length > 5) { setClassesError(`Maximal 5 Klassen erlaubt — du hast ${draftVolaClasses.length} definiert. Bitte entferne ${draftVolaClasses.length - 5} Klasse${draftVolaClasses.length - 5 > 1 ? 'n' : ''}.`); return; }
                       const pcts = draftVolaClasses.map(c => c.investPct);
                       // Aufsteigend-Prüfung
                       for (let i = 1; i < pcts.length; i++) {
