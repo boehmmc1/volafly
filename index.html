@@ -906,34 +906,30 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     setVolaClasses(tpl.classes);
     setThresholds(equalized);
     setActiveTemplateId(pid);
+    // Clear own profile standard in state (DB cleared separately via saveDefaultPreset)
+    setProfiles(prev => prev.map(p => ({ ...p, is_default: false })));
   };
 
   const loadProfiles = async () => {
-    console.log('[loadProfiles] called, user:', user?.id);
     const [profilesRes, settingsRes] = await Promise.all([
       sbClient.from('threshold_profiles').select('*').order('created_at', { ascending: false }),
       sbClient.from('notification_preferences').select('default_preset_id').eq('user_id', user.id).single(),
     ]);
-    console.log('[loadProfiles] settingsRes:', settingsRes.data, 'error:', settingsRes.error);
     const data = profilesRes.data;
     const pid = settingsRes.data?.default_preset_id || null;
-    console.log('[loadProfiles] pid from Supabase:', pid);
     if (pid) setDefaultPresetId(pid);
     if (!profilesRes.error && data && data.length > 0) {
       setProfiles(data);
       const supabaseDefault = data.find(p => p.is_default);
       if (supabaseDefault) {
-        console.log('[loadProfiles] found supabase profile default:', supabaseDefault.id);
         const merged = { ...defaultThresholds, ...supabaseDefault.thresholds };
         setThresholds(merged);
         setActiveProfileId(supabaseDefault.id);
         setActiveTemplateId(`profile-${supabaseDefault.id}`);
       } else if (pid) {
-        console.log('[loadProfiles] applying preset:', pid);
         applyPresetById(pid);
       }
     } else if (pid) {
-      console.log('[loadProfiles] no profiles, applying preset:', pid);
       applyPresetById(pid);
     }
   };
@@ -970,6 +966,10 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         setProfiles(prev => [data, ...prev]);
         setActiveProfileId(data.id);
         setNewProfileName('');
+        if (isFirst) {
+          setDefaultPresetId(null);
+          sbClient.from('notification_preferences').upsert({ user_id: user.id, email: user.email, default_preset_id: null, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+        }
         setProfileMsg({ type: 'success', text: `„${data.name}" gespeichert` });
       } else {
         setProfileMsg({ type: 'error', text: 'Fehler beim Speichern' });
@@ -980,8 +980,22 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   };
 
   const setDefaultProfile = async (id) => {
-    // Erst alle auf false setzen, dann nur das gewählte auf true — atomar über RPC vermieden,
-    // aber sequenziell sicher da wir danach den State komplett neu setzen
+    // Clear preset default in notification_preferences
+    setDefaultPresetId(null);
+    const { data: existing } = await sbClient
+      .from('notification_preferences')
+      .select('notify_weekly,notify_level')
+      .eq('user_id', user.id)
+      .single();
+    await sbClient.from('notification_preferences').upsert({
+      user_id: user.id,
+      email: user.email,
+      notify_weekly: existing?.notify_weekly ?? false,
+      notify_level: existing?.notify_level ?? false,
+      default_preset_id: null,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+    // Set all profiles to false, then set selected to true
     await sbClient.from('threshold_profiles')
       .update({ is_default: false })
       .eq('user_id', user.id);
@@ -989,7 +1003,6 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       .update({ is_default: true })
       .eq('id', id);
     if (!error) {
-      // State komplett neu laden — kein partielles Update das zu doppeltem Standard führt
       await loadProfiles();
       setProfileMsg({ type: 'success', text: 'Standard-Konfiguration gesetzt' });
       setTimeout(() => setProfileMsg(null), 3000);
@@ -1053,32 +1066,30 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   };
 
   const saveDefaultPreset = async (presetId) => {
-    console.log('[saveDefaultPreset] called with presetId:', presetId);
-    console.log('[saveDefaultPreset] user:', user?.id, user?.email);
-    if (!user) { console.warn('[saveDefaultPreset] no user, aborting'); return; }
-    // First try to get existing row to preserve notify fields
-    const { data: existing, error: fetchErr } = await sbClient
+    if (!user) return;
+    // Clear all own profiles is_default when a preset is set as default
+    if (presetId) {
+      await sbClient.from('threshold_profiles')
+        .update({ is_default: false })
+        .eq('user_id', user.id);
+      setProfiles(prev => prev.map(p => ({ ...p, is_default: false })));
+    }
+    const { data: existing } = await sbClient
       .from('notification_preferences')
       .select('notify_weekly,notify_level')
       .eq('user_id', user.id)
       .single();
-    console.log('[saveDefaultPreset] existing row:', existing, 'fetchErr:', fetchErr);
-    const payload = {
-      user_id: user.id,
-      email: user.email,
-      notify_weekly: existing?.notify_weekly ?? false,
-      notify_level: existing?.notify_level ?? false,
-      default_preset_id: presetId,
-      updated_at: new Date().toISOString(),
-    };
-    console.log('[saveDefaultPreset] upserting payload:', payload);
-    const { data: upsertData, error } = await sbClient
+    const { error } = await sbClient
       .from('notification_preferences')
-      .upsert(payload, { onConflict: 'user_id' })
-      .select();
-    console.log('[saveDefaultPreset] upsert result:', upsertData, 'error:', error);
-    if (error) console.error('[saveDefaultPreset] UPSERT FAILED:', error);
-    else console.log('[saveDefaultPreset] SUCCESS');
+      .upsert({
+        user_id: user.id,
+        email: user.email,
+        notify_weekly: existing?.notify_weekly ?? false,
+        notify_level: existing?.notify_level ?? false,
+        default_preset_id: presetId,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+    if (error) console.error('saveDefaultPreset error:', error);
   };
 
   const signOut = async () => { await sbClient.auth.signOut(); };
@@ -2853,7 +2864,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                             {p.is_default && <span style={{ marginLeft: '6px', fontSize: '9px', fontWeight: 700, color: '#0A84FF', background: 'rgba(10,132,255,0.15)', padding: '1px 6px', borderRadius: '5px' }}>Standard</span>}
                           </div>
                           <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
-                            <button onClick={() => { const merged = { ...defaultThresholds, ...p.thresholds }; setThresholds(merged); setDraftThresholds(computeEqualWeights(JSON.parse(JSON.stringify(merged)))); setActiveProfileId(p.id); setActiveTemplateId(`profile-${p.id}`); setShowConfig(false); }}
+                            <button onClick={() => { const merged = { ...defaultThresholds, ...p.thresholds }; setThresholds(merged); setDraftThresholds(computeEqualWeights(JSON.parse(JSON.stringify(merged)))); setActiveProfileId(p.id); setActiveTemplateId(`profile-${p.id}`); setDefaultPresetId(null); setShowConfig(false); }}
                               style={{ padding: '5px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                               onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
                               onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.5)'; }}>
@@ -3582,6 +3593,10 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                           if (!error && data) {
                             setProfiles(prev => [data, ...prev]);
                             setActiveProfileId(data.id);
+                            if (isFirst) {
+                              setDefaultPresetId(null);
+                              sbClient.from('notification_preferences').upsert({ user_id: user.id, email: user.email, default_preset_id: null, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+                            }
                             setSaveTemplateMsg({ type: 'success', text: `„${name}" gespeichert` });
                             setNewTemplateName('');
                             setTimeout(() => { setSaveTemplateMsg(null); setShowSaveTemplate(false); setShowConfig(false); }, 1800);
