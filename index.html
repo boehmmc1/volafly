@@ -2744,7 +2744,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {configTab !== 'start' && (
-                    <button onClick={() => setConfigTab('start')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', fontSize: '13px', padding: '0 4px 0 0', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    <button onClick={() => setConfigTab(configTab === 'thresholds' ? 'classes' : 'start')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', fontSize: '13px', padding: '0 4px 0 0', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '4px' }}
                       onMouseEnter={e => e.currentTarget.style.color='#F5F5F7'}
                       onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.35)'}>
                       ← 
