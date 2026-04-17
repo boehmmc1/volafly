@@ -681,7 +681,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   useEffect(() => {
     if (!sbClient || !user) return;
     loadProfiles();
-  }, []);
+  }, [user?.id]);
 
   // Google Sheets automatisch laden beim Mount — kurzer Delay damit alle States initialisiert sind
   useEffect(() => {
