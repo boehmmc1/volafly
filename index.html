@@ -3417,7 +3417,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       setDraftThresholds(equalized);
                       setThresholds(JSON.parse(JSON.stringify(equalized)));
                       setActiveTemplateId(null);
-                      if (isMobile) { setShowConfig(false); } else { setConfigTab('thresholds'); }
+                      setConfigTab('thresholds');
                     }}
                     style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', cursor: 'pointer', background: '#0A84FF', color: '#fff', fontSize: '14px', fontWeight: 600, fontFamily: 'inherit' }}
                     onMouseEnter={e => e.currentTarget.style.opacity='0.85'}
