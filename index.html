@@ -909,25 +909,31 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   };
 
   const loadProfiles = async () => {
+    console.log('[loadProfiles] called, user:', user?.id);
     const [profilesRes, settingsRes] = await Promise.all([
       sbClient.from('threshold_profiles').select('*').order('created_at', { ascending: false }),
       sbClient.from('notification_preferences').select('default_preset_id').eq('user_id', user.id).single(),
     ]);
+    console.log('[loadProfiles] settingsRes:', settingsRes.data, 'error:', settingsRes.error);
     const data = profilesRes.data;
     const pid = settingsRes.data?.default_preset_id || null;
+    console.log('[loadProfiles] pid from Supabase:', pid);
     if (pid) setDefaultPresetId(pid);
     if (!profilesRes.error && data && data.length > 0) {
       setProfiles(data);
       const supabaseDefault = data.find(p => p.is_default);
       if (supabaseDefault) {
+        console.log('[loadProfiles] found supabase profile default:', supabaseDefault.id);
         const merged = { ...defaultThresholds, ...supabaseDefault.thresholds };
         setThresholds(merged);
         setActiveProfileId(supabaseDefault.id);
         setActiveTemplateId(`profile-${supabaseDefault.id}`);
       } else if (pid) {
+        console.log('[loadProfiles] applying preset:', pid);
         applyPresetById(pid);
       }
     } else if (pid) {
+      console.log('[loadProfiles] no profiles, applying preset:', pid);
       applyPresetById(pid);
     }
   };
