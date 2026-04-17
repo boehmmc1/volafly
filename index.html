@@ -1047,24 +1047,32 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   };
 
   const saveDefaultPreset = async (presetId) => {
-    if (!user) return;
+    console.log('[saveDefaultPreset] called with presetId:', presetId);
+    console.log('[saveDefaultPreset] user:', user?.id, user?.email);
+    if (!user) { console.warn('[saveDefaultPreset] no user, aborting'); return; }
     // First try to get existing row to preserve notify fields
-    const { data: existing } = await sbClient
+    const { data: existing, error: fetchErr } = await sbClient
       .from('notification_preferences')
       .select('notify_weekly,notify_level')
       .eq('user_id', user.id)
       .single();
-    const { error } = await sbClient
+    console.log('[saveDefaultPreset] existing row:', existing, 'fetchErr:', fetchErr);
+    const payload = {
+      user_id: user.id,
+      email: user.email,
+      notify_weekly: existing?.notify_weekly ?? false,
+      notify_level: existing?.notify_level ?? false,
+      default_preset_id: presetId,
+      updated_at: new Date().toISOString(),
+    };
+    console.log('[saveDefaultPreset] upserting payload:', payload);
+    const { data: upsertData, error } = await sbClient
       .from('notification_preferences')
-      .upsert({
-        user_id: user.id,
-        email: user.email,
-        notify_weekly: existing?.notify_weekly ?? false,
-        notify_level: existing?.notify_level ?? false,
-        default_preset_id: presetId,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'user_id' });
-    if (error) console.error('saveDefaultPreset error:', error);
+      .upsert(payload, { onConflict: 'user_id' })
+      .select();
+    console.log('[saveDefaultPreset] upsert result:', upsertData, 'error:', error);
+    if (error) console.error('[saveDefaultPreset] UPSERT FAILED:', error);
+    else console.log('[saveDefaultPreset] SUCCESS');
   };
 
   const signOut = async () => { await sbClient.auth.signOut(); };
