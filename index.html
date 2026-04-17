@@ -1331,6 +1331,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   ];
   const [volaClasses, setVolaClasses] = useState(defaultVolaClasses);
   const [draftVolaClasses, setDraftVolaClasses] = useState(defaultVolaClasses);
+  const [classesError, setClassesError] = useState('');
 
   // ── Vorgefertigte Templates ──
   const classifyFromConfig = (key, value) => {
@@ -3387,11 +3388,17 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               )}
 
               {/* ── Footer: Klassen-Tab ── */}
+              {configTab === 'classes' && classesError && (
+                <div style={{ marginBottom: '0', padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,69,58,0.08)', border: '0.5px solid rgba(255,69,58,0.25)', fontSize: '12px', color: '#FF453A', lineHeight: 1.5 }}>
+                  ⚠ {classesError}
+                </div>
+              )}
               {configTab === 'classes' && (
                 <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
                   <button
                     onClick={() => {
                       setDraftVolaClasses(JSON.parse(JSON.stringify(defaultVolaClasses)));
+                      setClassesError('');
                     }}
                     style={{ padding: '12px 16px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit' }}
                     onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
@@ -3400,11 +3407,18 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                   </button>
                   <button
                     onClick={() => {
-                      if (draftVolaClasses.length < 2) { alert('Mindestens 2 Klassen erforderlich.'); return; }
-                      // Duplicate investPct check only — keine Pflicht zu aufsteigender Reihenfolge
+                      setClassesError('');
+                      if (draftVolaClasses.length < 2) { setClassesError('Mindestens 2 Klassen erforderlich.'); return; }
                       const pcts = draftVolaClasses.map(c => c.investPct);
+                      // Aufsteigend-Prüfung
+                      for (let i = 1; i < pcts.length; i++) {
+                        if (pcts[i] <= pcts[i-1]) {
+                          setClassesError(`Investitionsgrade müssen aufsteigend sein — "${draftVolaClasses[i-1].name}" (${pcts[i-1]}%) muss kleiner sein als "${draftVolaClasses[i].name}" (${pcts[i]}%).`);
+                          return;
+                        }
+                      }
                       const dupes = pcts.filter((p,i) => pcts.indexOf(p) !== i);
-                      if (dupes.length > 0) { alert(`Doppelter Investitionsgrad: ${dupes.join(', ')}% — jede Klasse muss einen eindeutigen Wert haben.`); return; }
+                      if (dupes.length > 0) { setClassesError(`Doppelter Investitionsgrad: ${dupes.join(', ')}% — jede Klasse muss einen eindeutigen Wert haben.`); return; }
                       // Apply classes — trim/pad threshold values arrays to n-1
                       const n = draftVolaClasses.length;
                       const adjusted = Object.fromEntries(Object.entries(draftThresholds).map(([key, cfg]) => {
