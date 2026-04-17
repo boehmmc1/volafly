@@ -1046,6 +1046,27 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     setNotifyLoading(false);
   };
 
+  const saveDefaultPreset = async (presetId) => {
+    if (!user) return;
+    // First try to get existing row to preserve notify fields
+    const { data: existing } = await sbClient
+      .from('notification_preferences')
+      .select('notify_weekly,notify_level')
+      .eq('user_id', user.id)
+      .single();
+    const { error } = await sbClient
+      .from('notification_preferences')
+      .upsert({
+        user_id: user.id,
+        email: user.email,
+        notify_weekly: existing?.notify_weekly ?? false,
+        notify_level: existing?.notify_level ?? false,
+        default_preset_id: presetId,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id' });
+    if (error) console.error('saveDefaultPreset error:', error);
+  };
+
   const signOut = async () => { await sbClient.auth.signOut(); };
 
   const deleteAccount = async () => {
@@ -2923,11 +2944,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                               onClick={() => {
                                 const newId = isDefault ? null : tpl.id;
                                 setDefaultPresetId(newId);
-                                sbClient.from('notification_preferences').upsert({
-                                  user_id: user.id, email: user.email,
-                                  default_preset_id: newId,
-                                  updated_at: new Date().toISOString(),
-                                }, { onConflict: 'user_id' });
+                                saveDefaultPreset(newId);
                               }}
                               style={{ padding: '5px 8px', borderRadius: '8px', border: `0.5px solid ${isDefault ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)'}`, background: 'transparent', color: isDefault ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', textAlign: 'center' }}
                               onMouseEnter={e => { e.currentTarget.style.color='#F5F5F7'; e.currentTarget.style.borderColor='rgba(255,255,255,0.25)'; }}
