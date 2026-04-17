@@ -669,12 +669,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   // ── Profil-Management ──
   const [profiles, setProfiles]             = useState([]);
   const [activeProfileId, setActiveProfileId] = useState(null);
-  const [defaultPresetId, setDefaultPresetId] = useState(() => {
-    try { return localStorage.getItem('volafly_default_preset') || null; } catch { return null; }
-  });
-  const [activeTemplateId, setActiveTemplateId] = useState(() => {
-    try { return localStorage.getItem('volafly_default_preset') || null; } catch { return null; }
-  });
+  const [defaultPresetId, setDefaultPresetId] = useState(null);
+  const [activeTemplateId, setActiveTemplateId] = useState(null);
   const [showProfilePanel, setShowProfilePanel] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
   const [profileLoading, setProfileLoading] = useState(false);
@@ -913,32 +909,25 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   };
 
   const loadProfiles = async () => {
-    const pid = (() => { try { return localStorage.getItem('volafly_default_preset') || null; } catch { return null; } })();
-    const { data, error } = await sbClient
-      .from('threshold_profiles')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (!error && data && data.length > 0) {
+    const [profilesRes, settingsRes] = await Promise.all([
+      sbClient.from('threshold_profiles').select('*').order('created_at', { ascending: false }),
+      sbClient.from('notification_preferences').select('default_preset_id').eq('user_id', user.id).single(),
+    ]);
+    const data = profilesRes.data;
+    const pid = settingsRes.data?.default_preset_id || null;
+    if (pid) setDefaultPresetId(pid);
+    if (!profilesRes.error && data && data.length > 0) {
       setProfiles(data);
       const supabaseDefault = data.find(p => p.is_default);
       if (supabaseDefault) {
-        // Supabase-Default hat Vorrang
         const merged = { ...defaultThresholds, ...supabaseDefault.thresholds };
         setThresholds(merged);
         setActiveProfileId(supabaseDefault.id);
         setActiveTemplateId(`profile-${supabaseDefault.id}`);
       } else if (pid) {
-        // Kein Supabase-Default → Preset laden
         applyPresetById(pid);
-        setActiveProfileId(data[0].id);
-      } else {
-        // Erstes Profil laden
-        const merged = { ...defaultThresholds, ...data[0].thresholds };
-        setThresholds(merged);
-        setActiveProfileId(data[0].id);
       }
     } else if (pid) {
-      // Keine Supabase-Profile → Preset laden
       applyPresetById(pid);
     }
   };
@@ -1042,8 +1031,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
 
   const loadNotifyPrefs = async () => {
     if (!user) return;
-    const { data } = await sbClient.from('notification_preferences').select('notify_weekly,notify_level').eq('user_id', user.id).single();
-    if (data) { setNotifyWeeklyReport(!!data.notify_weekly); setNotifyLevelChange(!!data.notify_level); }
+    const { data } = await sbClient.from('notification_preferences').select('notify_weekly,notify_level,default_preset_id').eq('user_id', user.id).single();
+    if (data) { setNotifyWeeklyReport(!!data.notify_weekly); setNotifyLevelChange(!!data.notify_level); if (data.default_preset_id) setDefaultPresetId(data.default_preset_id); }
   };
 
   const saveNotifyPref = async (field, value) => {
@@ -2934,7 +2923,11 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                               onClick={() => {
                                 const newId = isDefault ? null : tpl.id;
                                 setDefaultPresetId(newId);
-                                try { if (newId) localStorage.setItem('volafly_default_preset', newId); else localStorage.removeItem('volafly_default_preset'); } catch {}
+                                sbClient.from('notification_preferences').upsert({
+                                  user_id: user.id, email: user.email,
+                                  default_preset_id: newId,
+                                  updated_at: new Date().toISOString(),
+                                }, { onConflict: 'user_id' });
                               }}
                               style={{ padding: '5px 8px', borderRadius: '8px', border: `0.5px solid ${isDefault ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)'}`, background: 'transparent', color: isDefault ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.2)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap', textAlign: 'center' }}
                               onMouseEnter={e => { e.currentTarget.style.color='#F5F5F7'; e.currentTarget.style.borderColor='rgba(255,255,255,0.25)'; }}
@@ -3542,6 +3535,10 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                           if (!name) return;
                           if (profiles.length >= 3) {
                             setSaveTemplateMsg({ type: 'error', text: 'Limit erreicht (3/3) — lösche eine Konfiguration um eine neue zu speichern.' });
+                            return;
+                          }
+                          if (profiles.some(p => p.name.trim().toLowerCase() === name.toLowerCase())) {
+                            setSaveTemplateMsg({ type: 'error', text: `„${name}“ existiert bereits — bitte einen anderen Namen wählen.` });
                             return;
                           }
                           setProfileLoading(true);
