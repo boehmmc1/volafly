@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Volafly — Volatilität lesen. On the fly.</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24' stroke='%23F5F5F7' stroke-width='2.5' stroke-linecap='round' fill='none'/><path d='M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18' stroke='%23F5F5F7' stroke-width='2' stroke-linecap='round' fill='none' opacity='0.5'/></svg>">
+  <title>Volafly · Volatilität lesen. On the fly.</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%230A84FF'/><stop offset='100%25' stop-color='%23BF5AF2'/></linearGradient></defs><path d='M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14' stroke='url(%23g)' stroke-width='2.5' fill='none' stroke-linecap='round'/><path d='M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18' stroke='url(%23g)' stroke-width='2.5' fill='none' stroke-linecap='round' opacity='0.45'/></svg>">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js" crossorigin></script>
@@ -20,6 +20,570 @@
       100% { transform: scale(1); }
     }
   </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono&display=swap">
+
+<!-- Volafly Landing: design tokens + scoped layout -->
+<style>
+/* ─────────────────────────────────────────────────────────────
+   VOLAFLY — Design Tokens
+   Volatilität lesen. On the fly.
+   ─────────────────────────────────────────────────────────────
+
+   This file defines every token used across the Volafly brand:
+   - Color primitives + semantic roles
+   - Type scale + font stacks
+   - Radii, shadows, spacing, motion
+
+   The original product ships with an Apple System UI stack.
+   We keep that feel on Apple devices but ship a substitute
+   (Inter) for everyone else so the design looks identical.
+   ───────────────────────────────────────────────────────────── */
+
+/*
+Font families defined by this CSS:
+  - InterVariable  variable font for modern web browsers
+  - Inter          static fonts for older web browsers (small optical size)
+  - InterDisplay   static fonts for older web browsers (large optical size)
+
+Usage example:
+  :root { font-family: Inter, sans-serif; }
+  @supports (font-variation-settings: normal) {
+    :root { font-family: InterVariable, sans-serif; }
+  }
+
+*/
+/* legacy name "Inter var" (Oct 2023) */
+/* static fonts */
+@font-feature-values Inter {
+    @character-variant {
+        cv01: 1; cv02: 2; cv03: 3; cv04: 4; cv05: 5; cv06: 6; cv07: 7; cv08: 8;
+        cv09: 9; cv10: 10; cv11: 11; cv12: 12; cv13: 13;
+        alt-1:            1; /* Alternate one */
+        alt-3:            9; /* Flat-top three */
+        open-4:           2; /* Open four */
+        open-6:           3; /* Open six */
+        open-9:           4; /* Open nine */
+        lc-l-with-tail:   5; /* Lower-case L with tail */
+        simplified-u:     6; /* Simplified u */
+        alt-double-s:     7; /* Alternate German double s */
+        uc-i-with-serif:  8; /* Upper-case i with serif */
+        uc-g-with-spur:  10; /* Capital G with spur */
+        single-story-a:  11; /* Single-story a */
+        compact-lc-f:    12; /* Compact f */
+        compact-lc-t:    13; /* Compact t */
+    }
+    @styleset {
+        ss01: 1; ss02: 2; ss03: 3; ss04: 4; ss05: 5; ss06: 6; ss07: 7; ss08: 8;
+        open-digits: 1;                /* Open digits */
+        disambiguation: 2;             /* Disambiguation (with zero) */
+        disambiguation-except-zero: 4; /* Disambiguation (no zero) */
+        round-quotes-and-commas: 3;    /* Round quotes &amp; commas */
+        square-punctuation: 7;         /* Square punctuation */
+        square-quotes: 8;              /* Square quotes */
+        circled-characters: 5;         /* Circled characters */
+        squared-characters: 6;         /* Squared characters */
+    }
+}
+@font-feature-values InterDisplay {
+    @character-variant {
+        cv01: 1; cv02: 2; cv03: 3; cv04: 4; cv05: 5; cv06: 6; cv07: 7; cv08: 8;
+        cv09: 9; cv10: 10; cv11: 11; cv12: 12; cv13: 13;
+        alt-1:            1; /* Alternate one */
+        alt-3:            9; /* Flat-top three */
+        open-4:           2; /* Open four */
+        open-6:           3; /* Open six */
+        open-9:           4; /* Open nine */
+        lc-l-with-tail:   5; /* Lower-case L with tail */
+        simplified-u:     6; /* Simplified u */
+        alt-double-s:     7; /* Alternate German double s */
+        uc-i-with-serif:  8; /* Upper-case i with serif */
+        uc-g-with-spur:  10; /* Capital G with spur */
+        single-story-a:  11; /* Single-story a */
+        compact-lc-f:    12; /* Compact f */
+        compact-lc-t:    13; /* Compact t */
+    }
+    @styleset {
+        ss01: 1; ss02: 2; ss03: 3; ss04: 4; ss05: 5; ss06: 6; ss07: 7; ss08: 8;
+        open-digits: 1;                /* Open digits */
+        disambiguation: 2;             /* Disambiguation (with zero) */
+        disambiguation-except-zero: 4; /* Disambiguation (no zero) */
+        round-quotes-and-commas: 3;    /* Round quotes &amp; commas */
+        square-punctuation: 7;         /* Square punctuation */
+        square-quotes: 8;              /* Square quotes */
+        circled-characters: 5;         /* Circled characters */
+        squared-characters: 6;         /* Squared characters */
+    }
+}
+
+/* cyrillic-ext */
+/* cyrillic */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+/* cyrillic-ext */
+/* cyrillic */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+/* cyrillic-ext */
+/* cyrillic */
+/* greek */
+/* vietnamese */
+/* latin-ext */
+/* latin */
+:root {
+  /* ── COLOR PRIMITIVES ─────────────────────────────────────── */
+  /* Backgrounds — deep near-black, not pure black */
+  --vf-bg-0:          #0A0A0A;  /* page */
+  --vf-bg-1:          #101012;  /* elevated surface */
+  --vf-bg-2:          #161618;  /* modal / sheet */
+  --vf-bg-3:          #1C1C1E;  /* popover / dropdown */
+  --vf-bg-4:          #2C2C2E;  /* tooltip */
+
+  /* Text — cool off-white, with an intentional greyscale ramp */
+  --vf-fg-1:          #F5F5F7;  /* primary */
+  --vf-fg-2:          rgba(255,255,255,0.60);  /* body */
+  --vf-fg-3:          rgba(255,255,255,0.45);  /* secondary */
+  --vf-fg-4:          rgba(255,255,255,0.30);  /* tertiary / labels */
+  --vf-fg-5:          rgba(255,255,255,0.20);  /* quaternary / hints */
+  --vf-fg-6:          rgba(255,255,255,0.10);  /* disabled */
+
+  /* Hairlines & borders — always semi-transparent on dark */
+  --vf-border-1:      rgba(255,255,255,0.06);
+  --vf-border-2:      rgba(255,255,255,0.08);
+  --vf-border-3:      rgba(255,255,255,0.12);
+  --vf-border-4:      rgba(255,255,255,0.18);
+
+  /* Surface fills used for cards / pills */
+  --vf-surface-1:     rgba(255,255,255,0.03);
+  --vf-surface-2:     rgba(255,255,255,0.04);
+  --vf-surface-3:     rgba(255,255,255,0.06);
+  --vf-surface-4:     rgba(255,255,255,0.10);
+  --vf-surface-5:     rgba(255,255,255,0.14);
+
+  /* ── BRAND ACCENTS ────────────────────────────────────────── */
+  --vf-accent:        #0A84FF;   /* primary — systemBlue */
+  --vf-accent-press:  #0066CC;
+  --vf-accent-soft:   rgba(10,132,255,0.10);
+  --vf-accent-line:   rgba(10,132,255,0.28);
+  --vf-accent-glow:   rgba(10,132,255,0.25);
+
+  --vf-accent-2:      #BF5AF2;   /* violet — secondary accent (Bewertung / analysis) */
+  --vf-accent-2-soft: rgba(191,90,242,0.10);
+  --vf-accent-2-line: rgba(191,90,242,0.28);
+
+  /* ── SEMANTIC — VOLATILITY CLASSES ────────────────────────── *
+     These are THE five core brand colors — the whole product
+     tells a story with them. Order: calm → panic.
+   * ──────────────────────────────────────────────────────────── */
+  --vf-class-stille:     #8E8E93;  /* 1 · Stille    — grey — complacency */
+  --vf-class-ruhe:       #30D158;  /* 2 · Ruhe      — green — healthy */
+  --vf-class-spannung:   #FFCC00;  /* 3 · Spannung  — yellow — uncertainty */
+  --vf-class-stress:     #FF9F0A;  /* 4 · Stress    — orange — strain */
+  --vf-class-panik:      #FF453A;  /* 5 · Panik     — red — capitulation */
+
+  /* Generic semantic aliases (status) */
+  --vf-success:       #30D158;
+  --vf-warning:       #FFCC00;
+  --vf-danger:        #FF453A;
+  --vf-info:          #0A84FF;
+  --vf-neutral:       #8E8E93;
+
+  --vf-success-soft:  rgba(48,209,88,0.10);
+  --vf-warning-soft:  rgba(255,204,0,0.10);
+  --vf-danger-soft:   rgba(255,69,58,0.10);
+  --vf-info-soft:     rgba(10,132,255,0.10);
+
+  /* Ambient wash — used on most backgrounds */
+  --vf-wash: radial-gradient(ellipse at 20% 20%, rgba(10,132,255,0.06) 0%, transparent 50%),
+             radial-gradient(ellipse at 80% 80%, rgba(191,90,242,0.04) 0%, transparent 50%);
+
+  /* ── TYPOGRAPHY STACKS ────────────────────────────────────── */
+  /* Apple-first UI stack. On Apple: renders SF Pro.
+     On everything else: falls back to Inter (loaded via @import).
+     Inter is metric-compatible enough that layouts don't reflow. */
+  --vf-font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text",
+                "SF Pro Display", "Inter", "Helvetica Neue",
+                "Segoe UI", Roboto, sans-serif;
+  --vf-font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display",
+                     "Inter", "Helvetica Neue", sans-serif;
+  --vf-font-mono: "JetBrains Mono", "SF Mono", ui-monospace,
+                  "Menlo", "Monaco", monospace;
+
+  /* ── TYPE SCALE ───────────────────────────────────────────── *
+     Tight, editorial display at the top; compact UI at the bottom.
+     All tracked negatively at display sizes — the Apple look.
+   * ──────────────────────────────────────────────────────────── */
+  --vf-t-display-xl: 56px;   /* hero numbers (Investitionsgrad %) */
+  --vf-t-display-l:  42px;   /* Fear & Greed readout */
+  --vf-t-display:    32px;   /* marketing H1 inline */
+  --vf-t-h1:         28px;
+  --vf-t-h2:         22px;
+  --vf-t-h3:         18px;
+  --vf-t-body-l:     15px;
+  --vf-t-body:       14px;
+  --vf-t-body-s:     13px;
+  --vf-t-caption:    12px;   /* secondary body */
+  --vf-t-label:      11px;   /* section label uppercase */
+  --vf-t-meta:       10px;   /* tiny meta, uppercase */
+  --vf-t-micro:       9px;   /* badges */
+
+  /* Tracking */
+  --vf-track-tight:  -0.03em;  /* display */
+  --vf-track-snug:   -0.02em;  /* headings */
+  --vf-track-normal: -0.01em;  /* body */
+  --vf-track-wide:    0.04em;  /* labels */
+  --vf-track-wider:   0.08em;  /* UPPERCASE labels */
+
+  /* Weight tokens */
+  --vf-w-regular:    400;
+  --vf-w-medium:     500;
+  --vf-w-semibold:   600;
+  --vf-w-bold:       700;
+
+  /* ── RADII ────────────────────────────────────────────────── */
+  --vf-r-1:   4px;   /* tiny — pill badges */
+  --vf-r-2:   6px;
+  --vf-r-3:   8px;
+  --vf-r-4:   10px;  /* small control */
+  --vf-r-5:   12px;  /* input, button */
+  --vf-r-6:   14px;  /* control group */
+  --vf-r-7:   16px;  /* card */
+  --vf-r-8:   20px;  /* modal */
+  --vf-r-9:   24px;  /* mobile sheet corner */
+  --vf-r-pill: 999px;
+
+  /* ── SPACING ──────────────────────────────────────────────── *
+     4-pt grid. Keep the vocabulary small. 2, 4, 6, 8, 12, 16, 24, 32, 48, 64.
+   * ──────────────────────────────────────────────────────────── */
+  --vf-s-0:   0;
+  --vf-s-1:   2px;
+  --vf-s-2:   4px;
+  --vf-s-3:   6px;
+  --vf-s-4:   8px;
+  --vf-s-5:   12px;
+  --vf-s-6:   16px;
+  --vf-s-7:   24px;
+  --vf-s-8:   32px;
+  --vf-s-9:   48px;
+  --vf-s-10:  64px;
+
+  /* ── SHADOWS ──────────────────────────────────────────────── *
+     Dark UI → shadows are mostly cast for depth, plus
+     subtle inner hairlines from borders.
+   * ──────────────────────────────────────────────────────────── */
+  --vf-shadow-1:   0 1px 2px rgba(0,0,0,0.3);
+  --vf-shadow-2:   0 4px 12px rgba(0,0,0,0.25);
+  --vf-shadow-3:   0 8px 32px rgba(0,0,0,0.5);
+  --vf-shadow-4:   0 16px 48px rgba(0,0,0,0.6);
+  --vf-shadow-5:   0 24px 80px rgba(0,0,0,0.7);
+  --vf-shadow-glow: 0 4px 16px var(--vf-accent-glow);
+
+  /* ── MOTION ───────────────────────────────────────────────── */
+  --vf-ease:         cubic-bezier(0.4, 0, 0.2, 1);
+  --vf-ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+  --vf-ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --vf-dur-1: 120ms;
+  --vf-dur-2: 200ms;
+  --vf-dur-3: 280ms;
+  --vf-dur-4: 400ms;
+
+  /* ── GLASS ────────────────────────────────────────────────── *
+     The single most-used surface in the product.
+   * ──────────────────────────────────────────────────────────── */
+  --vf-glass-bg:     rgba(255,255,255,0.04);
+  --vf-glass-blur:   blur(40px) saturate(150%);
+  --vf-glass-border: 0.5px solid rgba(255,255,255,0.08);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   SEMANTIC ELEMENT STYLES
+   Apply on a container to activate the full design language.
+   ────────────────────────────────────────────────────────────── */
+.vf {
+  font-family: var(--vf-font-ui);
+  color: var(--vf-fg-1);
+  background: var(--vf-bg-0);
+  background-image: var(--vf-wash);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: 'ss01', 'cv11';  /* Inter: stylistic alternates matching SF */
+}
+
+.vf h1, .vf .h1 {
+  font-family: var(--vf-font-display);
+  font-size: var(--vf-t-h1);
+  font-weight: var(--vf-w-bold);
+  letter-spacing: var(--vf-track-snug);
+  line-height: 1.15;
+  color: var(--vf-fg-1);
+}
+.vf h2, .vf .h2 {
+  font-family: var(--vf-font-display);
+  font-size: var(--vf-t-h2);
+  font-weight: var(--vf-w-bold);
+  letter-spacing: var(--vf-track-snug);
+  line-height: 1.2;
+  color: var(--vf-fg-1);
+}
+.vf h3, .vf .h3 {
+  font-size: var(--vf-t-h3);
+  font-weight: var(--vf-w-semibold);
+  letter-spacing: var(--vf-track-normal);
+  line-height: 1.3;
+  color: var(--vf-fg-1);
+}
+.vf .display-xl {
+  font-family: var(--vf-font-display);
+  font-size: var(--vf-t-display-xl);
+  font-weight: var(--vf-w-bold);
+  letter-spacing: var(--vf-track-tight);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.vf .display-l {
+  font-family: var(--vf-font-display);
+  font-size: var(--vf-t-display-l);
+  font-weight: var(--vf-w-bold);
+  letter-spacing: var(--vf-track-tight);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.vf p, .vf .body {
+  font-size: var(--vf-t-body);
+  line-height: 1.6;
+  color: var(--vf-fg-2);
+}
+.vf .body-s  { font-size: var(--vf-t-body-s); line-height: 1.55; color: var(--vf-fg-2); }
+.vf .caption { font-size: var(--vf-t-caption); color: var(--vf-fg-3); }
+.vf .label   {
+  font-size: var(--vf-t-label);
+  font-weight: var(--vf-w-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--vf-track-wider);
+  color: var(--vf-fg-4);
+}
+.vf .meta    {
+  font-size: var(--vf-t-meta);
+  color: var(--vf-fg-4);
+  letter-spacing: var(--vf-track-wide);
+}
+.vf code, .vf .mono, .vf .num {
+  font-family: var(--vf-font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Base controls */
+.vf .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px 18px;
+  border-radius: var(--vf-r-5);
+  border: none;
+  font-family: inherit;
+  font-size: var(--vf-t-body);
+  font-weight: var(--vf-w-semibold);
+  cursor: pointer;
+  transition: transform var(--vf-dur-1) var(--vf-ease),
+              opacity var(--vf-dur-2) var(--vf-ease),
+              background var(--vf-dur-2) var(--vf-ease);
+  background: linear-gradient(135deg, var(--vf-accent) 0%, var(--vf-accent-press) 100%);
+  color: #fff;
+  box-shadow: var(--vf-shadow-glow);
+}
+.vf .btn:hover   { opacity: 0.92; }
+.vf .btn:active  { transform: scale(0.98); }
+.vf .btn.secondary {
+  background: var(--vf-surface-3);
+  border: 0.5px solid var(--vf-border-3);
+  color: var(--vf-fg-1);
+  box-shadow: none;
+}
+.vf .btn.ghost {
+  background: transparent;
+  color: var(--vf-fg-3);
+  box-shadow: none;
+}
+.vf .btn.ghost:hover { color: var(--vf-fg-1); background: var(--vf-surface-2); }
+
+.vf .card {
+  background: var(--vf-glass-bg);
+  backdrop-filter: var(--vf-glass-blur);
+  -webkit-backdrop-filter: var(--vf-glass-blur);
+  border: var(--vf-glass-border);
+  border-radius: var(--vf-r-7);
+  padding: var(--vf-s-6);
+}
+
+.vf .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--vf-r-2);
+  background: var(--vf-accent-soft);
+  border: 0.5px solid var(--vf-accent-line);
+  font-size: var(--vf-t-meta);
+  font-weight: var(--vf-w-semibold);
+  color: var(--vf-accent);
+  letter-spacing: var(--vf-track-wide);
+}
+
+</style>
+<style>
+
+  .vf-landing {
+    font-family: var(--vf-font-ui);
+    background: #0A0A0A;
+    background-image: var(--vf-wash);
+    color: var(--vf-fg-1);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .vf-landing .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+  .vf-landing /* Nav */
+  nav {
+    position: sticky; top: 0; z-index: 30;
+    padding: 14px 24px;
+    backdrop-filter: blur(30px) saturate(140%);
+    background: rgba(10,10,10,.72);
+    border-bottom: 0.5px solid rgba(255,255,255,.06);
+  }
+  .vf-landing .nav-inner {
+    max-width: 1080px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .vf-landing .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.02em; font-size: 17px; }
+  .vf-landing nav ul { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
+  .vf-landing nav a { color: rgba(255,255,255,.6); text-decoration: none; font-size: 13px; font-weight: 500; letter-spacing: -.01em; }
+  .vf-landing nav a:hover { color: #F5F5F7; }
+
+  .vf-landing /* Hero */
+  .hero { padding: 120px 24px 90px; text-align: center; position: relative; }
+  .vf-landing .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px;
+    background: rgba(10,132,255,.08); border: 0.5px solid rgba(10,132,255,.25);
+    font-size: 12px; color: #0A84FF; font-weight: 600; letter-spacing: .02em;
+    margin-bottom: 28px;
+  }
+  .vf-landing .dot { width: 6px; height: 6px; border-radius: 50%; background: #0A84FF; animation: vfPulse 1.6s ease-in-out infinite; }
+  @keyframes vfPulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+  .vf-landing .hero h1 {
+    font-size: clamp(44px, 7vw, 84px); font-weight: 700; line-height: 1;
+    letter-spacing: -.04em; margin: 0 0 20px; text-wrap: balance;
+  }
+  .vf-landing .hero h1 .grad {
+    background: linear-gradient(135deg,#0A84FF 0%, #BF5AF2 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .vf-landing .hero p {
+    font-size: 19px; color: rgba(255,255,255,.62); line-height: 1.5;
+    max-width: 620px; margin: 0 auto 36px; text-wrap: pretty;
+  }
+  .vf-landing .cta-row { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+  .vf-landing .btn-primary {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 14px 22px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg,#0A84FF,#0066CC);
+    color: #fff; font-family: inherit; font-size: 15px; font-weight: 600;
+    cursor: pointer; box-shadow: 0 4px 24px rgba(10,132,255,.3);
+    text-decoration: none; letter-spacing: -.01em;
+    transition: transform 120ms, opacity 200ms;
+  }
+  .vf-landing .btn-primary:active { transform: scale(.98); }
+  .vf-landing .btn-secondary {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 14px 22px; border-radius: 12px;
+    background: rgba(255,255,255,.06); border: 0.5px solid rgba(255,255,255,.12);
+    color: #F5F5F7; font-family: inherit; font-size: 15px; font-weight: 600;
+    cursor: pointer; text-decoration: none; letter-spacing: -.01em;
+  }
+
+  .vf-landing /* Hero visual */
+  .hero-viz {
+    margin: 64px auto 0; max-width: 880px; position: relative;
+    border-radius: 20px; overflow: hidden;
+    border: 0.5px solid rgba(255,255,255,.1);
+    background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.01));
+    backdrop-filter: blur(40px);
+    box-shadow: 0 40px 120px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+    padding: 28px;
+  }
+
+  .vf-landing /* Section */
+  section { padding: 96px 0; }
+  .vf-landing .eyebrow {
+    display: inline-block; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .12em; color: #0A84FF; font-weight: 700; margin-bottom: 14px;
+  }
+  .vf-landing h2.sec {
+    font-size: clamp(32px, 4.4vw, 44px); font-weight: 700; letter-spacing: -.03em;
+    line-height: 1.1; margin: 0 0 16px; text-wrap: balance;
+  }
+  .vf-landing .sec-sub { font-size: 17px; color: rgba(255,255,255,.6); line-height: 1.55; max-width: 620px; margin: 0 0 48px; }
+
+  .vf-landing /* Class grid */
+  .classes { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  @media (max-width: 820px) { .vf-landing .classes { grid-template-columns: repeat(2, 1fr); } }
+  .vf-landing .class-card {
+    padding: 22px 18px 24px; border-radius: 16px;
+    background: rgba(255,255,255,.03);
+    border: 0.5px solid rgba(255,255,255,.08);
+    transition: transform 280ms cubic-bezier(.4,0,.2,1), border-color 280ms;
+  }
+  .vf-landing .class-card:hover { transform: translateY(-3px); }
+  .vf-landing .class-card .lvl {
+    font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(255,255,255,.3); margin-bottom: 14px;
+  }
+  .vf-landing .class-card .dot-lg { width: 14px; height: 14px; border-radius: 50%; margin-bottom: 14px; }
+  .vf-landing .class-card .nm { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 8px; }
+  .vf-landing .class-card .rec { font-size: 12px; color: rgba(255,255,255,.55); line-height: 1.5; }
+
+  .vf-landing /* Features */
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 820px) { .vf-landing .features { grid-template-columns: 1fr; } }
+  .vf-landing .feature {
+    padding: 24px 22px; border-radius: 16px;
+    background: rgba(255,255,255,.03);
+    border: 0.5px solid rgba(255,255,255,.08);
+  }
+  .vf-landing .feature h3 { font-size: 17px; font-weight: 600; margin: 14px 0 6px; letter-spacing: -.01em; }
+  .vf-landing .feature p { font-size: 13px; color: rgba(255,255,255,.55); line-height: 1.6; margin: 0; }
+  .vf-landing .feature-icon {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(10,132,255,.1); border: 0.5px solid rgba(10,132,255,.25);
+    color: #0A84FF; display: flex; align-items: center; justify-content: center;
+  }
+  .vf-landing .feature svg { stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+
+  .vf-landing /* CTA band */
+  .cta-band {
+    background: linear-gradient(135deg, rgba(10,132,255,.08), rgba(191,90,242,.06));
+    border: 0.5px solid rgba(10,132,255,.2);
+    border-radius: 24px; padding: 56px 48px; text-align: center; margin: 40px 0 80px;
+  }
+  .vf-landing .cta-band h2 { font-size: clamp(26px, 4vw, 36px); font-weight: 700; letter-spacing: -.02em; margin: 0 0 10px; }
+  .vf-landing .cta-band p { font-size: 15px; color: rgba(255,255,255,.6); margin: 0 0 22px; }
+
+  .vf-landing footer {
+    padding: 40px 24px; border-top: 0.5px solid rgba(255,255,255,.06);
+    font-size: 12px; color: rgba(255,255,255,.3);
+  }
+  .vf-landing .footer-inner { max-width: 1080px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .vf-landing .footer-inner a { color: inherit; text-decoration: none; margin-left: 20px; }
+
+</style>
+
 </head>
 <body>
   <div id="root"></div>
@@ -117,8 +681,9 @@
             {/* Logo */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '56px' }}>
               <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
-                <path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-                <path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.45"/>
+                <defs><linearGradient id="vfLogoGrad1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#0A84FF"/><stop offset="100%" stopColor="#BF5AF2"/></linearGradient></defs>
+                <path d="M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14" stroke="url(#vfLogoGrad1)" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                <path d="M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18" stroke="url(#vfLogoGrad1)" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.45"/>
               </svg>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', lineHeight: 1 }}>Volafly</span>
@@ -165,8 +730,9 @@
             {isMobile && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '36px' }}>
                 <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                  <path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-                  <path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.45"/>
+                  <defs><linearGradient id="vfLogoGrad2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#0A84FF"/><stop offset="100%" stopColor="#BF5AF2"/></linearGradient></defs>
+                  <path d="M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14" stroke="url(#vfLogoGrad2)" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                  <path d="M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18" stroke="url(#vfLogoGrad2)" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.45"/>
                 </svg>
                 <div>
                   <div style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', lineHeight: 1 }}>Volafly</div>
@@ -251,8 +817,25 @@
     };
 
     // ── App Wrapper mit Auth ───────────────────────────────────────────────
+
+    // ── Volafly Landing Page ──────────────────────────────────────────────
+    const LANDING_MARKUP = "<nav>\n  <div class=\"nav-inner\">\n    <div class=\"logo\">\n      <svg viewBox=\"0 0 32 32\" width=\"26\" height=\"26\">\n        <defs><linearGradient id=\"lg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0%\" stop-color=\"#0A84FF\"></stop><stop offset=\"100%\" stop-color=\"#BF5AF2\"></stop></linearGradient></defs>\n        <path d=\"M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14\" stroke=\"url(#lg)\" stroke-width=\"2.5\" fill=\"none\" stroke-linecap=\"round\"></path>\n        <path d=\"M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18\" stroke=\"url(#lg)\" stroke-width=\"2.5\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.45\"></path>\n      </svg>\n      Volafly\n    </div>\n    <ul>\n      <li><a href=\"#wie\">Wie es funktioniert</a></li>\n      <li><a href=\"#stufen\">Stufen</a></li>\n      <li><a href=\"#preis\">Kostenlos</a></li>\n    </ul>\n    <a href=\"#\" data-vf-action=\"login\" class=\"btn-secondary\" style=\"padding: 8px 14px; font-size: 13px;\">Anmelden \u2192</a>\n  </div>\n</nav>\n\n<section class=\"hero\">\n  <div class=\"hero-eyebrow\"><span class=\"dot\"></span> Live \u00b7 Stand 20.04.2026 \u00b7 F&amp;G 42 \u201eSpannung\"</div>\n  <h1>Volatilit\u00e4t lesen.<br><span class=\"grad\">On the fly.</span></h1>\n  <p>Volafly \u00fcbersetzt VIX, Sentiment und Credit-Spreads in Echtzeit in einen klaren Investitionsgrad. Datenbasiert, nicht emotional. Antizyklisch, statt panisch.</p>\n  <div class=\"cta-row\">\n    <a href=\"#\" data-vf-action=\"login\" class=\"btn-primary\">Kostenlos starten \u2192</a>\n    <a href=\"#wie\" class=\"btn-secondary\">So funktioniert's</a>\n  </div>\n\n  <!-- Embedded preview card -->\n  <div class=\"hero-viz\">\n    <div style=\"display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;\">\n      <div style=\"font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: rgba(255,255,255,.35); font-weight: 600;\">Fear &amp; Greed Index</div>\n      <span style=\"font-size: 10px; color: rgba(255,255,255,.3); font-family: 'JetBrains Mono',monospace;\">aktualisiert t\u00e4glich</span>\n    </div>\n    <div style=\"display: flex; align-items: baseline; gap: 14px;\">\n      <div style=\"font-size: 56px; font-weight: 700; letter-spacing: -.04em; color: #FFCC00; font-variant-numeric: tabular-nums; line-height: 1;\">42</div>\n      <span style=\"padding: 4px 12px; border-radius: 6px; background: rgba(255,204,0,.12); border: 0.5px solid rgba(255,204,0,.35); font-size: 11px; font-weight: 600; color: #FFCC00; letter-spacing: .04em;\">Spannung</span>\n      <span style=\"font-size: 13px; color: rgba(255,255,255,.5); margin-left: auto;\">Empfehlung: Investitionsgrad halten</span>\n    </div>\n    <div style=\"margin-top: 18px; height: 6px; border-radius: 3px; position: relative; background: linear-gradient(90deg,#FF453A 0%,#FF9F0A 25%,#FFCC00 50%,#30D158 75%,#30D158 100%);\">\n      <div style=\"position: absolute; left: 42%; top: -4px; width: 14px; height: 14px; border-radius: 50%; background: #F5F5F7; border: 3px solid #0A0A0A;\"></div>\n    </div>\n    <div style=\"display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; color: rgba(255,255,255,.3); letter-spacing: .06em; text-transform: uppercase;\">\n      <span>Panik</span><span>Stress</span><span>Spannung</span><span>Ruhe</span><span>Stille</span>\n    </div>\n  </div>\n</section>\n\n<section id=\"stufen\" class=\"wrap\">\n  <div class=\"eyebrow\">F\u00fcnf Stufen</div>\n  <h2 class=\"sec\">Jeder Marktzustand hat eine Farbe \u2014 und eine klare Regel.</h2>\n  <p class=\"sec-sub\">Volafly reduziert Millionen Tick-Daten auf f\u00fcnf Klassen. Keine Graut\u00f6ne, keine Interpretation. Jede Stufe kommt mit einer eindeutigen Handlungsempfehlung.</p>\n  <div class=\"classes\">\n    <div class=\"class-card\"><div class=\"lvl\">01</div><div class=\"dot-lg\" style=\"background: #8E8E93;\"></div><div class=\"nm\" style=\"color: #8E8E93;\">Stille</div><div class=\"rec\">Komplacency. Positionen reduzieren, Absicherung aufbauen.</div></div>\n    <div class=\"class-card\"><div class=\"lvl\">02</div><div class=\"dot-lg\" style=\"background: #30D158;\"></div><div class=\"nm\" style=\"color: #30D158;\">Ruhe</div><div class=\"rec\">Gesunder Markt. Investitionsquote schrittweise erh\u00f6hen.</div></div>\n    <div class=\"class-card\"><div class=\"lvl\">03</div><div class=\"dot-lg\" style=\"background: #FFCC00;\"></div><div class=\"nm\" style=\"color: #FFCC00;\">Spannung</div><div class=\"rec\">Erh\u00f6hte Unsicherheit. Quote halten, nichts Neues kaufen.</div></div>\n    <div class=\"class-card\"><div class=\"lvl\">04</div><div class=\"dot-lg\" style=\"background: #FF9F0A;\"></div><div class=\"nm\" style=\"color: #FF9F0A;\">Stress</div><div class=\"rec\">Anspannung. Erste Nachk\u00e4ufe vorbereiten, Cash parken.</div></div>\n    <div class=\"class-card\"><div class=\"lvl\">05</div><div class=\"dot-lg\" style=\"background: #FF453A;\"></div><div class=\"nm\" style=\"color: #FF453A;\">Panik</div><div class=\"rec\">Kapitulation. Antizyklisch zukaufen, Regelwerk tr\u00e4gt.</div></div>\n  </div>\n</section>\n\n<section id=\"wie\" class=\"wrap\">\n  <div class=\"eyebrow\">Wie es funktioniert</div>\n  <h2 class=\"sec\">Drei Datenquellen. Eine Zahl. Eine Entscheidung.</h2>\n  <div class=\"features\">\n    <div class=\"feature\">\n      <div class=\"feature-icon\">\n        <svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\"><line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"10\"></line><line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"4\"></line><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"14\"></line></svg>\n      </div>\n      <h3>Volatilit\u00e4t</h3>\n      <p>VIX, VVIX, RVX und die VX-Terminstruktur \u2014 fortlaufend aggregiert, nicht w\u00f6chentlich.</p>\n    </div>\n    <div class=\"feature\">\n      <div class=\"feature-icon\" style=\"background: rgba(191,90,242,.1); border-color: rgba(191,90,242,.25); color: #BF5AF2;\">\n        <svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"></path><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line></svg>\n      </div>\n      <h3>Sentiment</h3>\n      <p>Fear &amp; Greed, Put/Call-Ratio, AAII-Bullish \u2014 das Stimmungsbarometer der Privatanleger.</p>\n    </div>\n    <div class=\"feature\">\n      <div class=\"feature-icon\" style=\"background: rgba(48,209,88,.1); border-color: rgba(48,209,88,.25); color: #30D158;\">\n        <svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\"><path d=\"M3 3v18h18\"></path><path d=\"M7 14l4-4 4 4 5-6\"></path></svg>\n      </div>\n      <h3>Credit</h3>\n      <p>High-Yield-Spreads, 10Y\u20132Y-Kurve, TED \u2014 wo institutionelle Akteure zuerst reagieren.</p>\n    </div>\n  </div>\n</section>\n\n<section class=\"wrap\">\n  <div class=\"cta-band\">\n    <h2>Starte heute. Antizyklisch, statt emotional.</h2>\n    <p>Kostenlos, kein Abo n\u00f6tig. Registrierung in 20 Sekunden.</p>\n    <a href=\"#\" data-vf-action=\"login\" class=\"btn-primary\">Konto erstellen \u2192</a>\n  </div>\n</section>\n\n<footer>\n  <div class=\"footer-inner\">\n    <div>\u00a9 2026 Volafly \u00b7 Keine Anlageberatung</div>\n    <div><a>Impressum</a><a>Datenschutz</a><a>Kontakt</a></div>\n  </div>\n</footer>";
+
+    const LandingPage = ({ onLogin }) => {
+      const handleClick = (e) => {
+        const trigger = e.target.closest('[data-vf-action="login"]');
+        if (trigger) { e.preventDefault(); onLogin(); }
+      };
+      return (
+        <div className="vf-landing"
+             onClick={handleClick}
+             dangerouslySetInnerHTML={{ __html: LANDING_MARKUP }} />
+      );
+    };
+
     const App = () => {
       const [user, setUser]       = useState(null);
+      const [showLogin, setShowLogin] = useState(false);
       const [authLoading, setAuthLoading] = useState(true);
       const [isPasswordReset, setIsPasswordReset] = useState(false);
       const [newPw, setNewPw]     = useState('');
@@ -302,7 +885,7 @@
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0A0A0A', backgroundImage: 'radial-gradient(ellipse at 30% 50%, rgba(10,132,255,0.08) 0%, transparent 55%)', fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif' }}>
           <div style={{ width: '100%', maxWidth: '360px', padding: '0 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '36px', justifyContent: 'center' }}>
-              <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" strokeWidth="2.5" strokeLinecap="round" fill="none"/><path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.45"/></svg>
+              <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><defs><linearGradient id="vfLogoGrad3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#0A84FF"/><stop offset="100%" stopColor="#BF5AF2"/></linearGradient></defs><path d="M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14" stroke="url(#vfLogoGrad3)" strokeWidth="2.5" fill="none" strokeLinecap="round"/><path d="M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18" stroke="url(#vfLogoGrad3)" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.45"/></svg>
               <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em' }}>Volafly</span>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.09)', borderRadius: '20px', padding: '28px' }}>
@@ -343,6 +926,7 @@
         </div>
       );
 
+      if (!user && !showLogin) return <LandingPage onLogin={() => setShowLogin(true)} />;
       if (!user) return <LoginScreen onLogin={setUser} />;
       return <MarketPivot user={user} supabase={sb} />;
     };
@@ -462,7 +1046,7 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
       <div style={{ background: '#161618', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: isMobile ? '24px 24px 0 0' : '24px', padding: isMobile ? '20px 16px 32px' : '32px', width: '100%', maxWidth: isMobile ? '100%' : '500px', boxShadow: '0 24px 80px rgba(0,0,0,0.7)', maxHeight: isMobile ? '85vh' : 'auto', overflowY: 'auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: isMobile ? '4px' : '6px' }}>
-          <svg width="20" height="20" viewBox="0 0 32 32" fill="none"><path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" strokeWidth="2.5" strokeLinecap="round" fill="none"/><path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.45"/></svg>
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none"><defs><linearGradient id="vfLogoGrad4" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#0A84FF"/><stop offset="100%" stopColor="#BF5AF2"/></linearGradient></defs><path d="M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14" stroke="url(#vfLogoGrad4)" strokeWidth="2.5" fill="none" strokeLinecap="round"/><path d="M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18" stroke="url(#vfLogoGrad4)" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.45"/></svg>
           <span style={{ fontSize: isMobile ? '17px' : '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em' }}>Volafly</span>
         </div>
         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', letterSpacing: '0.04em', marginBottom: isMobile ? '12px' : '20px' }}>Volatilität lesen. On the fly.</div>
@@ -2341,8 +2925,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-                  <path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" strokeWidth="2.5" strokeLinecap="round" fill="none"/>
-                  <path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.45"/>
+                  <defs><linearGradient id="vfLogoGrad5" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#0A84FF"/><stop offset="100%" stopColor="#BF5AF2"/></linearGradient></defs>
+                  <path d="M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14" stroke="url(#vfLogoGrad5)" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
+                  <path d="M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18" stroke="url(#vfLogoGrad5)" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.45"/>
                 </svg>
                 <span style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em' }}>Volafly</span>
               </div>
@@ -2461,8 +3046,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           {/* Volafly logo — linke Spalte */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2 24 C6 24 10 16 16 12 C22 16 26 24 30 24" stroke="#F5F5F7" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-              <path d="M2 18 C6 18 10 12 16 8 C22 12 26 18 30 18" stroke="#F5F5F7" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.45"/>
+              <defs><linearGradient id="vfLogoGrad6" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0A84FF"/><stop offset="100%" stop-color="#BF5AF2"/></linearGradient></defs>
+              <path d="M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14" stroke="url(#vfLogoGrad6)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+              <path d="M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18" stroke="url(#vfLogoGrad6)" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.45"/>
             </svg>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', lineHeight: 1 }}>Volafly</span>
