@@ -892,7 +892,7 @@ Usage example:
     const LandingPage = ({ onLogin }) => {
       useEffect(() => {
         const handleKey = (e) => {
-          if (e.shiftKey && e.altKey && e.key === 'V') onLogin();
+          if (e.shiftKey && e.altKey && e.code === 'KeyV') onLogin();
         };
         window.addEventListener('keydown', handleKey);
         return () => window.removeEventListener('keydown', handleKey);
