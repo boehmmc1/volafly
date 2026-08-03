@@ -890,71 +890,14 @@ Usage example:
     const LANDING_MARKUP = "<nav>\n  <div class=\"nav-inner\">\n    <div class=\"logo\">\n      <svg viewBox=\"0 0 32 32\" width=\"26\" height=\"26\">\n        <defs><linearGradient id=\"lg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0%\" stop-color=\"#0A84FF\"></stop><stop offset=\"100%\" stop-color=\"#BF5AF2\"></stop></linearGradient></defs>\n        <path d=\"M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14\" stroke=\"url(#lg)\" stroke-width=\"2.5\" fill=\"none\" stroke-linecap=\"round\"></path>\n        <path d=\"M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18\" stroke=\"url(#lg)\" stroke-width=\"2.5\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.45\"></path>\n      </svg>\n      Volafly\n    </div>\n    <ul>\n      <li><a href=\"#wie\">Wie es funktioniert</a></li>\n      <li><a href=\"#stufen\">Stufen</a></li>\n    </ul>\n    <a href=\"#\" data-vf-action=\"login\" class=\"btn-secondary\" style=\"padding: 8px 14px; font-size: 13px;\">Anmelden \u2192</a>\n  </div>\n</nav>\n\n<section class=\"hero\">\n  <h1>Volatilit\u00e4t lesen.<br><span class=\"grad\">On the fly.</span></h1>\n  <p>Volafly \u00fcbersetzt VIX, Sentiment und Credit-Spreads in Echtzeit in einen klaren Investitionsgrad. Datenbasiert, nicht emotional. Antizyklisch, statt panisch.</p>\n  <div class=\"cta-row\">\n    <a href=\"#\" data-vf-action=\"login\" class=\"btn-primary\">Kostenlos starten \u2192</a>\n    <a href=\"#wie\" class=\"btn-secondary\">So funktioniert's</a>\n  </div>\n\n  <!-- Launch Video — separate file, same folder -->\n  <div class=\"hero-video\">\n    <iframe src=\"volafly-launch-video.html\" title=\"Volafly Launch Video\" loading=\"lazy\" scrolling=\"no\"></iframe>\n  </div>\n\n  <!-- Template-Preview card -->\n  <div class=\"hero-viz\">\n    <div class=\"hvz-head\">\n      <div class=\"hvz-head-left\">\n        <span class=\"hvz-badge\">Template</span>\n        <span class=\"hvz-name\">Der rationale Investor</span>\n      </div>\n      <span class=\"hvz-updated\">aktualisiert mehrfach t\u00e4glich</span>\n    </div>\n    <div class=\"hvz-readout\">\n      <div class=\"hvz-num\">80<span class=\"hvz-num-unit\">%</span></div>\n      <span class=\"hvz-state\">Spannung</span>\n      <span class=\"hvz-desc\">Investitionsgrad \u00b7 antizyklisch</span>\n    </div>\n    <div class=\"hvz-bar\">\n      <div class=\"hvz-bar-dot\"></div>\n    </div>\n    <div class=\"hvz-scale\">\n      <span>Panik<span class=\"hvz-pct\"> \u00b7 110%</span></span>\n      <span>Stress<span class=\"hvz-pct\"> \u00b7 90%</span></span>\n      <span class=\"hvz-scale-current\">Spannung<span class=\"hvz-pct\"> \u00b7 80%</span></span>\n      <span>Ruhe<span class=\"hvz-pct\"> \u00b7 60%</span></span>\n      <span>Stille<span class=\"hvz-pct\"> \u00b7 40%</span></span>\n    </div>\n    <div class=\"hvz-sources\">\n      <span class=\"hvz-sources-label\">Datenquellen:</span> VIX \u00b7 VVIX \u00b7 Fear &amp; Greed \u00b7 Put/Call \u00b7 High-Yield Spread \u00b7 AAII \u00b7 10Y\u20132Y\n    </div>\n  </div>\n</section>\n\n<section id=\"stufen\" class=\"wrap\">\n  <div class=\"eyebrow\">F\u00fcnf Stufen</div>\n  <h2 class=\"sec\">Jeder Marktzustand hat eine Farbe \u2014 und eine klare Regel.</h2>\n  <p class=\"sec-sub\">Volafly reduziert Millionen Tick-Daten auf bis zu f\u00fcnf Klassen \u2014 Schwellenwerte und Handlungsempfehlungen legst du selbst fest. Keine Graut\u00f6ne, keine Interpretation.</p>\n  <div class=\"classes\">\n    <div class=\"class-card\"><div class=\"lvl\">01</div><div class=\"dot-lg\" style=\"background: #8E8E93;\"></div><div class=\"nm\" style=\"color: #8E8E93;\">Stille</div><div class=\"rec\">Komplacency. Positionen reduzieren, Absicherung aufbauen.</div></div>\n    <div class=\"class-card\"><div class=\"lvl\">02</div><div class=\"dot-lg\" style=\"background: #30D158;\"></div><div class=\"nm\" style=\"color: #30D158;\">Ruhe</div><div class=\"rec\">Gesunder Markt. Investitionsquote schrittweise erh\u00f6hen.</div></div>\n    <div class=\"class-card\"><div class=\"lvl\">03</div><div class=\"dot-lg\" style=\"background: #FFCC00;\"></div><div class=\"nm\" style=\"color: #FFCC00;\">Spannung</div><div class=\"rec\">Erh\u00f6hte Unsicherheit. Quote halten, nichts Neues kaufen.</div></div>\n    <div class=\"class-card\"><div class=\"lvl\">04</div><div class=\"dot-lg\" style=\"background: #FF9F0A;\"></div><div class=\"nm\" style=\"color: #FF9F0A;\">Stress</div><div class=\"rec\">Anspannung. Erste Nachk\u00e4ufe vorbereiten, Cash parken.</div></div>\n    <div class=\"class-card\"><div class=\"lvl\">05</div><div class=\"dot-lg\" style=\"background: #FF453A;\"></div><div class=\"nm\" style=\"color: #FF453A;\">Panik</div><div class=\"rec\">Kapitulation. Antizyklisch zukaufen, Regelwerk tr\u00e4gt.</div></div>\n  </div>\n</section>\n\n<section id=\"wie\" class=\"wrap\">\n  <div class=\"eyebrow\">Wie es funktioniert</div>\n  <h2 class=\"sec\">Drei Datenquellen. Eine Zahl. Eine Entscheidung.</h2>\n  <div class=\"features\">\n    <div class=\"feature\">\n      <div class=\"feature-icon\">\n        <svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\"><line x1=\"18\" y1=\"20\" x2=\"18\" y2=\"10\"></line><line x1=\"12\" y1=\"20\" x2=\"12\" y2=\"4\"></line><line x1=\"6\" y1=\"20\" x2=\"6\" y2=\"14\"></line></svg>\n      </div>\n      <h3>Volatilit\u00e4t</h3>\n      <p>VIX, VVIX, RVX und die VX-Terminstruktur \u2014 fortlaufend aggregiert, nicht w\u00f6chentlich.</p>\n    </div>\n    <div class=\"feature\">\n      <div class=\"feature-icon\" style=\"background: rgba(191,90,242,.1); border-color: rgba(191,90,242,.25); color: #BF5AF2;\">\n        <svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"></path><line x1=\"9\" y1=\"9\" x2=\"9.01\" y2=\"9\"></line><line x1=\"15\" y1=\"9\" x2=\"15.01\" y2=\"9\"></line></svg>\n      </div>\n      <h3>Sentiment</h3>\n      <p>Fear &amp; Greed, Put/Call-Ratio, AAII-Bullish \u2014 das Stimmungsbarometer der Privatanleger.</p>\n    </div>\n    <div class=\"feature\">\n      <div class=\"feature-icon\" style=\"background: rgba(48,209,88,.1); border-color: rgba(48,209,88,.25); color: #30D158;\">\n        <svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\"><path d=\"M3 3v18h18\"></path><path d=\"M7 14l4-4 4 4 5-6\"></path></svg>\n      </div>\n      <h3>Credit</h3>\n      <p>High-Yield-Spreads, 10Y\u20132Y-Kurve, TED \u2014 wo institutionelle Akteure zuerst reagieren.</p>\n    </div>\n  </div>\n</section>\n\n<section class=\"wrap\">\n  <div class=\"cta-band\">\n    <h2>Starte heute. Antizyklisch, statt emotional.</h2>\n    <p>Kostenlos, kein Abo n\u00f6tig. Registrierung in 20 Sekunden.</p>\n    <a href=\"#\" data-vf-action=\"login\" class=\"btn-primary\">Konto erstellen \u2192</a>\n  </div>\n</section>\n\n<footer>\n  <div class=\"footer-inner\">\n    <div>\u00a9 2026 Volafly \u00b7 Keine Anlageberatung</div>\n    <div><a>Impressum</a><a>Datenschutz</a><a>Kontakt</a></div>\n  </div>\n</footer>";
 
     const LandingPage = ({ onLogin }) => {
-      useEffect(() => {
-        const handleKey = (e) => {
-          if (e.shiftKey && e.altKey && e.code === 'KeyV') onLogin();
-        };
-        window.addEventListener('keydown', handleKey);
-        return () => window.removeEventListener('keydown', handleKey);
-      }, [onLogin]);
-
+      const handleClick = (e) => {
+        const trigger = e.target.closest('[data-vf-action="login"]');
+        if (trigger) { e.preventDefault(); onLogin(); }
+      };
       return (
-        <div style={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#0A0A0A',
-          backgroundImage: 'radial-gradient(ellipse at 50% 40%, rgba(10,132,255,0.07) 0%, transparent 60%)',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif',
-          color: '#F5F5F7',
-          textAlign: 'center',
-          padding: '40px 24px',
-          userSelect: 'none',
-        }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '48px' }}>
-            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-              <defs>
-                <linearGradient id="ucGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#0A84FF"/>
-                  <stop offset="100%" stopColor="#BF5AF2"/>
-                </linearGradient>
-              </defs>
-              <path d="M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14" stroke="url(#ucGrad)" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-              <path d="M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18" stroke="url(#ucGrad)" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.45"/>
-            </svg>
-            <span style={{ fontSize: '22px', fontWeight: 700, letterSpacing: '-0.02em' }}>Volafly</span>
-          </div>
-
-          {/* Pulsing dot */}
-          <div style={{ marginBottom: '28px' }}>
-            <div style={{
-              width: '10px', height: '10px', borderRadius: '50%',
-              background: '#0A84FF',
-              margin: '0 auto',
-              boxShadow: '0 0 0 0 rgba(10,132,255,0.4)',
-              animation: 'uc-pulse 2.4s ease-in-out infinite',
-            }}/>
-          </div>
-
-          {/* Headline */}
-          <h1 style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.03em', marginBottom: '12px', lineHeight: 1.2 }}>
-            Wir bauen gerade.
-          </h1>
-          <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.38)', maxWidth: '320px', lineHeight: 1.6, marginBottom: '0' }}>
-            Volafly wird überarbeitet und ist in Kürze wieder verfügbar.
-          </p>
-
-          <style>{`
-            @keyframes uc-pulse {
-              0%   { box-shadow: 0 0 0 0 rgba(10,132,255,0.45); }
-              60%  { box-shadow: 0 0 0 10px rgba(10,132,255,0); }
-              100% { box-shadow: 0 0 0 0 rgba(10,132,255,0); }
-            }
-          `}</style>
-        </div>
+        <div className="vf-landing"
+             onClick={handleClick}
+             dangerouslySetInnerHTML={{ __html: LANDING_MARKUP }} />
       );
     };
 
@@ -1352,12 +1295,13 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       rvx: 0, vxn: 0, vix: 0, vvix: 0, vxv: 0,
       fearGreed: 0, equityPutCall: 0, totalPutCall: 0,
       skewIndex: 0, moveIndex: 0, leftTailVol: 0,
+      vixEq: 0, cryptoFearGreed: 0,
       vx1: 0, vx2: 0, vx3: 0, vx4: 0, vx5: 0
     },
-    yieldCurve: { y2: 0, y10: 0, y30: 0 },
+    yieldCurve: { y2: 0, y10: 0, y30: 0, y10real: 0, y30real: 0 },
     movingAverages: { breadth: { above5day: 0, above20day: 0, above50day: 0, above200day: 0 } },
     riskIndicators: { hySpread: 0, dxy: 0, goldSP: 0, gold: 0, silver: 0, wti: 0 },
-    indices: { spx: 0, ndx: 0, rut: 0, spx200d: 0, ndx200d: 0 }
+    indices: { spx: 0, ndx: 0, rut: 0, spx200d: 0, ndx200d: 0, spxRsi: null, ndxRsi: null }
   });
   const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsmLGq2ejgt-yg-ER16AuBC2cjPmHJLa4voisbpgmo3qpNMo7LMNus01PLp6etdn2CJb9724Bp6y-d/pub?gid=0&single=true&output=csv';
 
@@ -1511,6 +1455,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         skewIndex:    data.SKEW_Index            ?? marketData.volatilityMetrics.skewIndex,
         moveIndex:    data.MOVE_Index            ?? marketData.volatilityMetrics.moveIndex,
         leftTailVol:  data.Left_Tail_Volatility  ?? marketData.volatilityMetrics.leftTailVol,
+        vixEq:        data.VIXEQ                 ?? marketData.volatilityMetrics.vixEq,
+        cryptoFearGreed: data.Crypto_Fear_Greed_Index ?? marketData.volatilityMetrics.cryptoFearGreed,
         vx1:          data.VX1                  ?? marketData.volatilityMetrics.vx1,
         vx2:          data.VX2                  ?? marketData.volatilityMetrics.vx2,
         vx3:          data.VX3                  ?? marketData.volatilityMetrics.vx3,
@@ -1521,6 +1467,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         y2:  data.Yield_2Y  ?? marketData.yieldCurve.y2,
         y10: data.Yield_10Y ?? marketData.yieldCurve.y10,
         y30: data.Yield_30Y ?? marketData.yieldCurve.y30,
+        y10real: data.DFII10 ?? marketData.yieldCurve.y10real,
+        y30real: data.DFII30 ?? marketData.yieldCurve.y30real,
       },
       movingAverages: { breadth: {
         above5day:   data.S5FD_Above_5Day_MA   ?? marketData.movingAverages.breadth.above5day,
@@ -1542,6 +1490,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         rut: data.RUT ?? marketData.indices.rut,
         spx200d: data.SPX_200D ?? marketData.indices.spx200d,
         ndx200d: data.NDX_200D ?? marketData.indices.ndx200d,
+        spxRsi: data.SPX_RSI ?? marketData.indices.spxRsi,
+        ndxRsi: data.NDX_RSI ?? marketData.indices.ndxRsi,
       },
     });
   };
@@ -1565,7 +1515,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
         'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
         'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
-        'HY_Spread','DXY','Gold_SP_Ratio','Gold','Silver','WTI','SPX','NDX','RUT','SPX_200D','NDX_200D'];
+        'HY_Spread','DXY','Gold_SP_Ratio','Gold','Silver','WTI','SPX','NDX','RUT','SPX_200D','NDX_200D',
+        'VIXEQ','DFII10','DFII30','SPX_RSI','NDX_RSI','Crypto_Fear_Greed_Index'];
       const found = known.filter(k => data[k] !== undefined);
       if (found.length === 0) {
         // Beim Auto-Load: retry statt Fehler zeigen
@@ -1845,6 +1796,10 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     skew:         { label: 'SKEW Index', desc: 'Nachfrage nach Crash-Absicherung (OTM-Puts). Über 130 = Markt fürchtet einen seltenen, starken Einbruch.' },
     move:         { label: 'MOVE Index', desc: 'Der VIX für US-Staatsanleihen. Hohe Werte = Unsicherheit über künftige Zinsentwicklung.' },
     leftTail:     { label: 'Left Tail Vola', desc: 'Wie teuer Crash-Schutz gerade ist. Steigt stark wenn Profis echte Absicherung suchen.' },
+    vixEq:        { label: 'VIXEQ', desc: 'Durchschnittliche 30-Tage-Vola der S&P-500-Einzelaktien (Cboe Constituent Volatility). VIX misst die Index-Vola, VIXEQ die Einzelwerte — die Differenz ist Korrelation/Dispersion.' },
+    dfii10:       { label: '10Y Realrendite', desc: 'Inflationsbereinigte 10-jährige US-Rendite (TIPS). Nominal minus real ≈ erwartete Inflation (Breakeven).' },
+    dfii30:       { label: '30Y Realrendite', desc: 'Inflationsbereinigte 30-jährige US-Rendite (TIPS).' },
+    cryptoFG:     { label: 'Krypto Fear & Greed', desc: 'Stimmungsindex des Kryptomarkts (CoinMarketCap): 0 = extreme Angst, 100 = extreme Gier. Separat vom Aktien-F&G.' },
     breadth5:     { label: 'Breadth 5D', desc: '% der S&P-Aktien über ihrem 5-Tage-Schnitt. Unter 30% = kurzfristig überverkauft.' },
     breadth20:    { label: 'Breadth 20D', desc: '% der S&P-Aktien über ihrem 20-Tage-Schnitt. Unter 40% = breite mittelfristige Schwäche.' },
     breadth50:    { label: 'Breadth 50D', desc: '% der S&P-Aktien über ihrem 50-Tage-Schnitt. Unter 50% = mehr als die Hälfte im Abwärtstrend.' },
@@ -1888,7 +1843,13 @@ S5TH_Above_200Day_MA;${String(marketData.movingAverages.breadth.above200day).rep
 HY_Spread;${String(marketData.riskIndicators.hySpread).replace('.', ',')}
 DXY;${String(marketData.riskIndicators.dxy).replace('.', ',')}
 Gold_SP_Ratio;${String(marketData.riskIndicators.goldSP).replace('.', ',')}
-WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
+WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}
+VIXEQ;${String(marketData.volatilityMetrics.vixEq).replace('.', ',')}
+DFII10;${String(marketData.yieldCurve.y10real).replace('.', ',')}
+DFII30;${String(marketData.yieldCurve.y30real).replace('.', ',')}
+SPX_RSI;${marketData.indices.spxRsi ?? ''}
+NDX_RSI;${marketData.indices.ndxRsi ?? ''}
+Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
   const copyToClipboard = async () => {
     if (navigator.clipboard && window.isSecureContext) {
@@ -1959,7 +1920,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           'Total_Put_Call_Ratio','SKEW_Index','MOVE_Index','Left_Tail_Volatility',
           'VX1','VX2','VX3','VX4','VX5','Yield_2Y','Yield_10Y','Yield_30Y',
           'S5FD_Above_5Day_MA','S5TW_Above_20Day_MA','S5FI_Above_50Day_MA','S5TH_Above_200Day_MA',
-          'HY_Spread','DXY','Gold_SP_Ratio','Gold','Silver','WTI','SPX','NDX','RUT','SPX_200D','NDX_200D'];
+          'HY_Spread','DXY','Gold_SP_Ratio','Gold','Silver','WTI','SPX','NDX','RUT','SPX_200D','NDX_200D',
+          'VIXEQ','DFII10','DFII30','SPX_RSI','NDX_RSI','Crypto_Fear_Greed_Index'];
         const foundFields = knownFields.filter(k => data[k] !== undefined);
         if (foundFields.length === 0) {
           setCsvStatus({ type: 'error', msg: 'Keine bekannten Felder gefunden — bitte das Template als Vorlage verwenden' });
@@ -1980,6 +1942,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             skewIndex: data.SKEW_Index ?? marketData.volatilityMetrics.skewIndex,
             moveIndex: data.MOVE_Index ?? marketData.volatilityMetrics.moveIndex,
             leftTailVol: data.Left_Tail_Volatility ?? marketData.volatilityMetrics.leftTailVol,
+            vixEq: data.VIXEQ ?? marketData.volatilityMetrics.vixEq,
+            cryptoFearGreed: data.Crypto_Fear_Greed_Index ?? marketData.volatilityMetrics.cryptoFearGreed,
             vx1: data.VX1 ?? marketData.volatilityMetrics.vx1,
             vx2: data.VX2 ?? marketData.volatilityMetrics.vx2,
             vx3: data.VX3 ?? marketData.volatilityMetrics.vx3,
@@ -1990,6 +1954,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             y2: data.Yield_2Y ?? marketData.yieldCurve.y2,
             y10: data.Yield_10Y ?? marketData.yieldCurve.y10,
             y30: data.Yield_30Y ?? marketData.yieldCurve.y30,
+            y10real: data.DFII10 ?? marketData.yieldCurve.y10real,
+            y30real: data.DFII30 ?? marketData.yieldCurve.y30real,
           },
           movingAverages: { breadth: {
             above5day: data.S5FD_Above_5Day_MA ?? marketData.movingAverages.breadth.above5day,
@@ -2011,6 +1977,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             rut: data.RUT ?? marketData.indices.rut,
             spx200d: data.SPX_200D ?? marketData.indices.spx200d,
             ndx200d: data.NDX_200D ?? marketData.indices.ndx200d,
+            spxRsi: data.SPX_RSI ?? marketData.indices.spxRsi,
+            ndxRsi: data.NDX_RSI ?? marketData.indices.ndxRsi,
           },
         };
         setMarketData(newData);
@@ -2040,6 +2008,12 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
   const fearColor = v.fearGreed < 25 ? '#FF3B30' : v.fearGreed < 45 ? '#FF9500' : v.fearGreed < 55 ? '#FFCC00' : v.fearGreed < 75 ? '#34C759' : '#30D158';
   const contango = v.vx5 > v.vx1;
   const vixRatio = v.vix / v.vxv;
+  // RSI(14) 0..100 → Farbe (≥70 überkauft, ≤30 überverkauft)
+  const rsiInfo = (x) => x == null
+    ? { c: 'rgba(255,255,255,0.3)', note: '' }
+    : x >= 70 ? { c: '#FF9F0A', note: ' · überkauft' }
+    : x <= 30 ? { c: '#30D158', note: ' · überverkauft' }
+    :           { c: 'rgba(255,255,255,0.6)', note: '' };
 
   const formatTime = (date) => {
     if (!date) return null;
@@ -2253,6 +2227,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
     'y2':     { label: 'Yield 2Y',   tvUrl: 'https://www.tradingview.com/symbols/TVC-US02Y/?interval=D' },
     'y10':    { label: 'Yield 10Y',  tvUrl: 'https://www.tradingview.com/symbols/TVC-US10Y/?interval=D' },
     'y30':    { label: 'Yield 30Y',  tvUrl: 'https://www.tradingview.com/symbols/TVC-US30Y/?interval=D' },
+    'vixEq':  { label: 'VIXEQ',      tvUrl: 'https://de.tradingview.com/symbols/CBOE-VIXEQ/?interval=D' },
+    'dfii10': { label: '10Y Real',   tvUrl: 'https://de.tradingview.com/symbols/FRED-DFII10/?interval=D' },
+    'dfii30': { label: '30Y Real',   tvUrl: 'https://de.tradingview.com/symbols/FRED-DFII30/?interval=D' },
   };
 
   // ── DATA TAB ──
@@ -2280,6 +2257,20 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
               </div>
             </div>
           </div>
+          {marketData.volatilityMetrics.cryptoFearGreed > 0 && (() => {
+            const cfg = marketData.volatilityMetrics.cryptoFearGreed;
+            const ccol = cfg < 25 ? '#FF3B30' : cfg < 45 ? '#FF9500' : cfg < 55 ? '#FFCC00' : cfg < 75 ? '#34C759' : '#30D158';
+            const clbl = cfg < 25 ? 'Extreme Angst' : cfg < 45 ? 'Angst' : cfg < 55 ? 'Neutral' : cfg < 75 ? 'Gier' : 'Extreme Gier';
+            return (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ fontSize: '28px', fontWeight: 700, color: ccol, letterSpacing: '-0.03em', lineHeight: 1 }}>{cfg}</div>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600, color: ccol }}>{clbl}</span>
+                  <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Krypto F&amp;G</span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* Breadth */}
@@ -2325,7 +2316,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
             {[
               { label: '2Y', val: y.y2, id: 'y2' },
               { label: '10Y', val: y.y10, id: 'y10' },
+              { label: '10Y real', val: y.y10real, id: 'dfii10' },
               { label: '30Y', val: y.y30, id: 'y30' },
+              { label: '30Y real', val: y.y30real, id: 'dfii30' },
             ].map((item, i) => {
               const tvEntry = TV_SYMBOLS[item.id];
               return (
@@ -2398,8 +2391,8 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
           <div style={sectionLabel}>Aktienindizes</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             {[
-              { label: 'S&P 500',    val: idx.spx, ma200: idx.spx200d, url: 'https://www.tradingview.com/symbols/SP-SPX/?interval=D',    sub: 'SPX' },
-              { label: 'Nasdaq 100', val: idx.ndx, ma200: idx.ndx200d, url: 'https://www.tradingview.com/symbols/NASDAQ-NDX/?interval=D', sub: 'NDX' },
+              { label: 'S&P 500',    val: idx.spx, ma200: idx.spx200d, rsi: idx.spxRsi, url: 'https://www.tradingview.com/symbols/SP-SPX/?interval=D',    sub: 'SPX' },
+              { label: 'Nasdaq 100', val: idx.ndx, ma200: idx.ndx200d, rsi: idx.ndxRsi, url: 'https://www.tradingview.com/symbols/NASDAQ-NDX/?interval=D', sub: 'NDX' },
               /* RUSSELL 2000 — auskommentiert, bei Bedarf wieder einblenden
               { label: 'Russell 2000', val: idx.rut, ma200: null, url: 'https://www.tradingview.com/symbols/TVC-RUT/?interval=D', sub: 'RUT' },
               */
@@ -2425,6 +2418,9 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
                       <span style={{ fontSize: '9px', fontWeight: 600, color: aboveMA ? '#30D158' : '#FF453A' }}>{aboveMA ? 'über 200T' : 'unter 200T'}</span>
                     </div>
                   )}
+                  {item.rsi != null && (() => { const r = rsiInfo(item.rsi); return (
+                    <div style={{ marginTop: '4px', fontSize: '9px', fontWeight: 600, color: r.c }}>RSI {item.rsi}{r.note}</div>
+                  ); })()}
                   {aboveMA === null && <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>{item.sub}</div>}
                 </div>
               );
@@ -2441,6 +2437,7 @@ WTI;${String(marketData.riskIndicators.wti).replace('.', ',')}`;
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '4px' }}>
           {[
             { label: 'VIX', val: f(v.vix), id: 'vix' },
+            { label: 'VIXEQ', val: f(v.vixEq), id: 'vixEq' },
             { label: 'RVX', val: f(v.rvx), id: 'rvx' },
             { label: 'VXN', val: f(v.vxn), id: 'vxn' },
             { label: 'VVIX', val: f(v.vvix), id: 'vvix' },
