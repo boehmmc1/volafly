@@ -2535,27 +2535,6 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '7px', background: '#0A84FF', borderRadius: '2px', display: 'inline-block' }} />Realrendite (TIPS)</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '7px', background: 'rgba(10,132,255,0.28)', borderRadius: '2px', display: 'inline-block' }} />Breakeven-Inflation</span>
           </div>
-          {/* Treasury Attraktivität — Makro-Tacho (10Y als Treiber) */}
-          {y.y10 > 0 && (() => {
-            const yieldPct = v => v < 3.5 ? Math.max(0, (v / 3.5) * 30) : v < 5 ? 30 + ((v - 3.5) / 1.5) * 30 : Math.min(100, 60 + ((v - 5) / 4) * 40);
-            const zoneCol = v => v < 3.5 ? '#30D158' : v <= 5 ? 'rgba(255,255,255,0.35)' : '#FF453A';
-            const zc = zoneCol(y.y10);
-            const zl = y.y10 < 3.5 ? 'Aktienfreundlich' : y.y10 <= 5 ? 'Neutral' : 'Aktienbelastend';
-            return (
-              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center', marginBottom: '2px' }}>Aktien-Attraktivität · Zinsniveau</div>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <div style={{ maxWidth: '150px', width: '100%' }}>
-                    <Gauge type="macro" pct={yieldPct(y.y10)} num={f(y.y10, 2) + '%'} zoneColor={zc} zoneLabel={zl}
-                      leftColor="#30D158" rightColor="#FF453A" zoneStart={30} zoneEnd={60}
-                      caption={'30Y ' + f(y.y30, 2) + '%'}
-                      extraDots={y.y30 > 0 ? [{ pct: yieldPct(y.y30), color: zoneCol(y.y30), label: '30Y' }] : undefined}
-                      tipKey="treasAttr" tipText={'Zinsniveau treibt die Aktien-Attraktivität: niedrig = aktienfreundlich, hoch = aktienbelastend. Heller Punkt = 10Y (Wert in der Mitte), kleiner Punkt = 30Y.'} />
-                  </div>
-                </div>
-              </div>
-            );
-          })()}
 
         </div>
 
@@ -2574,11 +2553,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               return (
                 <div key={i}
                   onClick={() => window.open(item.url, '_blank')}
-                  style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
+                  style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', textAlign: 'center' }}
                   onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                 >
-                  <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>{item.label} <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+                  <div style={{...metricLabel, display:'flex', alignItems:'center', justifyContent:'center', gap:'3px'}}>{item.label} <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
                   <div style={{ fontSize: '28px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>{item.val ? item.val.toLocaleString('de-DE', {maximumFractionDigits: 0}) : '—'}</div>
                   {aboveMA !== null && (
                     <div style={{ marginTop: '4px', display: 'inline-flex', alignItems: 'center', gap: '3px', padding: '2px 6px', borderRadius: '5px',
@@ -2612,8 +2591,6 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '4px' }}>
           {[
-            { label: 'VIX', val: f(v.vix), id: 'vix' },
-            { label: 'VIXEQ', val: f(v.vixEq), id: 'vixEq' },
             { label: 'RVX', val: f(v.rvx), id: 'rvx' },
             { label: 'VXN', val: f(v.vxn), id: 'vxn' },
             { label: 'VVIX', val: f(v.vvix), id: 'vvix' },
