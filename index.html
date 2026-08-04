@@ -2624,71 +2624,59 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
       </div>
 
-      {/* Put/Call + US Treasuries */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px', marginBottom: '8px' }}>
-
-        {/* Yields + Spread */}
-        <div style={glass}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
-            <div style={sectionLabel}>US Treasuries</div>
+      {/* US Treasuries */}
+      <div style={{ ...glass, marginBottom: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+          <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
           </div>
-          {(() => {
-            const rows = [
-              { m: '2Y',  nom: y.y2,  real: null },
-              { m: '10Y', nom: y.y10, real: y.y10real },
-              { m: '30Y', nom: y.y30, real: y.y30real },
-            ];
-            const YMAX = 6, BLU = '#0A84FF';
-            const w = val => `${Math.max(0, Math.min(100, (val / YMAX) * 100))}%`;
+          <div style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em' }}>US Treasuries</div>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '8px' }}>
+          {[
+            { m: '2Y',  nom: y.y2,  real: null },
+            { m: '10Y', nom: y.y10, real: y.y10real, hl: true },
+            { m: '30Y', nom: y.y30, real: y.y30real },
+          ].map((p, i) => {
+            const be = p.real != null && p.nom > 0 ? p.nom - p.real : null;
             return (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
-                {rows.map((p, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', width: '26px', flexShrink: 0 }}>{p.m}</span>
-                    <div style={{ flex: 1, height: '17px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', display: 'flex' }}>
-                      {p.real != null
-                        ? <>
-                            <div style={{ width: w(p.real), background: BLU, borderRadius: '4px 0 0 4px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                              <span style={{ fontSize: '9px', fontWeight: 600, color: '#fff', whiteSpace: 'nowrap' }}>{f(p.real, 2)}</span>
-                            </div>
-                            <div style={{ width: w(p.nom - p.real), background: 'rgba(10,132,255,0.28)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                              <span style={{ fontSize: '9px', fontWeight: 600, color: '#BFDBFF', whiteSpace: 'nowrap' }}>+{f(p.nom - p.real, 2)}</span>
-                            </div>
-                          </>
-                        : <div style={{ width: w(p.nom), background: 'rgba(10,132,255,0.55)', borderRadius: '4px' }} />}
-                    </div>
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#F5F5F7', fontVariantNumeric: 'tabular-nums', width: '46px', textAlign: 'right', flexShrink: 0 }}>{f(p.nom, 2)}%</span>
-                  </div>
-                ))}
+              <div key={i} style={{ border: `0.5px solid ${p.hl ? 'rgba(10,132,255,0.6)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '12px', padding: '14px 16px', background: p.hl ? 'rgba(10,132,255,0.04)' : 'rgba(255,255,255,0.015)' }}>
+                <div style={{ fontSize: '15px', fontWeight: 700, color: '#F5F5F7' }}>{p.m}</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>Nominalrendite</div>
+                <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '1px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{p.nom > 0 ? f(p.nom, 2) + ' %' : '—'}</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '14px' }}>Realrendite (TIPS)</div>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: p.real != null ? '#0A84FF' : 'rgba(255,255,255,0.3)', marginTop: '1px', fontVariantNumeric: 'tabular-nums' }}>{p.real != null ? f(p.real, 2) + ' %' : '—'}</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>Break-even-Inflation</div>
+                <div style={{ fontSize: '15px', fontWeight: 600, color: be != null ? '#0A84FF' : 'rgba(255,255,255,0.3)', marginTop: '1px', fontVariantNumeric: 'tabular-nums' }}>{be != null ? '+' + f(be, 2) + ' %' : '—'}</div>
               </div>
             );
-          })()}
-          <div style={{ marginTop: '7px', display: 'flex', gap: '14px', fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '7px', background: '#0A84FF', borderRadius: '2px', display: 'inline-block' }} />Realrendite (TIPS)</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '7px', background: 'rgba(10,132,255,0.28)', borderRadius: '2px', display: 'inline-block' }} />Breakeven-Inflation</span>
-          </div>
-          {v.moveIndex > 0 && (() => {
-            const mv = v.moveIndex;
-            const mpct = Math.min(100, Math.max(0, (mv - 50) / (160 - 50) * 100));
-            const mzc = mv < 80 ? '#30D158' : mv <= 120 ? 'rgba(255,255,255,0.35)' : '#FF453A';
-            const mzl = mv < 80 ? 'ruhig' : mv <= 120 ? 'normal' : 'Stress';
-            return (
-              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em', textAlign: 'center', marginBottom: '2px' }}>Zins-Volatilität</div>
-                <div style={{ display: 'flex', justifyContent: 'center' }}>
-                  <div style={{ maxWidth: '150px', width: '100%' }}>
-                    <Gauge type="macro" pct={mpct} num={f(mv, 0)} zoneColor={mzc} zoneLabel={mzl}
-                      leftColor="#30D158" rightColor="#FF453A" zoneStart={27} zoneEnd={64}
-                      tipKey="moveT" tipText={'MOVE-Index — implizite Volatilität am US-Treasury-Markt (das „VIX der Anleihen"). Niedrig = ruhiger Zinsmarkt, hoch = Zins-Stress.'} />
-                  </div>
+          })}
+        </div>
+        {v.moveIndex > 0 && (() => {
+          const mv = v.moveIndex;
+          const mzc = mv <= 120 ? '#30D158' : '#FF453A';
+          const mzl = mv < 80 ? 'ruhig' : mv <= 120 ? 'normal' : 'Stress';
+          return (
+            <HoverTip tipKey="moveT" content={'MOVE-Index — implizite Volatilität am US-Treasury-Markt (das „VIX der Anleihen"). Niedrig = ruhiger Zinsmarkt, hoch = Zins-Stress.'} width={230}>
+              <div style={{ marginTop: '8px', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '13px 18px', display: 'flex', alignItems: 'center', gap: '14px', cursor: 'help' }}>
+                <div style={{ width: '34px', height: '34px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)', flex: 1 }}>Zinsvolatilität (MOVE)</span>
+                <span style={{ fontSize: '26px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{f(mv, 0)}</span>
+                <div style={{ width: '1px', height: '28px', background: 'rgba(255,255,255,0.1)', margin: '0 6px' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: isMobile ? 'auto' : '84px' }}>
+                  <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: mzc, flexShrink: 0 }} />
+                  <span style={{ fontSize: '14px', fontWeight: 600, color: mzc }}>{mzl}</span>
                 </div>
               </div>
-            );
-          })()}
-        </div>
+            </HoverTip>
+          );
+        })()}
+      </div>
 
-        {/* Aktienindizes — kompakt */}
-        <div style={glass}>
+      {/* Aktienindizes */}
+      <div style={{ ...glass, marginBottom: '8px' }}>
           <div style={sectionLabel}>Aktienindizes</div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             {[
@@ -2731,7 +2719,6 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             })}
           </div>
         </div>
-      </div>
 
       {/* VIX Term Structure */}
       <div style={{ ...glass, marginTop: '8px' }}>
