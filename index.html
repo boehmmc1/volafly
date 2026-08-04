@@ -2265,7 +2265,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
     if (isMacro) { const dim = zoneColor === 'rgba(255,255,255,0.35)'; zone = { c: dim ? '#AEAEB2' : zoneColor, t: zoneLabel }; }
     else if (type === 'fg') zone = clamp < 25 ? { c: '#FF453A', t: 'Extreme Angst' } : clamp < 45 ? { c: '#FF9F0A', t: 'Angst' } : clamp < 55 ? { c: '#FFCC00', t: 'neutral' } : clamp < 75 ? { c: '#34C759', t: 'Gier' } : { c: '#30D158', t: 'Extreme Gier' };
     else if (type === 'rsi') zone = !has ? { c: 'rgba(255,255,255,0.3)', t: '—' } : value >= 70 ? { c: '#FF9F0A', t: 'überkauft' } : value <= 30 ? { c: '#30D158', t: 'überverkauft' } : { c: '#F5F5F7', t: 'neutral' };
-    else if (type === 'risk') zone = !has ? { c: 'rgba(255,255,255,0.3)', t: '—' } : clamp < 35 ? { c: '#30D158', t: 'niedrig' } : clamp < 60 ? { c: '#FFCC00', t: 'erhöht' } : clamp < 80 ? { c: '#FF9F0A', t: 'hoch' } : { c: '#FF453A', t: 'extrem' };
+    else if (type === 'risk') zone = !has ? { c: 'rgba(255,255,255,0.3)', t: '—' } : clamp < 35 ? { c: '#30D158', t: 'niedrig' } : clamp < 65 ? { c: '#FFCC00', t: 'neutral' } : { c: '#FF453A', t: 'hoch' };
     else zone = clamp < 45 ? { c: '#FF453A', t: 'schwach' } : clamp < 55 ? { c: '#FFCC00', t: 'neutral' } : { c: '#30D158', t: 'stark' };
     const gid = 'gg_' + tipKey;
     const numTxt = isMacro ? num : (!has ? '—' : type === 'rsi' ? f(value, 1) : Math.round(value) + (type === 'breadth' ? '%' : ''));
@@ -2274,7 +2274,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
     const stops = type === 'fg'
       ? [['0%', '#FF453A'], ['35%', '#FF9F0A'], ['55%', '#FFCC00'], ['100%', '#30D158']]
       : type === 'risk'
-      ? [['0%', '#30D158'], ['40%', '#FFCC00'], ['70%', '#FF9F0A'], ['100%', '#FF453A']]
+      ? [['0%', '#30D158'], ['50%', '#FFCC00'], ['100%', '#FF453A']]
       : [['0%', '#FF453A'], ['50%', '#FFCC00'], ['100%', '#30D158']];
     const g = 3, aS = gaugeVAng(zoneStart), aE = gaugeVAng(zoneEnd);
     const body = (
@@ -2622,97 +2622,45 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         </div>
       </div>
 
-      {/* Volatility row */}
+      {/* Volatilität & Crash-Risiko — Tacho-Zeile */}
       <div style={{ ...glass, marginBottom: '8px' }}>
         <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Volatility Indices</div>
+          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Volatilität & Crash-Risiko</div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(80px, 1fr))', gap: '4px' }}>
-          {[
-            { label: 'RVX', val: f(v.rvx), id: 'rvx' },
-            { label: 'VXN', val: f(v.vxn), id: 'vxn' },
-            { label: 'VVIX', val: f(v.vvix), id: 'vvix' },
-            { label: 'VIX/VXV', val: f(vixRatio, 3), id: 'vixVxv' },
-          ].map((item, i) => {
-            const tvEntry = TV_SYMBOLS[item.id];
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(116px, 1fr))', gap: '10px', justifyItems: 'center' }}>
+          {(v.skewIndex > 0 || v.leftTailVol > 0) && (() => {
+            const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
+            const s1 = v.skewIndex > 0 ? cl(v.skewIndex, 110, 180) : null;
+            const s2 = v.leftTailVol > 0 ? cl(v.leftTailVol, 5, 20) : null;
+            const parts = [s1, s2].filter(x => x != null);
+            const score = parts.reduce((a, b) => a + b, 0) / parts.length;
             return (
-              <TT key={i} id={item.id}>
-                <div
-                  onClick={tvEntry ? () => window.open(tvEntry.tvUrl, '_blank') : undefined}
-                  style={{ textAlign: 'center', padding: '8px 4px', cursor: tvEntry ? 'pointer' : 'default', borderRadius: '8px', transition: 'background 0.15s ease' }}
-                  onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '3px', fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: '4px' }}>
-                    {item.label}
-                    {tvEntry && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>}
-                  </div>
-                  <div style={metricValue('#F5F5F7')}>{item.val}</div>
-                </div>
-              </TT>
+              <div style={{ maxWidth: '132px', width: '100%' }}>
+                <Gauge value={score} type="risk" small caption="Crash"
+                  tipKey="crashPricing" tipText={'Eingepreistes Crash-Risiko aus CBOE SKEW (110–180) und Left-Tail-Volatility (5–20). Hoch = viel bezahlte Crash-Absicherung.'} />
+              </div>
             );
-          })}
-          {/* Divider */}
-          <div style={{ width: '0.5px', background: 'rgba(255,255,255,0.08)', margin: '4px 0', alignSelf: 'stretch' }} />
-          {/* Equity P/C */}
-          <TT id="equityPC">
-            <div style={{ textAlign: 'center', padding: '8px 4px', borderRadius: '8px' }}>
-              <div style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: '4px' }}>Equity P/C</div>
-              <div style={metricValue(v.equityPutCall < 0.7 ? '#30D158' : v.equityPutCall > 1.0 ? '#FF453A' : '#FFCC00')}>{f(v.equityPutCall, 2)}</div>
-            </div>
-          </TT>
-          {/* Total P/C */}
-          <TT id="totalPC">
-            <div style={{ textAlign: 'center', padding: '8px 4px', borderRadius: '8px' }}>
-              <div style={{ fontSize: '9px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'rgba(255,255,255,0.3)', marginBottom: '4px' }}>Total P/C</div>
-              <div style={metricValue(v.totalPutCall < 1.0 ? '#30D158' : '#FF453A')}>{f(v.totalPutCall, 2)}</div>
-            </div>
-          </TT>
-        </div>
-      </div>
-
-      {/* Black Swan Risiko (SKEW + Left Tail Vol) */}
-      <div style={{ ...glass, marginTop: '8px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <div style={sectionLabel}>Black-Swan-Risiko</div>
-          <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)' }}>SKEW + Left Tail Vol</div>
-        </div>
-        {(v.skewIndex > 0 || v.leftTailVol > 0) ? (() => {
-          const SKEW_LO = 115, SKEW_HI = 150;   // SKEW-Normierung
-          const LTV_LO = 5, LTV_HI = 15;        // Left-Tail-Vol-Normierung — an Live-Werte kalibrieren
-          const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
-          const skewScore = v.skewIndex > 0 ? cl(v.skewIndex, SKEW_LO, SKEW_HI) : 0;
-          const ltvScore = v.leftTailVol > 0 ? cl(v.leftTailVol, LTV_LO, LTV_HI) : 0;
-          const hasBoth = v.skewIndex > 0 && v.leftTailVol > 0;
-          const score = hasBoth ? (0.6 * skewScore + 0.4 * ltvScore) : (v.skewIndex > 0 ? skewScore : ltvScore);
-          const scCol = sc => sc < 35 ? '#30D158' : sc < 60 ? '#FFCC00' : sc < 80 ? '#FF9F0A' : '#FF453A';
-          return (
-            <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <div style={{ flex: isMobile ? '1 1 100%' : '0 0 150px', maxWidth: '150px' }}>
-                <Gauge value={score} type="risk" caption="Tail-Risiko"
-                  tipKey="blackSwan" tipText={'Kombiniertes Tail-Risiko aus CBOE SKEW (100 = normal, 140+ = erhöhtes Crash-Hedging) und Left-Tail-Volatility. Höher = mehr eingepreistes Black-Swan-Risiko.'} />
+          })()}
+          {[
+            { lab: 'RVX', val: v.rvx, lo: 12, hi: 45, t1: 22, t2: 30, dec: 1, tip: 'RVX — VIX-Äquivalent für Small Caps (Russell 2000).' },
+            { lab: 'VXN', val: v.vxn, lo: 12, hi: 50, t1: 23, t2: 33, dec: 1, tip: 'VXN — VIX-Äquivalent für den Nasdaq 100.' },
+            { lab: 'VVIX', val: v.vvix, lo: 70, hi: 160, t1: 95, t2: 120, dec: 0, tip: 'VVIX — Volatilität der Volatilität. Über 120 = Vola-Spike wahrscheinlich.' },
+            { lab: 'VIX/VXV', val: vixRatio, lo: 0.75, hi: 1.20, t1: 0.95, t2: 1.05, dec: 3, tip: 'VIX/VXV — kurz- zu mittelfristige Vola. Über 1 = Backwardation/Stress.' },
+            { lab: 'Equity P/C', val: v.equityPutCall, lo: 0.3, hi: 1.5, t1: 0.7, t2: 1.0, dec: 2, tip: 'Equity Put/Call — hoch = mehr Absicherung/Angst.' },
+            { lab: 'Total P/C', val: v.totalPutCall, lo: 0.5, hi: 1.6, t1: 0.9, t2: 1.05, dec: 2, tip: 'Total Put/Call — hoch = mehr Absicherung/Angst.' },
+          ].map((t, i) => t.val > 0 ? (() => {
+            const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
+            const zc = t.val < t.t1 ? '#30D158' : t.val < t.t2 ? 'rgba(255,255,255,0.35)' : '#FF453A';
+            const zl = t.val < t.t1 ? 'ruhig' : t.val < t.t2 ? 'neutral' : 'erhöht';
+            return (
+              <div key={i} style={{ maxWidth: '132px', width: '100%' }}>
+                <Gauge type="macro" small pct={cl(t.val, t.lo, t.hi)} num={f(t.val, t.dec)} zoneColor={zc} zoneLabel={zl}
+                  leftColor="#30D158" rightColor="#FF453A" zoneStart={cl(t.t1, t.lo, t.hi)} zoneEnd={cl(t.t2, t.lo, t.hi)}
+                  caption={t.lab} tipKey={'vt' + i} tipText={t.tip} />
               </div>
-              <div style={{ flex: 1, minWidth: '180px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {[
-                  { lab: 'SKEW', val: v.skewIndex, sc: skewScore, dec: 0 },
-                  { lab: 'Left Tail Vol', val: v.leftTailVol, sc: ltvScore, dec: 2 },
-                ].map((r, i) => r.val > 0 ? (
-                  <div key={i}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>{r.lab}</span>
-                      <span style={{ fontSize: '14px', fontWeight: 600, color: '#F5F5F7', fontVariantNumeric: 'tabular-nums' }}>{f(r.val, r.dec)}</span>
-                    </div>
-                    <div style={{ height: '6px', borderRadius: '3px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
-                      <div style={{ width: `${r.sc}%`, height: '100%', borderRadius: '3px', background: scCol(r.sc) }} />
-                    </div>
-                  </div>
-                ) : null)}
-              </div>
-            </div>
-          );
-        })() : (
-          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>Keine SKEW/Left-Tail-Daten.</div>
-        )}
+            );
+          })() : null)}
+        </div>
       </div>
 
       {/* VIX Term Structure */}
