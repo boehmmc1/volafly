@@ -2453,11 +2453,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
       {/* Markt-Ampel — antizyklisches Investieren (gegenläufig zur Hedging-Ampel) */}
       {(() => {
         const sigs = [
-          { lab: 'VIX', ok: v.vix > 30, hint: '„investieren" bei VIX > 30 (hohe Vola).' },
-          { lab: 'VIX/VXV', ok: v.vxv > 0 && (v.vix / v.vxv) > 1.0, hint: '„investieren" bei VIX/VXV > 1 (Backwardation = kurzfristiger Stress).' },
-          { lab: 'Fear & Greed', ok: v.fearGreed > 0 && v.fearGreed < 35, hint: '„investieren" bei Fear & Greed < 35 (Angst).' },
-          { lab: 'Equity P/C', ok: v.equityPutCall > 0.95, hint: '„investieren" bei Equity Put/Call > 0,95 (viel Absicherung/Angst).' },
-          { lab: 'VX1–Spot', ok: v.vx1 > 0 && (v.vx1 - v.vix) < 0, hint: '„investieren" bei VX1 unter Spot (Backwardation).' },
+          { lab: 'VIX', ok: v.vix > 30, val: v.vix > 0 ? f(v.vix, 1) : '—', hint: '„investieren" bei VIX > 30 (hohe Vola).' },
+          { lab: 'VIX/VXV', ok: v.vxv > 0 && (v.vix / v.vxv) > 1.0, val: v.vxv > 0 ? f(v.vix / v.vxv, 2) : '—', hint: '„investieren" bei VIX/VXV > 1 (Backwardation = kurzfristiger Stress).' },
+          { lab: 'Fear & Greed', ok: v.fearGreed > 0 && v.fearGreed < 35, val: v.fearGreed > 0 ? f(v.fearGreed, 0) : '—', hint: '„investieren" bei Fear & Greed < 35 (Angst).' },
+          { lab: 'Equity P/C', ok: v.equityPutCall > 0.95, val: v.equityPutCall > 0 ? f(v.equityPutCall, 2) : '—', hint: '„investieren" bei Equity Put/Call > 0,95 (viel Absicherung/Angst).' },
+          { lab: 'VX1–Spot', ok: v.vx1 > 0 && (v.vx1 - v.vix) < 0, val: (v.vx1 > 0 && v.vix > 0) ? ((v.vx1 - v.vix >= 0 ? '+' : '') + f(v.vx1 - v.vix, 2)) : '—', hint: '„investieren" bei VX1 unter Spot (Backwardation).' },
         ];
         const met = sigs.filter(s => s.ok).length;
         const ausverkauf = idx.spxRsi != null && idx.ndxRsi != null && idx.spxRsi < 30 && idx.ndxRsi < 30;
@@ -2465,7 +2465,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         const red = met === 0;
         const state = green ? 'g' : red ? 'r' : 'y';
         const lampCol = { g: '#30D158', y: '#FFCC00', r: '#FF453A' };
-        const verdict = green ? 'Antizyklisch investieren' : red ? 'Vorsicht — zurückhalten' : 'Quote halten';
+        const verdict = green ? 'Antizyklisch investieren' : red ? 'Zurückhaltend bleiben' : 'Quote halten';
         const sub = green
           ? 'Alle 5 Angst-Signale erfüllt — Kapitulation, jetzt zukaufen.'
           : red
@@ -2489,12 +2489,12 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px', marginTop: '8px' }}>
               {sigs.map((s, i) => (
                 <HoverTip key={i} tipKey={'ma' + i} content={s.hint} width={200}>
-                  <div style={{ border: `0.5px solid ${s.ok ? 'rgba(48,209,88,0.3)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
-                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>{s.lab}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.ok ? '#30D158' : 'rgba(255,255,255,0.2)' }} />
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: s.ok ? '#30D158' : 'rgba(255,255,255,0.35)' }}>{s.ok ? 'ja' : 'nein'}</span>
+                  <div style={{ border: `0.5px solid ${s.ok ? 'rgba(48,209,88,0.35)' : 'rgba(255,255,255,0.08)'}`, background: s.ok ? 'rgba(48,209,88,0.05)' : 'transparent', borderRadius: '10px', padding: '10px 12px', cursor: 'help' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>{s.lab}</span>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.ok ? '#30D158' : 'rgba(255,255,255,0.25)', flexShrink: 0 }} />
                     </div>
+                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '3px', fontVariantNumeric: 'tabular-nums', color: s.ok ? '#30D158' : '#F5F5F7' }}>{s.val}</div>
                   </div>
                 </HoverTip>
               ))}
