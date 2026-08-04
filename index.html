@@ -2487,7 +2487,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           <TT id="fearGreed">
             <div style={sectionLabel}>Fear &amp; Greed</div>
           </TT>
-          <div style={{ display: 'grid', gridTemplateColumns: v.cryptoFearGreed > 0 ? '1fr 1fr' : '1fr', gap: '8px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '14px' }}>
             <Gauge value={v.fearGreed} type="fg" caption="Aktien" tipKey="fgA" tipText={'Fear & Greed — Zonen: unter 25 Extreme Angst · 25–44 Angst · 45–54 Neutral · 55–74 Gier · über 75 Extreme Gier'} />
             {v.cryptoFearGreed > 0 &&
               <Gauge value={v.cryptoFearGreed} type="fg" caption="Krypto" tipKey="fgK" tipText={'Krypto Fear & Greed (CoinMarketCap) — gleiche Zonen. 0 = extreme Angst, 100 = extreme Gier.'} />}
@@ -2511,6 +2511,51 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             ))}
           </div>
         </div>
+
+        {/* Nächste FED-Sitzung (CME FedWatch) — kompakt */}
+        <div style={{ ...glass, height: '100%' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <div style={sectionLabel}>Nächste FED-Sitzung</div>
+            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)' }}>CME FedWatch</div>
+          </div>
+          {fed.date > 0 && fed.hold != null ? (() => {
+            const fy = Math.floor(fed.date / 10000), fm = Math.floor(fed.date / 100) % 100, fdd = fed.date % 100;
+            const md = new Date(fy, fm - 1, fdd);
+            const dateStr = `${String(fdd).padStart(2, '0')}.${String(fm).padStart(2, '0')}.${fy}`;
+            const daysTo = Math.max(0, Math.ceil((md - new Date()) / 86400000));
+            const segs = [
+              { label: 'Senken', val: fed.cut ?? 0, col: '#30D158' },
+              { label: 'Gleichbl.', val: fed.hold ?? 0, col: '#8E8E93' },
+              { label: 'Steigern', val: fed.hike ?? 0, col: '#FF9F0A' },
+            ];
+            const maxVal = Math.max(...segs.map(s => s.val));
+            return (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{dateStr}</span>
+                  <span style={{ fontSize: '12px', color: '#0A84FF', fontWeight: 600 }}>in {daysTo} {daysTo === 1 ? 'Tag' : 'Tagen'}</span>
+                </div>
+                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '2px', marginBottom: '10px' }}>
+                  Zielband <span style={{ color: '#F5F5F7', fontWeight: 600 }}>{f(fed.bandLow, 2)}–{f(fed.bandHigh, 2)} %</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px' }}>
+                  {segs.map((s, i) => (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: s.col, marginBottom: '5px', fontVariantNumeric: 'tabular-nums' }}>{f(s.val, 1)}%</span>
+                      <div style={{ width: '100%', maxWidth: '54px', height: '72px', display: 'flex', alignItems: 'flex-end' }}>
+                        <div style={{ width: '100%', height: `${Math.max(s.val, 1.5)}%`, minHeight: '3px', background: s.col, borderRadius: '5px 5px 0 0', opacity: s.val === maxVal ? 1 : 0.85 }} />
+                      </div>
+                      <span style={{ fontSize: '10px', color: s.val === maxVal ? '#F5F5F7' : 'rgba(255,255,255,0.5)', fontWeight: s.val === maxVal ? 600 : 400, marginTop: '6px' }}>{s.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })() : (
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>Noch keine FedWatch-Daten.</div>
+          )}
+        </div>
+
       </div>
 
       {/* Put/Call + US Treasuries */}
@@ -2622,45 +2667,71 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         </div>
       </div>
 
-      {/* Volatilität & Crash-Risiko — Tacho-Zeile */}
-      <div style={{ ...glass, marginBottom: '8px' }}>
-        <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Volatilität & Crash-Risiko</div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(116px, 1fr))', gap: '10px', justifyItems: 'center' }}>
-          {(v.skewIndex > 0 || v.leftTailVol > 0) && (() => {
+      {/* Risiko-Kacheln: Crash-Einpreisung · Put/Call · Volatilitäts-Indizes */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px', marginBottom: '8px' }}>
+
+        <div style={{ ...glass, height: '100%' }}>
+          <div style={sectionLabel}>Crash-Einpreisung</div>
+          {(v.skewIndex > 0 || v.leftTailVol > 0) ? (() => {
             const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
             const s1 = v.skewIndex > 0 ? cl(v.skewIndex, 110, 180) : null;
             const s2 = v.leftTailVol > 0 ? cl(v.leftTailVol, 5, 20) : null;
             const parts = [s1, s2].filter(x => x != null);
             const score = parts.reduce((a, b) => a + b, 0) / parts.length;
             return (
-              <div style={{ maxWidth: '132px', width: '100%' }}>
-                <Gauge value={score} type="risk" small caption="Crash"
-                  tipKey="crashPricing" tipText={'Eingepreistes Crash-Risiko aus CBOE SKEW (110–180) und Left-Tail-Volatility (5–20). Hoch = viel bezahlte Crash-Absicherung.'} />
+              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '4px' }}>
+                <div style={{ maxWidth: '150px', width: '100%' }}>
+                  <Gauge value={score} type="risk" tipKey="crashPricing" tipText={'Eingepreistes Crash-Risiko aus CBOE SKEW (110–180) und Left-Tail-Volatility (5–20). Hoch = viel bezahlte Crash-Absicherung.'} />
+                </div>
               </div>
             );
-          })()}
-          {[
-            { lab: 'RVX', val: v.rvx, lo: 12, hi: 45, t1: 22, t2: 30, dec: 1, tip: 'RVX — VIX-Äquivalent für Small Caps (Russell 2000).' },
-            { lab: 'VXN', val: v.vxn, lo: 12, hi: 50, t1: 23, t2: 33, dec: 1, tip: 'VXN — VIX-Äquivalent für den Nasdaq 100.' },
-            { lab: 'VVIX', val: v.vvix, lo: 70, hi: 160, t1: 95, t2: 120, dec: 0, tip: 'VVIX — Volatilität der Volatilität. Über 120 = Vola-Spike wahrscheinlich.' },
-            { lab: 'VIX/VXV', val: vixRatio, lo: 0.75, hi: 1.20, t1: 0.95, t2: 1.05, dec: 3, tip: 'VIX/VXV — kurz- zu mittelfristige Vola. Über 1 = Backwardation/Stress.' },
-            { lab: 'Equity P/C', val: v.equityPutCall, lo: 0.3, hi: 1.5, t1: 0.7, t2: 1.0, dec: 2, tip: 'Equity Put/Call — hoch = mehr Absicherung/Angst.' },
-            { lab: 'Total P/C', val: v.totalPutCall, lo: 0.5, hi: 1.6, t1: 0.9, t2: 1.05, dec: 2, tip: 'Total Put/Call — hoch = mehr Absicherung/Angst.' },
-          ].map((t, i) => t.val > 0 ? (() => {
-            const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
-            const zc = t.val < t.t1 ? '#30D158' : t.val < t.t2 ? 'rgba(255,255,255,0.35)' : '#FF453A';
-            const zl = t.val < t.t1 ? 'ruhig' : t.val < t.t2 ? 'neutral' : 'erhöht';
-            return (
-              <div key={i} style={{ maxWidth: '132px', width: '100%' }}>
-                <Gauge type="macro" small pct={cl(t.val, t.lo, t.hi)} num={f(t.val, t.dec)} zoneColor={zc} zoneLabel={zl}
-                  leftColor="#30D158" rightColor="#FF453A" zoneStart={cl(t.t1, t.lo, t.hi)} zoneEnd={cl(t.t2, t.lo, t.hi)}
-                  caption={t.lab} tipKey={'vt' + i} tipText={t.tip} />
-              </div>
-            );
-          })() : null)}
+          })() : <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>Keine SKEW/Left-Tail-Daten.</div>}
         </div>
+
+        <div style={{ ...glass, height: '100%' }}>
+          <div style={sectionLabel}>Put/Call-Ratios</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px', marginTop: '4px', justifyItems: 'center' }}>
+            {[
+              { lab: 'Equity P/C', val: v.equityPutCall, lo: 0.3, hi: 1.5, t1: 0.7, t2: 1.0, dec: 2, tip: 'Equity Put/Call — hoch = mehr Absicherung/Angst.' },
+              { lab: 'Total P/C', val: v.totalPutCall, lo: 0.5, hi: 1.6, t1: 0.9, t2: 1.05, dec: 2, tip: 'Total Put/Call — hoch = mehr Absicherung/Angst.' },
+            ].map((t, i) => t.val > 0 ? (() => {
+              const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
+              const zc = t.val < t.t1 ? '#30D158' : t.val < t.t2 ? 'rgba(255,255,255,0.35)' : '#FF453A';
+              const zl = t.val < t.t1 ? 'ruhig' : t.val < t.t2 ? 'neutral' : 'erhöht';
+              return (
+                <div key={i} style={{ maxWidth: '130px', width: '100%' }}>
+                  <Gauge type="macro" small pct={cl(t.val, t.lo, t.hi)} num={f(t.val, t.dec)} zoneColor={zc} zoneLabel={zl}
+                    leftColor="#30D158" rightColor="#FF453A" zoneStart={cl(t.t1, t.lo, t.hi)} zoneEnd={cl(t.t2, t.lo, t.hi)}
+                    caption={t.lab} tipKey={'pc' + i} tipText={t.tip} />
+                </div>
+              );
+            })() : null)}
+          </div>
+        </div>
+
+        <div style={{ ...glass, height: '100%' }}>
+          <div style={sectionLabel}>Volatilitäts-Indizes</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px', marginTop: '4px', justifyItems: 'center' }}>
+            {[
+              { lab: 'RVX', val: v.rvx, lo: 12, hi: 45, t1: 22, t2: 30, dec: 1, tip: 'RVX — VIX-Äquivalent für Small Caps (Russell 2000).' },
+              { lab: 'VXN', val: v.vxn, lo: 12, hi: 50, t1: 23, t2: 33, dec: 1, tip: 'VXN — VIX-Äquivalent für den Nasdaq 100.' },
+              { lab: 'VVIX', val: v.vvix, lo: 70, hi: 160, t1: 95, t2: 120, dec: 0, tip: 'VVIX — Volatilität der Volatilität. Über 120 = Vola-Spike wahrscheinlich.' },
+              { lab: 'VIX/VXV', val: vixRatio, lo: 0.75, hi: 1.20, t1: 0.95, t2: 1.05, dec: 3, tip: 'VIX/VXV — kurz- zu mittelfristige Vola. Über 1 = Backwardation/Stress.' },
+            ].map((t, i) => t.val > 0 ? (() => {
+              const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
+              const zc = t.val < t.t1 ? '#30D158' : t.val < t.t2 ? 'rgba(255,255,255,0.35)' : '#FF453A';
+              const zl = t.val < t.t1 ? 'ruhig' : t.val < t.t2 ? 'neutral' : 'erhöht';
+              return (
+                <div key={i} style={{ maxWidth: '130px', width: '100%' }}>
+                  <Gauge type="macro" small pct={cl(t.val, t.lo, t.hi)} num={f(t.val, t.dec)} zoneColor={zc} zoneLabel={zl}
+                    leftColor="#30D158" rightColor="#FF453A" zoneStart={cl(t.t1, t.lo, t.hi)} zoneEnd={cl(t.t2, t.lo, t.hi)}
+                    caption={t.lab} tipKey={'vi' + i} tipText={t.tip} />
+                </div>
+              );
+            })() : null)}
+          </div>
+        </div>
+
       </div>
 
       {/* VIX Term Structure */}
@@ -2776,50 +2847,6 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             })}
           </div>
           </div>
-      </div>
-
-      {/* Nächste FED-Sitzung (CME FedWatch) */}
-      <div style={{ ...glass, marginTop: '8px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-          <div style={sectionLabel}>Nächste FED-Sitzung</div>
-          <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)' }}>Quelle: CME FedWatch</div>
-        </div>
-        {fed.date > 0 && fed.hold != null ? (() => {
-          const fy = Math.floor(fed.date / 10000), fm = Math.floor(fed.date / 100) % 100, fdd = fed.date % 100;
-          const md = new Date(fy, fm - 1, fdd);
-          const dateStr = `${String(fdd).padStart(2, '0')}.${String(fm).padStart(2, '0')}.${fy}`;
-          const daysTo = Math.max(0, Math.ceil((md - new Date()) / 86400000));
-          const segs = [
-            { label: 'Senken', val: fed.cut ?? 0, col: '#30D158' },
-            { label: 'Gleichbleiben', val: fed.hold ?? 0, col: '#8E8E93' },
-            { label: 'Steigern', val: fed.hike ?? 0, col: '#FF9F0A' },
-          ];
-          const maxVal = Math.max(...segs.map(s => s.val));
-          return (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{dateStr}</span>
-                <span style={{ fontSize: '13px', color: '#0A84FF', fontWeight: 600 }}>in {daysTo} {daysTo === 1 ? 'Tag' : 'Tagen'}</span>
-              </div>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '3px', marginBottom: '14px' }}>
-                Aktuelles Zielband <span style={{ color: '#F5F5F7', fontWeight: 600 }}>{f(fed.bandLow, 2)}–{f(fed.bandHigh, 2)} %</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '14px', marginTop: '4px' }}>
-                {segs.map((s, i) => (
-                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    <span style={{ fontSize: '15px', fontWeight: 700, color: s.col, marginBottom: '6px', fontVariantNumeric: 'tabular-nums' }}>{f(s.val, 1)}%</span>
-                    <div style={{ width: '100%', maxWidth: '70px', height: '110px', display: 'flex', alignItems: 'flex-end' }}>
-                      <div style={{ width: '100%', height: `${Math.max(s.val, 1.5)}%`, minHeight: '3px', background: s.col, borderRadius: '6px 6px 0 0', opacity: s.val === maxVal ? 1 : 0.85 }} />
-                    </div>
-                    <span style={{ fontSize: '11px', color: s.val === maxVal ? '#F5F5F7' : 'rgba(255,255,255,0.5)', fontWeight: s.val === maxVal ? 600 : 400, marginTop: '8px' }}>{s.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })() : (
-          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>Noch keine FedWatch-Daten geladen.</div>
-        )}
       </div>
 
       {/* Makrosignale */}
