@@ -2237,8 +2237,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
   const gaugeArc = (cx, cy, r, s, e) => { const p1 = gaugePolar(cx, cy, r, s), p2 = gaugePolar(cx, cy, r, e); return `M ${p1[0].toFixed(2)} ${p1[1].toFixed(2)} A ${r} ${r} 0 ${Math.abs(e - s) > 180 ? 1 : 0} ${s > e ? 1 : 0} ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`; };
   const gaugeVAng = v => 180 - (Math.max(0, Math.min(100, v)) / 100) * 180;
   const Gauge = ({ value, type, small = false, caption, tipKey, tipText }) => {
-    const W = small ? 108 : 148, R = small ? 42 : 60, SW = small ? 8 : 10;
-    const cx = W / 2, cy = R + 10, H = cy + 4;
+    const W = small ? 96 : 130, R = small ? 40 : 55, SW = small ? 7 : 9;
+    const cx = W / 2, cy = R + 4, H = cy + 10;
     const has = value != null;
     const clamp = has ? Math.max(0, Math.min(100, value)) : 0;
     const np = gaugePolar(cx, cy, R, gaugeVAng(clamp));
@@ -2258,23 +2258,23 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 : <><stop offset="0%" stopColor="#FF453A" /><stop offset="50%" stopColor="#FFCC00" /><stop offset="100%" stopColor="#30D158" /></>}
             </linearGradient></defs>
           )}
-          <path d={gaugeArc(cx, cy, R, 180, 0)} stroke="rgba(255,255,255,0.06)" strokeWidth={SW} fill="none" strokeLinecap="round" />
+          <path d={gaugeArc(cx, cy, R, 180, 0)} stroke="rgba(255,255,255,0.07)" strokeWidth={SW} fill="none" strokeLinecap="round" />
           {type === 'rsi'
             ? <g>
-                <path d={gaugeArc(cx, cy, R, 180, gaugeVAng(30))} stroke="#30D158" strokeWidth={SW} fill="none" strokeLinecap="round" opacity="0.5" />
-                <path d={gaugeArc(cx, cy, R, gaugeVAng(70), 0)} stroke="#FF9F0A" strokeWidth={SW} fill="none" strokeLinecap="round" opacity="0.5" />
+                <path d={gaugeArc(cx, cy, R, 180, gaugeVAng(30))} stroke="#30D158" strokeWidth={SW} fill="none" strokeLinecap="round" />
+                <path d={gaugeArc(cx, cy, R, gaugeVAng(70), 0)} stroke="#FF9F0A" strokeWidth={SW} fill="none" strokeLinecap="round" />
               </g>
-            : <path d={gaugeArc(cx, cy, R, 180, 0)} stroke={`url(#${gid})`} strokeWidth={SW} fill="none" strokeLinecap="round" opacity="0.9" />}
+            : <path d={gaugeArc(cx, cy, R, 180, 0)} stroke={`url(#${gid})`} strokeWidth={SW} fill="none" strokeLinecap="round" />}
           {has && <g>
-            <line x1={cx} y1={cy} x2={np[0].toFixed(2)} y2={np[1].toFixed(2)} stroke={zone.c} strokeWidth={small ? 2 : 2.5} strokeLinecap="round" />
-            <circle cx={np[0].toFixed(2)} cy={np[1].toFixed(2)} r={small ? 8 : 10} fill={zone.c} opacity="0.18" />
+            <circle cx={np[0].toFixed(2)} cy={np[1].toFixed(2)} r={small ? 8 : 10} fill={zone.c} opacity="0.22" />
             <circle cx={np[0].toFixed(2)} cy={np[1].toFixed(2)} r={small ? 3.5 : 4.5} fill={zone.c} />
-            <circle cx={cx} cy={cy} r={small ? 2.5 : 3.5} fill="rgba(255,255,255,0.25)" />
           </g>}
+          <text x={cx} y={cy - (small ? 3 : 5)} textAnchor="middle" fontSize={small ? 16 : 22} fontWeight="700" fill={zone.c} style={{ letterSpacing: '-0.02em' }}>{numTxt}</text>
         </svg>
-        <div style={{ fontSize: small ? '17px' : '26px', fontWeight: 700, color: zone.c, letterSpacing: '-0.03em', lineHeight: 1, marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>{numTxt}</div>
-        <div style={{ fontSize: '11px', fontWeight: 600, color: zone.c, marginTop: '3px' }}>{zone.t}</div>
-        {caption && <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '2px' }}>{caption}</div>}
+        <div style={{ fontSize: '10px', marginTop: '1px', textAlign: 'center', lineHeight: 1.2 }}>
+          {caption && <span style={{ color: 'rgba(255,255,255,0.4)' }}>{caption} · </span>}
+          <span style={{ color: zone.c, fontWeight: 600 }}>{zone.t}</span>
+        </div>
       </div>
     );
     return tipText ? <HoverTip tipKey={tipKey} content={tipText} width={210}>{body}</HoverTip> : body;
@@ -2448,37 +2448,30 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               { m: '10Y', nom: y.y10, real: y.y10real },
               { m: '30Y', nom: y.y30, real: y.y30real },
             ];
-            const YMAX = 6, W = 300, padL = 32, padR = 48, rowH = 30, top = 2;
-            const plotW = W - padL - padR;
-            const H = top + rows.length * rowH + 2;
-            const x = val => padL + (Math.max(0, val) / YMAX) * plotW;
-            const PUR = '#BF5AF2';
+            const YMAX = 6, BLU = '#0A84FF';
+            const w = val => `${Math.max(0, Math.min(100, (val / YMAX) * 100))}%`;
             return (
-              <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
-                {rows.map((p, i) => {
-                  const yy = top + i * rowH + 6, bh = 14;
-                  return (
-                    <g key={i}>
-                      <text x="0" y={yy + 11} fill="rgba(255,255,255,0.45)" fontSize="11" fontWeight="500">{p.m}</text>
-                      {p.real == null ? (
-                        <rect x={padL} y={yy} width={Math.max(0, x(p.nom) - padL)} height={bh} rx="3" fill={PUR} opacity="0.55" />
-                      ) : (
-                        <g>
-                          <rect x={padL} y={yy} width={Math.max(0, x(p.real) - padL)} height={bh} rx="3" fill={PUR} />
-                          <rect x={x(p.real) + 1.5} y={yy} width={Math.max(0, x(p.nom) - x(p.real) - 1.5)} height={bh} rx="3" fill={PUR} opacity="0.3" />
-                          <text x={(x(p.real) + x(p.nom)) / 2} y={yy + 10} fill="#E8DEFB" fontSize="8.5" fontWeight="600" textAnchor="middle">+{f(p.nom - p.real, 2)}</text>
-                        </g>
-                      )}
-                      <text x={x(p.nom) + 5} y={yy + 11} fill="#F5F5F7" fontSize="12" fontWeight="600">{f(p.nom, 2)}%</text>
-                    </g>
-                  );
-                })}
-              </svg>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+                {rows.map((p, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', width: '26px', flexShrink: 0 }}>{p.m}</span>
+                    <div style={{ flex: 1, height: '14px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden', display: 'flex' }}>
+                      {p.real != null
+                        ? <>
+                            <div style={{ width: w(p.real), background: BLU, borderRadius: '4px 0 0 4px' }} />
+                            <div style={{ width: w(p.nom - p.real), background: 'rgba(10,132,255,0.28)' }} />
+                          </>
+                        : <div style={{ width: w(p.nom), background: 'rgba(10,132,255,0.55)', borderRadius: '4px' }} />}
+                    </div>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: '#F5F5F7', fontVariantNumeric: 'tabular-nums', width: '46px', textAlign: 'right', flexShrink: 0 }}>{f(p.nom, 2)}%</span>
+                  </div>
+                ))}
+              </div>
             );
           })()}
-          <div style={{ display: 'flex', gap: '14px', marginTop: '6px', fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '7px', background: '#BF5AF2', borderRadius: '2px', display: 'inline-block' }} />Realrendite (TIPS)</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '7px', background: 'rgba(191,90,242,0.3)', borderRadius: '2px', display: 'inline-block' }} />Breakeven-Inflation</span>
+          <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '4px 14px', fontSize: '10px', color: 'rgba(255,255,255,0.4)', alignItems: 'center' }}>
+            <span>TIPS real: <span style={{ color: '#4DA3FF', fontWeight: 600 }}>10Y {f(y.y10real, 2)}% · 30Y {f(y.y30real, 2)}%</span></span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '7px', background: '#0A84FF', borderRadius: '2px', display: 'inline-block' }} />real<span style={{ width: '10px', height: '7px', background: 'rgba(10,132,255,0.28)', borderRadius: '2px', display: 'inline-block', marginLeft: '6px' }} />Breakeven</span>
           </div>
           {/* Treasury Gesamtskala */}
           {(y.y2 > 0 || y.y10 > 0 || y.y30 > 0) && (() => {
@@ -2513,18 +2506,6 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             );
           })()}
 
-                    {/* 10Y–2Y Spread */}
-          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <TT id="yieldSpread">
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>10Y – 2Y Spread</span>
-                <span style={{ fontSize: '15px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: (y.y10 - y.y2) < 0 ? '#FF453A' : (y.y10 - y.y2) < 0.5 ? '#FF9F0A' : '#30D158' }}>
-                  {(y.y10 - y.y2) >= 0 ? '+' : ''}{f(y.y10 - y.y2, 2)}%
-                </span>
-                {(y.y10 - y.y2) < 0 && <span style={{ fontSize: '9px', color: '#FF453A', opacity: 0.7 }}>⚠ invertiert</span>}
-              </div>
-            </TT>
-          </div>
         </div>
 
         {/* Aktienindizes — kompakt */}
