@@ -2235,6 +2235,102 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
   // ── DATA TAB ──
   const DataView = () => (
     <>
+      {/* Hedging-Ampel */}
+      {(() => {
+        const eq = v.vix ? v.vixEq / v.vix : 0;
+        const roll = v.vx1 ? (v.vx2 - v.vx1) / v.vx1 * 100 : 0;
+        const prem = v.vix ? (v.vx1 - v.vix) / v.vix * 100 : 0;
+        const ratio = v.vxv ? v.vix / v.vxv : 0;
+        const bedarfHigh = eq > 2.5;
+        const bedarfLevel = eq < 1.5 ? 'niedrig' : eq <= 2.5 ? 'neutral' : 'extrem hoch';
+        const groups = [
+          { name: 'Vola-Niveau', crit: [
+            { t: 'VIX < 16', ok: v.vix < 16, val: f(v.vix) },
+            { t: 'VX1 < 18', ok: v.vx1 < 18, val: f(v.vx1) },
+            { t: 'VX2 < 19,5', ok: v.vx2 < 19.5, val: f(v.vx2) },
+          ] },
+          { name: 'Terminkurve', crit: [
+            { t: 'Contango', ok: contango, val: contango ? 'ja' : 'nein' },
+            { t: 'Roll 2-6%', ok: roll >= 2 && roll <= 6, val: f(roll) + '%' },
+            { t: 'VX1-Aufschlag < 12%', ok: prem < 12, val: f(prem) + '%' },
+          ] },
+          { name: 'Nervosität', crit: [
+            { t: 'VVIX < 90', ok: v.vvix < 90, val: f(v.vvix) },
+            { t: 'VIX/VXV < 0,85', ok: ratio < 0.85, val: ratio.toFixed(3).replace('.', ',') },
+          ] },
+        ];
+        const allCrit = groups.reduce((a, g) => a.concat(g.crit), []);
+        const score = allCrit.filter(c => c.ok).length;
+        const overheated = idx.spxRsi != null && idx.ndxRsi != null && idx.spxRsi > 70 && idx.ndxRsi > 70;
+        const cheap = score >= 7 ? 'g' : score >= 5 ? 'm' : 'b';
+        let state, verdict, sub;
+        if (cheap === 'b') { state = 'b'; verdict = 'Hedges teuer'; sub = 'Die Schwankung am Markt ist bereits erhöht — Absicherung ist teuer oder kommt zu spät.'; }
+        else if (cheap === 'g' && (bedarfHigh || overheated)) { state = 'g'; verdict = 'Jetzt absichern'; sub = 'Absicherung ist günstig umsetzbar und der Bedarf hoch — guter Moment, um Schutz aufzubauen.'; }
+        else if (cheap === 'g') { state = 'g'; verdict = 'Günstig absichern möglich'; sub = 'Absicherung wäre gerade günstig — aber der Bedarf ist niedrig und kein Überhitzungs-Signal.'; }
+        else if (bedarfHigh) { state = 'm'; verdict = 'Absichern erwägen'; sub = 'Der hohe Bedarf spricht klar für Absicherung — aber sie ist zuletzt etwas teurer geworden, kein günstiger Volltreffer.'; }
+        else { state = 'm'; verdict = 'Abwarten'; sub = 'Noch kein klares Signal — weder viel Bedarf noch besonders günstige Absicherung.'; }
+        const COL = { g: '#30D158', m: '#FFCC00', b: '#FF453A' };
+        const sc = COL[state];
+        const chipCol = n => n.ok === n.tot ? '#30D158' : n.ok === 0 ? '#FF453A' : '#FFCC00';
+        return (
+          <div style={{ ...glass, marginBottom: '8px' }}>
+            <div style={sectionLabel}>Hedging-Ampel</div>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', padding: '10px', background: 'rgba(0,0,0,0.25)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                {['b', 'm', 'g'].map(s => (
+                  <div key={s} style={{ width: '22px', height: '22px', borderRadius: '50%', background: state === s ? COL[s] : 'rgba(255,255,255,0.07)', boxShadow: state === s ? `0 0 14px ${COL[s]}` : 'none', transition: 'all 0.3s' }} />
+                ))}
+              </div>
+              <div style={{ flex: 1, minWidth: isMobile ? '150px' : '220px' }}>
+                <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 700, color: sc, letterSpacing: '-0.02em' }}>{verdict}</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginTop: '5px', lineHeight: 1.5 }}>{sub}</div>
+              </div>
+            </div>
+            <div style={{ marginTop: '14px', padding: '11px', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
+                <span>Absicherungs-Bedarf · förderlich für Hedges</span>
+                <span style={{ fontWeight: 600, color: '#F5F5F7' }}>{f(eq, 2)} · {bedarfLevel}</span>
+              </div>
+              <div style={{ position: 'relative', height: '22px', marginTop: '8px', display: 'flex', borderRadius: '5px', overflow: 'hidden' }}>
+                <div style={{ flex: 1.5, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: 'rgba(255,255,255,0.5)' }}>niedrig</div>
+                <div style={{ flex: 1, background: 'rgba(255,204,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#3d2f00' }}>neutral</div>
+                <div style={{ flex: 1, background: 'rgba(48,209,88,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#04340f' }}>extrem hoch</div>
+                <div style={{ position: 'absolute', top: '-3px', left: `${Math.min(eq / 3.5 * 100, 99)}%`, width: '2px', height: '28px', background: '#F5F5F7' }} />
+              </div>
+              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginTop: '8px', lineHeight: 1.5 }}>
+                {bedarfHigh ? 'Einzelwerte schwanken viel stärker als der Index → hoher Bedarf, Index-Schutz relativ günstig.' : bedarfLevel === 'neutral' ? 'Etwas erhöhte Streuung zwischen Einzelwerten und Index.' : 'Einzelwerte und Index schwanken ähnlich — wenig Anlass zur Absicherung.'}
+              </div>
+            </div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '14px' }}>Ist Absicherung gerade günstig umsetzbar?</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', marginTop: '8px' }}>
+              {groups.map((g, i) => {
+                const nOk = g.crit.filter(c => c.ok).length;
+                const info = { ok: nOk, tot: g.crit.length };
+                return (
+                  <div key={i} title={g.crit.map(c => `${c.t} ${c.ok ? '\u2713' : '\u2717'} (${c.val})`).join('   \u00b7   ')}
+                    style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{g.name}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: chipCol(info) }} />
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: chipCol(info) }}>{nOk}/{g.crit.length}</span>
+                    </div>
+                  </div>
+                );
+              })}
+              <div title={`S&P 500 RSI ${f(idx.spxRsi || 0)} · Nasdaq 100 RSI ${f(idx.ndxRsi || 0)} — beide > 70 nötig`}
+                style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Überhitzung</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: overheated ? '#30D158' : '#FF453A' }} />
+                  <span style={{ fontSize: '13px', fontWeight: 600, color: overheated ? '#30D158' : '#FF453A' }}>{overheated ? 'aktiv' : 'nein'}</span>
+                </div>
+              </div>
+            </div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '10px' }}>Günstige Hedges: {score} von 8 · Bedarf: {bedarfLevel} · Überhitzung: {overheated ? 'ja' : 'nein'}</div>
+          </div>
+        );
+      })()}
+
       {/* Top row: Fear & Greed + Breadth */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '8px', marginBottom: '8px' }}>
         {/* Fear & Greed */}
@@ -2278,7 +2374,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           <TT id="breadth5">
             <div style={sectionLabel}>S&amp;P 500 Breadth</div>
           </TT>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 16px' }}>
             {[
               { label: '5D',   val: b.above5day,   id: 'breadth5' },
               { label: '20D',  val: b.above20day,  id: 'breadth20' },
@@ -2312,32 +2408,43 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
             <div style={sectionLabel}>US Treasuries</div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-            {[
-              { label: '2Y', val: y.y2, id: 'y2' },
-              { label: '10Y', val: y.y10, id: 'y10' },
-              { label: '10Y real', val: y.y10real, id: 'dfii10' },
-              { label: '30Y', val: y.y30, id: 'y30' },
-              { label: '30Y real', val: y.y30real, id: 'dfii30' },
-            ].map((item, i) => {
-              const tvEntry = TV_SYMBOLS[item.id];
-              return (
-                <TT key={i} id={item.id}>
-                  <div
-                    onClick={tvEntry ? () => window.open(tvEntry.tvUrl, '_blank') : undefined}
-                    style={{ cursor: tvEntry ? 'pointer' : 'default', borderRadius: '6px', padding: '4px', transition: 'background 0.15s' }}
-                    onMouseEnter={e => { if (tvEntry) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
-                  >
-                    <div style={{ ...metricLabel, display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      {item.label}
-                      {tvEntry && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>}
-                    </div>
-                    <div style={metricValue('#BF5AF2')}>{f(item.val, 2)}%</div>
-                  </div>
-                </TT>
-              );
-            })}
+          {(() => {
+            const rows = [
+              { m: '2Y',  nom: y.y2,  real: null },
+              { m: '10Y', nom: y.y10, real: y.y10real },
+              { m: '30Y', nom: y.y30, real: y.y30real },
+            ];
+            const YMAX = 6, W = 300, padL = 32, padR = 48, rowH = 30, top = 2;
+            const plotW = W - padL - padR;
+            const H = top + rows.length * rowH + 2;
+            const x = val => padL + (Math.max(0, val) / YMAX) * plotW;
+            const PUR = '#BF5AF2';
+            return (
+              <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block' }}>
+                {rows.map((p, i) => {
+                  const yy = top + i * rowH + 6, bh = 14;
+                  return (
+                    <g key={i}>
+                      <text x="0" y={yy + 11} fill="rgba(255,255,255,0.45)" fontSize="11" fontWeight="500">{p.m}</text>
+                      {p.real == null ? (
+                        <rect x={padL} y={yy} width={Math.max(0, x(p.nom) - padL)} height={bh} rx="3" fill={PUR} opacity="0.55" />
+                      ) : (
+                        <g>
+                          <rect x={padL} y={yy} width={Math.max(0, x(p.real) - padL)} height={bh} rx="3" fill={PUR} />
+                          <rect x={x(p.real) + 1.5} y={yy} width={Math.max(0, x(p.nom) - x(p.real) - 1.5)} height={bh} rx="3" fill={PUR} opacity="0.3" />
+                          <text x={(x(p.real) + x(p.nom)) / 2} y={yy + 10} fill="#E8DEFB" fontSize="8.5" fontWeight="600" textAnchor="middle">+{f(p.nom - p.real, 2)}</text>
+                        </g>
+                      )}
+                      <text x={x(p.nom) + 5} y={yy + 11} fill="#F5F5F7" fontSize="12" fontWeight="600">{f(p.nom, 2)}%</text>
+                    </g>
+                  );
+                })}
+              </svg>
+            );
+          })()}
+          <div style={{ display: 'flex', gap: '14px', marginTop: '6px', fontSize: '9px', color: 'rgba(255,255,255,0.4)' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '7px', background: '#BF5AF2', borderRadius: '2px', display: 'inline-block' }} />Realrendite (TIPS)</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}><span style={{ width: '10px', height: '7px', background: 'rgba(191,90,242,0.3)', borderRadius: '2px', display: 'inline-block' }} />Breakeven-Inflation</span>
           </div>
           {/* Treasury Gesamtskala */}
           {(y.y2 > 0 || y.y10 > 0 || y.y30 > 0) && (() => {
