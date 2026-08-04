@@ -2452,12 +2452,13 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
       })()}
       {/* Markt-Ampel — antizyklisches Investieren (gegenläufig zur Hedging-Ampel) */}
       {(() => {
+        const contango = v.vx5 > v.vx1;
         const sigs = [
-          { lab: 'VIX', ok: v.vix > 30, val: v.vix > 0 ? f(v.vix, 1) : '—', hint: '„investieren" bei VIX > 30 (hohe Vola).' },
-          { lab: 'VIX/VXV', ok: v.vxv > 0 && (v.vix / v.vxv) > 1.0, val: v.vxv > 0 ? f(v.vix / v.vxv, 2) : '—', hint: '„investieren" bei VIX/VXV > 1 (Backwardation = kurzfristiger Stress).' },
-          { lab: 'Fear & Greed', ok: v.fearGreed > 0 && v.fearGreed < 35, val: v.fearGreed > 0 ? f(v.fearGreed, 0) : '—', hint: '„investieren" bei Fear & Greed < 35 (Angst).' },
           { lab: 'Equity P/C', ok: v.equityPutCall > 0.95, val: v.equityPutCall > 0 ? f(v.equityPutCall, 2) : '—', hint: '„investieren" bei Equity Put/Call > 0,95 (viel Absicherung/Angst).' },
-          { lab: 'VX1–Spot', ok: v.vx1 > 0 && (v.vx1 - v.vix) < 0, val: (v.vx1 > 0 && v.vix > 0) ? ((v.vx1 - v.vix >= 0 ? '+' : '') + f(v.vx1 - v.vix, 2)) : '—', hint: '„investieren" bei VX1 unter Spot (Backwardation).' },
+          { lab: 'Total P/C', ok: v.totalPutCall > 1.0, val: v.totalPutCall > 0 ? f(v.totalPutCall, 2) : '—', hint: '„investieren" bei Total Put/Call > 1,0.' },
+          { lab: 'VIX/VXV', ok: v.vxv > 0 && (v.vix / v.vxv) > 1.0, val: v.vxv > 0 ? f(v.vix / v.vxv, 2) : '—', hint: '„investieren" bei VIX/VXV > 1 (Backwardation = kurzfristiger Stress).' },
+          { lab: 'VVIX', ok: v.vvix > 120, val: v.vvix > 0 ? f(v.vvix, 0) : '—', hint: '„investieren" bei VVIX > 120 (Vol-Spike wahrscheinlich).' },
+          { lab: 'Terminkurve', ok: (v.vx1 > 0 && v.vx5 > 0) && !contango, val: (v.vx1 > 0 && v.vx5 > 0) ? (contango ? 'Contango' : 'Backwardation') : '—', hint: '„investieren" bei Backwardation der VX-Terminkurve (kurzfristiger Stress).' },
         ];
         const met = sigs.filter(s => s.ok).length;
         const ausverkauf = idx.spxRsi != null && idx.ndxRsi != null && idx.spxRsi < 30 && idx.ndxRsi < 30;
@@ -2494,7 +2495,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                       <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>{s.lab}</span>
                       <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.ok ? '#30D158' : 'rgba(255,255,255,0.25)', flexShrink: 0 }} />
                     </div>
-                    <div style={{ fontSize: '20px', fontWeight: 700, marginTop: '3px', fontVariantNumeric: 'tabular-nums', color: s.ok ? '#30D158' : '#F5F5F7' }}>{s.val}</div>
+                    <div style={{ fontSize: (s.val.length > 6 ? '14px' : '20px'), fontWeight: 700, marginTop: (s.val.length > 6 ? '6px' : '3px'), fontVariantNumeric: 'tabular-nums', color: s.ok ? '#30D158' : '#F5F5F7' }}>{s.val}</div>
                   </div>
                 </HoverTip>
               ))}
@@ -2690,7 +2691,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
       </div>
 
       {/* Risiko-Kacheln: Crash-Einpreisung · Put/Call · Volatilitäts-Indizes */}
-      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 0.75fr) minmax(0, 0.95fr) minmax(0, 1.3fr)', gap: '8px', marginBottom: '8px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 0.8fr) minmax(0, 1.2fr)', gap: '8px', marginBottom: '8px' }}>
 
         <div style={{ ...glass, height: '100%' }}>
           <div style={sectionLabel}>Crash-Einpreisung</div>
@@ -2711,34 +2712,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         </div>
 
         <div style={{ ...glass, height: '100%' }}>
-          <div style={sectionLabel}>Put/Call-Ratios</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '8px', marginTop: '4px', justifyItems: 'center' }}>
-            {[
-              { lab: 'Equity P/C', val: v.equityPutCall, lo: 0.3, hi: 1.5, t1: 0.7, t2: 1.0, dec: 2, tip: 'Equity Put/Call — hoch = mehr Absicherung/Angst.' },
-              { lab: 'Total P/C', val: v.totalPutCall, lo: 0.5, hi: 1.6, t1: 0.9, t2: 1.05, dec: 2, tip: 'Total Put/Call — hoch = mehr Absicherung/Angst.' },
-            ].map((t, i) => t.val > 0 ? (() => {
-              const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
-              const zc = t.val < t.t1 ? '#30D158' : t.val < t.t2 ? 'rgba(255,255,255,0.35)' : '#FF453A';
-              const zl = t.val < t.t1 ? 'ruhig' : t.val < t.t2 ? 'neutral' : 'erhöht';
-              return (
-                <div key={i} style={{ maxWidth: '130px', width: '100%' }}>
-                  <Gauge type="macro" small pct={cl(t.val, t.lo, t.hi)} num={f(t.val, t.dec)} zoneColor={zc} zoneLabel={zl}
-                    leftColor="#30D158" rightColor="#FF453A" zoneStart={cl(t.t1, t.lo, t.hi)} zoneEnd={cl(t.t2, t.lo, t.hi)}
-                    caption={t.lab} tipKey={'pc' + i} tipText={t.tip} />
-                </div>
-              );
-            })() : null)}
-          </div>
-        </div>
-
-        <div style={{ ...glass, height: '100%' }}>
           <div style={sectionLabel}>Volatilitäts-Indizes</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginTop: '4px', justifyItems: 'center' }}>
             {[
               { lab: 'RVX', val: v.rvx, lo: 12, hi: 45, t1: 22, t2: 30, dec: 1, tip: 'RVX — VIX-Äquivalent für Small Caps (Russell 2000).' },
               { lab: 'VXN', val: v.vxn, lo: 12, hi: 50, t1: 23, t2: 33, dec: 1, tip: 'VXN — VIX-Äquivalent für den Nasdaq 100.' },
-              { lab: 'VVIX', val: v.vvix, lo: 70, hi: 160, t1: 95, t2: 120, dec: 0, tip: 'VVIX — Volatilität der Volatilität. Über 120 = Vola-Spike wahrscheinlich.' },
-              { lab: 'VIX/VXV', val: vixRatio, lo: 0.75, hi: 1.20, t1: 0.95, t2: 1.05, dec: 3, tip: 'VIX/VXV — kurz- zu mittelfristige Vola. Über 1 = Backwardation/Stress.' },
             ].map((t, i) => t.val > 0 ? (() => {
               const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
               const zc = t.val < t.t1 ? '#30D158' : t.val < t.t2 ? 'rgba(255,255,255,0.35)' : '#FF453A';
@@ -2758,16 +2736,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
       {/* VIX Term Structure */}
       <div style={{ ...glass, marginTop: '8px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={sectionLabel}>VIX Term Structure</div>
-            <div style={{
-              fontSize: '10px', fontWeight: 600, padding: '2px 6px', borderRadius: '4px', marginBottom: '12px',
-              background: contango ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)',
-              color: contango ? '#30D158' : '#FF453A',
-            }}>
-              {contango ? 'Contango' : 'Backwardation'}
-            </div>
-          </div>
+          <div style={sectionLabel}>VIX Term Structure</div>
 
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px', alignItems: 'center' }}>
           <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
