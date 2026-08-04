@@ -1310,6 +1310,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [lastImportDate, setLastImportDate] = useState(null);
   const [dataTooltip, setDataTooltip] = useState(null);
+  const [hoverTip, setHoverTip] = useState(null);
   const [sheetDescs, setSheetDescs] = useState({});
   const [fetchLoading, setFetchLoading] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -2214,6 +2215,71 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
     );
   };
 
+  // ── Hover-Tooltip für dynamische Inhalte ──
+  const HoverTip = ({ tipKey, content, width = 210, children }) => (
+    <div style={{ position: 'relative', display: 'block', width: '100%' }}
+      onMouseEnter={() => setHoverTip(tipKey)} onMouseLeave={() => setHoverTip(null)}>
+      {children}
+      {hoverTip === tipKey && (
+        <div style={{
+          position: 'absolute', bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+          marginBottom: '8px', zIndex: 100, background: '#2C2C2E',
+          border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: '10px', padding: '9px 12px',
+          width: `${width}px`, boxShadow: '0 4px 24px rgba(0,0,0,0.5)', pointerEvents: 'none',
+          fontSize: '11px', lineHeight: 1.5, color: 'rgba(255,255,255,0.7)', textAlign: 'left', whiteSpace: 'normal',
+        }}>{content}</div>
+      )}
+    </div>
+  );
+
+  // ── Gauge (Halbkreis-Tacho) ──
+  const gaugePolar = (cx, cy, r, deg) => { const a = deg * Math.PI / 180; return [cx + r * Math.cos(a), cy - r * Math.sin(a)]; };
+  const gaugeArc = (cx, cy, r, s, e) => { const p1 = gaugePolar(cx, cy, r, s), p2 = gaugePolar(cx, cy, r, e); return `M ${p1[0].toFixed(2)} ${p1[1].toFixed(2)} A ${r} ${r} 0 ${Math.abs(e - s) > 180 ? 1 : 0} ${s > e ? 1 : 0} ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`; };
+  const gaugeVAng = v => 180 - (Math.max(0, Math.min(100, v)) / 100) * 180;
+  const Gauge = ({ value, type, small = false, caption, tipKey, tipText }) => {
+    const W = small ? 108 : 148, R = small ? 42 : 60, SW = small ? 8 : 10;
+    const cx = W / 2, cy = R + 10, H = cy + 4;
+    const has = value != null;
+    const clamp = has ? Math.max(0, Math.min(100, value)) : 0;
+    const np = gaugePolar(cx, cy, R, gaugeVAng(clamp));
+    let zone;
+    if (type === 'fg') zone = clamp < 25 ? { c: '#FF453A', t: 'Extreme Angst' } : clamp < 45 ? { c: '#FF9F0A', t: 'Angst' } : clamp < 55 ? { c: '#FFCC00', t: 'Neutral' } : clamp < 75 ? { c: '#34C759', t: 'Gier' } : { c: '#30D158', t: 'Extreme Gier' };
+    else if (type === 'rsi') zone = !has ? { c: 'rgba(255,255,255,0.3)', t: '—' } : value >= 70 ? { c: '#FF9F0A', t: 'überkauft' } : value <= 30 ? { c: '#30D158', t: 'überverkauft' } : { c: '#F5F5F7', t: 'neutral' };
+    else zone = clamp < 45 ? { c: '#FF453A', t: 'schwach' } : clamp < 55 ? { c: '#FFCC00', t: 'gemischt' } : { c: '#30D158', t: 'stark' };
+    const gid = 'gg_' + tipKey;
+    const numTxt = !has ? '—' : type === 'rsi' ? f(value, 1) : Math.round(value) + (type === 'breadth' ? '%' : '');
+    const body = (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', cursor: tipText ? 'help' : 'default' }}>
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: 'block', maxWidth: `${W}px` }}>
+          {(type === 'fg' || type === 'breadth') && (
+            <defs><linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
+              {type === 'fg'
+                ? <><stop offset="0%" stopColor="#FF453A" /><stop offset="35%" stopColor="#FF9F0A" /><stop offset="55%" stopColor="#FFCC00" /><stop offset="100%" stopColor="#30D158" /></>
+                : <><stop offset="0%" stopColor="#FF453A" /><stop offset="50%" stopColor="#FFCC00" /><stop offset="100%" stopColor="#30D158" /></>}
+            </linearGradient></defs>
+          )}
+          <path d={gaugeArc(cx, cy, R, 180, 0)} stroke="rgba(255,255,255,0.06)" strokeWidth={SW} fill="none" strokeLinecap="round" />
+          {type === 'rsi'
+            ? <g>
+                <path d={gaugeArc(cx, cy, R, 180, gaugeVAng(30))} stroke="#30D158" strokeWidth={SW} fill="none" strokeLinecap="round" opacity="0.5" />
+                <path d={gaugeArc(cx, cy, R, gaugeVAng(70), 0)} stroke="#FF9F0A" strokeWidth={SW} fill="none" strokeLinecap="round" opacity="0.5" />
+              </g>
+            : <path d={gaugeArc(cx, cy, R, 180, 0)} stroke={`url(#${gid})`} strokeWidth={SW} fill="none" strokeLinecap="round" opacity="0.9" />}
+          {has && <g>
+            <line x1={cx} y1={cy} x2={np[0].toFixed(2)} y2={np[1].toFixed(2)} stroke={zone.c} strokeWidth={small ? 2 : 2.5} strokeLinecap="round" />
+            <circle cx={np[0].toFixed(2)} cy={np[1].toFixed(2)} r={small ? 8 : 10} fill={zone.c} opacity="0.18" />
+            <circle cx={np[0].toFixed(2)} cy={np[1].toFixed(2)} r={small ? 3.5 : 4.5} fill={zone.c} />
+            <circle cx={cx} cy={cy} r={small ? 2.5 : 3.5} fill="rgba(255,255,255,0.25)" />
+          </g>}
+        </svg>
+        <div style={{ fontSize: small ? '17px' : '26px', fontWeight: 700, color: zone.c, letterSpacing: '-0.03em', lineHeight: 1, marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>{numTxt}</div>
+        <div style={{ fontSize: '11px', fontWeight: 600, color: zone.c, marginTop: '3px' }}>{zone.t}</div>
+        {caption && <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '2px' }}>{caption}</div>}
+      </div>
+    );
+    return tipText ? <HoverTip tipKey={tipKey} content={tipText} width={210}>{body}</HoverTip> : body;
+  };
+
   // ── TradingView Chart Popup ──────────────────────────────────────────────
   const TV_SYMBOLS = {
     'vix':    { label: 'VIX',        tvUrl: 'https://de.tradingview.com/symbols/TVC-VIX/?interval=D' },
@@ -2307,24 +2373,28 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 const nOk = g.crit.filter(c => c.ok).length;
                 const info = { ok: nOk, tot: g.crit.length };
                 return (
-                  <div key={i} title={g.crit.map(c => `${c.t} ${c.ok ? '\u2713' : '\u2717'} (${c.val})`).join('   \u00b7   ')}
-                    style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
-                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{g.name}</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
-                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: chipCol(info) }} />
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: chipCol(info) }}>{nOk}/{g.crit.length}</span>
+                  <HoverTip key={i} tipKey={'ampchip' + i} width={230}
+                    content={g.crit.map(c => `${c.t} ${c.ok ? '\u2713' : '\u2717'} (${c.val})`).join('   \u00b7   ')}>
+                    <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{g.name}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: chipCol(info) }} />
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: chipCol(info) }}>{nOk}/{g.crit.length}</span>
+                      </div>
                     </div>
-                  </div>
+                  </HoverTip>
                 );
               })}
-              <div title={`S&P 500 RSI ${f(idx.spxRsi || 0)} · Nasdaq 100 RSI ${f(idx.ndxRsi || 0)} — beide > 70 nötig`}
-                style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Überhitzung</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: overheated ? '#30D158' : '#FF453A' }} />
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: overheated ? '#30D158' : '#FF453A' }}>{overheated ? 'aktiv' : 'nein'}</span>
+              <HoverTip tipKey="ampOverheat" width={230}
+                content={`S&P 500 RSI ${f(idx.spxRsi || 0)} · Nasdaq 100 RSI ${f(idx.ndxRsi || 0)} — beide über 70 nötig`}>
+                <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Überhitzung</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: overheated ? '#30D158' : '#FF453A' }} />
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: overheated ? '#30D158' : '#FF453A' }}>{overheated ? 'aktiv' : 'nein'}</span>
+                  </div>
                 </div>
-              </div>
+              </HoverTip>
             </div>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '10px' }}>Günstige Hedges: {score} von 8 · Bedarf: {bedarfLevel} · Überhitzung: {overheated ? 'ja' : 'nein'}</div>
           </div>
@@ -2338,35 +2408,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           <TT id="fearGreed">
             <div style={sectionLabel}>Fear &amp; Greed</div>
           </TT>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ fontSize: '42px', fontWeight: 700, color: fearColor, letterSpacing: '-0.04em', lineHeight: 1 }}>{v.fearGreed}</div>
-            <div style={{ flex: 1 }}>
-              <div style={{
-                height: '4px', borderRadius: '2px', position: 'relative',
-                background: 'linear-gradient(to right, #FF3B30, #FF9500, #FFCC00, #34C759, #30D158)',
-              }}>
-                <div style={{
-                  position: 'absolute', top: '-4px', left: `${v.fearGreed}%`, transform: 'translateX(-50%)',
-                  width: '12px', height: '12px', borderRadius: '50%', background: '#fff',
-                  boxShadow: `0 0 12px ${fearColor}`,
-                }} />
-              </div>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: v.cryptoFearGreed > 0 ? '1fr 1fr' : '1fr', gap: '8px' }}>
+            <Gauge value={v.fearGreed} type="fg" caption="Aktien" tipKey="fgA" tipText={'Fear & Greed — Zonen: unter 25 Extreme Angst · 25–44 Angst · 45–54 Neutral · 55–74 Gier · über 75 Extreme Gier'} />
+            {v.cryptoFearGreed > 0 &&
+              <Gauge value={v.cryptoFearGreed} type="fg" caption="Krypto" tipKey="fgK" tipText={'Krypto Fear & Greed (CoinMarketCap) — gleiche Zonen. 0 = extreme Angst, 100 = extreme Gier.'} />}
           </div>
-          {marketData.volatilityMetrics.cryptoFearGreed > 0 && (() => {
-            const cfg = marketData.volatilityMetrics.cryptoFearGreed;
-            const ccol = cfg < 25 ? '#FF3B30' : cfg < 45 ? '#FF9500' : cfg < 55 ? '#FFCC00' : cfg < 75 ? '#34C759' : '#30D158';
-            const clbl = cfg < 25 ? 'Extreme Angst' : cfg < 45 ? 'Angst' : cfg < 55 ? 'Neutral' : cfg < 75 ? 'Gier' : 'Extreme Gier';
-            return (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '12px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: '28px', fontWeight: 700, color: ccol, letterSpacing: '-0.03em', lineHeight: 1 }}>{cfg}</div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontSize: '11px', fontWeight: 600, color: ccol }}>{clbl}</span>
-                  <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Krypto F&amp;G</span>
-                </div>
-              </div>
-            );
-          })()}
         </div>
 
         {/* Breadth */}
@@ -2374,28 +2420,16 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           <TT id="breadth5">
             <div style={sectionLabel}>S&amp;P 500 Breadth</div>
           </TT>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 16px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
             {[
-              { label: '5D',   val: b.above5day,   id: 'breadth5' },
-              { label: '20D',  val: b.above20day,  id: 'breadth20' },
-              { label: '50D',  val: b.above50day,  id: 'breadth50' },
-              { label: '200D', val: b.above200day, id: 'breadth200' },
-            ].map((item, i) => {
-              const color = item.val > 70 ? '#30D158' : item.val > 50 ? '#FFCC00' : item.val > 30 ? '#FF9F0A' : '#FF453A';
-              return (
-                <TT key={i} id={item.id}>
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>{item.label}</span>
-                      <span style={{ fontSize: '15px', fontWeight: 600, color, fontVariantNumeric: 'tabular-nums' }}>{f(item.val)}%</span>
-                    </div>
-                    <div style={{ height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', overflow: 'hidden' }}>
-                      <div style={{ width: `${item.val}%`, height: '100%', background: color, borderRadius: '2px' }} />
-                    </div>
-                  </div>
-                </TT>
-              );
-            })}
+              { label: '5T',   val: b.above5day,   tk: 'br5' },
+              { label: '20T',  val: b.above20day,  tk: 'br20' },
+              { label: '50T',  val: b.above50day,  tk: 'br50' },
+              { label: '200T', val: b.above200day, tk: 'br200' },
+            ].map((item, i) => (
+              <Gauge key={i} value={item.val} type="breadth" small caption={item.label} tipKey={item.tk}
+                tipText={'Anteil der S&P-500-Aktien über der Linie — Kipppunkt 50%. Unter 50% = mehrheitlich im Abwärtstrend.'} />
+            ))}
           </div>
         </div>
       </div>
@@ -2525,9 +2559,12 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                       <span style={{ fontSize: '9px', fontWeight: 600, color: aboveMA ? '#30D158' : '#FF453A' }}>{aboveMA ? 'über 200T' : 'unter 200T'}</span>
                     </div>
                   )}
-                  {item.rsi != null && (() => { const r = rsiInfo(item.rsi); return (
-                    <div style={{ marginTop: '4px', fontSize: '9px', fontWeight: 600, color: r.c }}>RSI {item.rsi}{r.note}</div>
-                  ); })()}
+                  {item.rsi != null && (
+                    <div style={{ marginTop: '8px' }}>
+                      <Gauge value={item.rsi} type="rsi" small caption="RSI (14)" tipKey={'rsi' + item.sub}
+                        tipText={'RSI (14): unter 30 überverkauft (grün) · 30–70 neutral · über 70 überkauft (orange).'} />
+                    </div>
+                  )}
                   {aboveMA === null && <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>{item.sub}</div>}
                 </div>
               );
@@ -2663,10 +2700,12 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '4px' }}>
             {[
-              { label: 'VX1–Spot', val: v.vx1 - v.vix, id: 'vx1spot' },
-              { label: 'VX2–VX1', val: v.vx2 - v.vx1, id: 'vx2vx1' },
-              { label: 'VX5–VX1', val: v.vx5 - v.vx1, id: 'vx5vx1' },
-            ].map((s, i) => (
+              { label: 'VX1–Spot', val: v.vx1 - v.vix, base: v.vix, id: 'vx1spot' },
+              { label: 'VX2–VX1', val: v.vx2 - v.vx1, base: v.vx1, id: 'vx2vx1' },
+              { label: 'VX5–VX1', val: v.vx5 - v.vx1, base: v.vx1, id: 'vx5vx1' },
+            ].map((s, i) => {
+              const pct = s.base ? (s.val / s.base) * 100 : 0;
+              return (
               <TT key={i} id={s.id}>
                 <div style={{
                   textAlign: 'center', padding: '6px',
@@ -2676,9 +2715,13 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   <div style={{ fontSize: '14px', fontWeight: 600, color: s.val > 0 ? '#30D158' : '#FF453A', fontVariantNumeric: 'tabular-nums' }}>
                     {s.val > 0 ? '+' : ''}{f(s.val, 2)}
                   </div>
+                  <div style={{ fontSize: '10px', fontWeight: 600, color: s.val > 0 ? '#30D158' : '#FF453A', opacity: 0.7, fontVariantNumeric: 'tabular-nums', marginTop: '1px' }}>
+                    {s.val > 0 ? '+' : ''}{f(pct, 1)}%
+                  </div>
                 </div>
               </TT>
-            ))}
+              );
+            })}
           </div>
       </div>
 
