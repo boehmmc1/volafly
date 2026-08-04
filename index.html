@@ -1301,7 +1301,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     yieldCurve: { y2: 0, y10: 0, y30: 0, y10real: 0, y30real: 0 },
     movingAverages: { breadth: { above5day: 0, above20day: 0, above50day: 0, above200day: 0 } },
     riskIndicators: { hySpread: 0, dxy: 0, goldSP: 0, gold: 0, silver: 0, wti: 0 },
-    indices: { spx: 0, ndx: 0, rut: 0, spx200d: 0, ndx200d: 0, spxRsi: null, ndxRsi: null }
+    indices: { spx: 0, ndx: 0, rut: 0, spx200d: 0, ndx200d: 0, spxRsi: null, ndxRsi: null },
+    fed: { date: 0, bandLow: 0, bandHigh: 0, cut: null, hold: null, hike: null }
   });
   const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsmLGq2ejgt-yg-ER16AuBC2cjPmHJLa4voisbpgmo3qpNMo7LMNus01PLp6etdn2CJb9724Bp6y-d/pub?gid=0&single=true&output=csv';
 
@@ -1493,6 +1494,14 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         ndx200d: data.NDX_200D ?? marketData.indices.ndx200d,
         spxRsi: data.SPX_RSI ?? marketData.indices.spxRsi,
         ndxRsi: data.NDX_RSI ?? marketData.indices.ndxRsi,
+      },
+      fed: {
+        date:     data.FED_Meeting_Date ?? marketData.fed.date,
+        bandLow:  data.FED_Band_Low     ?? marketData.fed.bandLow,
+        bandHigh: data.FED_Band_High    ?? marketData.fed.bandHigh,
+        cut:      data.FED_Prob_Cut     ?? marketData.fed.cut,
+        hold:     data.FED_Prob_Hold    ?? marketData.fed.hold,
+        hike:     data.FED_Prob_Hike    ?? marketData.fed.hike,
       },
     });
   };
@@ -1981,6 +1990,14 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             spxRsi: data.SPX_RSI ?? marketData.indices.spxRsi,
             ndxRsi: data.NDX_RSI ?? marketData.indices.ndxRsi,
           },
+          fed: {
+            date:     data.FED_Meeting_Date ?? marketData.fed.date,
+            bandLow:  data.FED_Band_Low     ?? marketData.fed.bandLow,
+            bandHigh: data.FED_Band_High    ?? marketData.fed.bandHigh,
+            cut:      data.FED_Prob_Cut     ?? marketData.fed.cut,
+            hold:     data.FED_Prob_Hold    ?? marketData.fed.hold,
+            hike:     data.FED_Prob_Hike    ?? marketData.fed.hike,
+          },
         };
         setMarketData(newData);
         setLastImportDate(new Date());
@@ -2005,6 +2022,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
   const b = marketData.movingAverages.breadth;
   const ri = marketData.riskIndicators;
   const idx = marketData.indices || { spx: null, ndx: null, rut: null, spx200d: null, ndx200d: null };
+  const fed = marketData.fed || { date: 0, bandLow: 0, bandHigh: 0, cut: null, hold: null, hike: null };
 
   const fearColor = v.fearGreed < 25 ? '#FF3B30' : v.fearGreed < 45 ? '#FF9500' : v.fearGreed < 55 ? '#FFCC00' : v.fearGreed < 75 ? '#34C759' : '#30D158';
   const contango = v.vx5 > v.vx1;
@@ -2749,6 +2767,57 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             })}
           </div>
           </div>
+      </div>
+
+      {/* Nächste FED-Sitzung (CME FedWatch) */}
+      <div style={{ ...glass, marginTop: '8px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={sectionLabel}>Nächste FED-Sitzung</div>
+          <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)' }}>Quelle: CME FedWatch</div>
+        </div>
+        {fed.date > 0 && fed.hold != null ? (() => {
+          const fy = Math.floor(fed.date / 10000), fm = Math.floor(fed.date / 100) % 100, fdd = fed.date % 100;
+          const md = new Date(fy, fm - 1, fdd);
+          const dateStr = `${String(fdd).padStart(2, '0')}.${String(fm).padStart(2, '0')}.${fy}`;
+          const daysTo = Math.max(0, Math.ceil((md - new Date()) / 86400000));
+          const segs = [
+            { label: 'Senken', val: fed.cut ?? 0, col: '#30D158' },
+            { label: 'Gleichbleiben', val: fed.hold ?? 0, col: '#8E8E93' },
+            { label: 'Steigern', val: fed.hike ?? 0, col: '#FF9F0A' },
+          ];
+          const maxVal = Math.max(...segs.map(s => s.val));
+          return (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{dateStr}</span>
+                <span style={{ fontSize: '13px', color: '#0A84FF', fontWeight: 600 }}>in {daysTo} {daysTo === 1 ? 'Tag' : 'Tagen'}</span>
+              </div>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '3px', marginBottom: '14px' }}>
+                Aktuelles Zielband <span style={{ color: '#F5F5F7', fontWeight: 600 }}>{f(fed.bandLow, 2)}–{f(fed.bandHigh, 2)} %</span>
+              </div>
+              <div style={{ display: 'flex', height: '20px', borderRadius: '6px', overflow: 'hidden', background: 'rgba(255,255,255,0.05)' }}>
+                {segs.map((s, i) => s.val > 0 ? (
+                  <div key={i} style={{ width: `${s.val}%`, background: s.col, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    {s.val >= 12 && <span style={{ fontSize: '10px', fontWeight: 700, color: '#0A0A0A', whiteSpace: 'nowrap' }}>{f(s.val, 0)}%</span>}
+                  </div>
+                ) : null)}
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginTop: '10px' }}>
+                {segs.map((s, i) => (
+                  <div key={i} style={{ textAlign: 'center', padding: '6px 4px', borderRadius: '8px', background: s.val === maxVal ? 'rgba(255,255,255,0.04)' : 'transparent' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '2px', background: s.col, flexShrink: 0 }} />
+                      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>{s.label}</span>
+                    </div>
+                    <div style={{ fontSize: '16px', fontWeight: 700, color: s.col, marginTop: '3px', fontVariantNumeric: 'tabular-nums' }}>{f(s.val, 1)}%</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })() : (
+          <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>Noch keine FedWatch-Daten geladen.</div>
+        )}
       </div>
 
       {/* Makrosignale */}
