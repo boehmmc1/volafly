@@ -2416,8 +2416,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 <div style={{ position: 'absolute', top: '-3px', left: `${Math.min(eq / 3.5 * 100, 99)}%`, width: '2px', height: '28px', background: '#F5F5F7' }} />
               </div>
             </div>
-            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '14px' }}>Ist Absicherung gerade günstig umsetzbar?</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', marginTop: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginTop: '14px' }}>
               {groups.map((g, i) => {
                 const nOk = g.crit.filter(c => c.ok).length;
                 const info = { ok: nOk, tot: g.crit.length };
@@ -2445,7 +2444,6 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 </div>
               </HoverTip>
             </div>
-            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '10px' }}>Günstige Hedges: {score} von 8 · Bedarf: {bedarfLevel} · Überhitzung: {overheated ? 'ja' : 'nein'}</div>
           </div>
         );
       })()}
@@ -2459,8 +2457,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           { lab: 'Total P/C', zone: v.totalPutCall > 0 ? cz(v.totalPutCall, 0.85, 1.0) : null, val: v.totalPutCall > 0 ? f(v.totalPutCall, 2) : '—', hint: 'Total Put/Call · Rot < 0,85 · Gelb 0,85–1,00 · Grün ≥ 1,00.' },
           { lab: 'VIX/VXV', zone: vvxv != null ? cz(vvxv, 0.90, 1.0) : null, val: vvxv != null ? f(vvxv, 2) : '—', hint: 'VIX/VXV · Rot < 0,90 · Gelb 0,90–1,00 · Grün ≥ 1,00 (Backwardation).' },
           { lab: 'VVIX', zone: v.vvix > 0 ? cz(v.vvix, 100, 120) : null, val: v.vvix > 0 ? f(v.vvix, 0) : '—', hint: 'VVIX · Rot < 100 · Gelb 100–120 · Grün ≥ 120 (Vol-Spike).' },
-          { lab: 'Volatilität der Nebenwerte', zone: v.rvx > 0 ? cz(v.rvx, 23, 30) : null, val: v.rvx > 0 ? f(v.rvx, 1) : '—', hint: 'RVX (Small Caps / Russell 2000) · Rot < 23 · Gelb 23–30 · Grün ≥ 30 (Stress). Schwellen aus dem Bewertungs-Tab.' },
-          { lab: 'Volatilität auf den Nasdaq 100', zone: v.vxn > 0 ? cz(v.vxn, 23, 33) : null, val: v.vxn > 0 ? f(v.vxn, 1) : '—', hint: 'VXN (Nasdaq 100) · Rot < 23 · Gelb 23–33 · Grün ≥ 33 (Stress). Schwellen aus dem Bewertungs-Tab.' },
+          { lab: 'Vola Nebenwerte', zone: v.rvx > 0 ? cz(v.rvx, 23, 30) : null, val: v.rvx > 0 ? f(v.rvx, 1) : '—', hint: 'RVX (Small Caps / Russell 2000) · Rot < 23 · Gelb 23–30 · Grün ≥ 30 (Stress). Schwellen aus dem Bewertungs-Tab.' },
+          { lab: 'Vola Nasdaq 100', zone: v.vxn > 0 ? cz(v.vxn, 23, 33) : null, val: v.vxn > 0 ? f(v.vxn, 1) : '—', hint: 'VXN (Nasdaq 100) · Rot < 23 · Gelb 23–33 · Grün ≥ 33 (Stress). Schwellen aus dem Bewertungs-Tab.' },
           { lab: 'Terminkurve', zone: termSpread == null ? null : (termSpread < 0 ? 'g' : termSpread <= 1.0 ? 'y' : 'r'), val: termSpread == null ? '—' : (termSpread < 0 ? 'Backwardation' : 'Contango'), hint: 'VX-Terminkurve · Rot steiles Contango (VX5–VX1 > 1) · Gelb flaches Contango (0–1) · Grün Backwardation.' },
         ];
         const met = sigs.filter(s => s.zone === 'g').length;
@@ -2493,17 +2491,17 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               </div>
             </div>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '14px' }}>Angst-Signale ({met}/7 · alle 7 = grün)</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px', marginTop: '8px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
               {sigs.map((s, i) => {
-                const col = s.zone ? zCol[s.zone] : 'rgba(255,255,255,0.35)';
+                const col = s.zone ? zCol[s.zone] : 'rgba(255,255,255,0.2)';
+                const txtCol = !s.zone ? '#F5F5F7' : (s.zone === 'y' ? '#3d2f00' : '#0A0A0A');
                 return (
                   <HoverTip key={i} tipKey={'ma' + i} content={s.hint} width={210}>
-                    <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px', cursor: 'help' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>{s.lab}</span>
-                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: col, flexShrink: 0 }} />
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '104px 1fr' : '150px 1fr', alignItems: 'center', gap: '10px', cursor: 'help' }}>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)' }}>{s.lab}</span>
+                      <div style={{ height: '24px', borderRadius: '6px', background: col, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '10px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: txtCol }}>{s.val}</span>
                       </div>
-                      <div style={{ fontSize: (s.val.length > 6 ? '14px' : '20px'), fontWeight: 700, marginTop: (s.val.length > 6 ? '6px' : '3px'), fontVariantNumeric: 'tabular-nums', color: '#F5F5F7' }}>{s.val}</div>
                     </div>
                   </HoverTip>
                 );
