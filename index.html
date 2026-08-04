@@ -2403,18 +2403,17 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               </div>
             </div>
             <div style={{ marginTop: '14px', padding: '11px', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
-                <span>Absicherungs-Bedarf · förderlich für Hedges</span>
-                <span style={{ fontWeight: 600, color: '#F5F5F7' }}>{f(eq, 2)} · {bedarfLevel}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, flex: 1 }}>
+                  {bedarfHigh ? 'Einzelwerte schwanken viel stärker als der Index → hoher Bedarf, Index-Schutz relativ günstig.' : bedarfLevel === 'neutral' ? 'Etwas erhöhte Streuung zwischen Einzelwerten und Index.' : 'Einzelwerte und Index schwanken ähnlich — wenig Anlass zur Absicherung.'}
+                </span>
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#F5F5F7', whiteSpace: 'nowrap' }}>{f(eq, 2)} · {bedarfLevel}</span>
               </div>
-              <div style={{ position: 'relative', height: '22px', marginTop: '8px', display: 'flex', borderRadius: '5px', overflow: 'hidden' }}>
+              <div style={{ position: 'relative', height: '22px', marginTop: '10px', display: 'flex', borderRadius: '5px', overflow: 'hidden' }}>
                 <div style={{ flex: 1.5, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: 'rgba(255,255,255,0.5)' }}>niedrig</div>
                 <div style={{ flex: 1, background: 'rgba(255,204,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#3d2f00' }}>neutral</div>
                 <div style={{ flex: 1, background: 'rgba(48,209,88,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#04340f' }}>extrem hoch</div>
                 <div style={{ position: 'absolute', top: '-3px', left: `${Math.min(eq / 3.5 * 100, 99)}%`, width: '2px', height: '28px', background: '#F5F5F7' }} />
-              </div>
-              <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginTop: '8px', lineHeight: 1.5 }}>
-                {bedarfHigh ? 'Einzelwerte schwanken viel stärker als der Index → hoher Bedarf, Index-Schutz relativ günstig.' : bedarfLevel === 'neutral' ? 'Etwas erhöhte Streuung zwischen Einzelwerten und Index.' : 'Einzelwerte und Index schwanken ähnlich — wenig Anlass zur Absicherung.'}
               </div>
             </div>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '14px' }}>Ist Absicherung gerade günstig umsetzbar?</div>
@@ -2494,15 +2493,15 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '14px' }}>Angst-Signale ({met}/5 · alle 5 = grün)</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px', marginTop: '8px' }}>
               {sigs.map((s, i) => {
-                const col = s.zone ? zCol[s.zone] : 'rgba(255,255,255,0.4)';
+                const col = s.zone ? zCol[s.zone] : 'rgba(255,255,255,0.35)';
                 return (
                   <HoverTip key={i} tipKey={'ma' + i} content={s.hint} width={210}>
-                    <div style={{ border: `0.5px solid ${s.zone ? zBd[s.zone] : 'rgba(255,255,255,0.08)'}`, background: s.zone ? zBg[s.zone] : 'transparent', borderRadius: '10px', padding: '10px 12px', cursor: 'help' }}>
+                    <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px', cursor: 'help' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>{s.lab}</span>
                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: col, flexShrink: 0 }} />
                       </div>
-                      <div style={{ fontSize: (s.val.length > 6 ? '14px' : '20px'), fontWeight: 700, marginTop: (s.val.length > 6 ? '6px' : '3px'), fontVariantNumeric: 'tabular-nums', color: col }}>{s.val}</div>
+                      <div style={{ fontSize: (s.val.length > 6 ? '14px' : '20px'), fontWeight: 700, marginTop: (s.val.length > 6 ? '6px' : '3px'), fontVariantNumeric: 'tabular-nums', color: '#F5F5F7' }}>{s.val}</div>
                     </div>
                   </HoverTip>
                 );
@@ -2643,7 +2642,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
                   <div style={{ maxWidth: '150px', width: '100%' }}>
                     <Gauge type="macro" pct={mpct} num={f(mv, 0)} zoneColor={mzc} zoneLabel={mzl}
-                      leftColor="#30D158" rightColor="#FF453A" zoneStart={27} zoneEnd={64} caption="MOVE"
+                      leftColor="#30D158" rightColor="#FF453A" zoneStart={27} zoneEnd={64}
                       tipKey="moveT" tipText={'MOVE-Index — implizite Volatilität am US-Treasury-Markt (das „VIX der Anleihen"). Niedrig = ruhiger Zinsmarkt, hoch = Zins-Stress.'} />
                   </div>
                 </div>
@@ -2686,7 +2685,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   )}
                   {item.rsi != null && (
                     <div style={{ marginTop: '8px' }}>
-                      <Gauge value={item.rsi} type="rsi" small caption="RSI (14)" tipKey={'rsi' + item.sub}
+                      <Gauge value={item.rsi} type="rsi" small caption="RSI" tipKey={'rsi' + item.sub}
                         tipText={'RSI (14): unter 30 überverkauft (grün) · 30–70 neutral · über 70 überkauft (orange).'} />
                     </div>
                   )}
@@ -2719,12 +2718,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           })() : <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', marginTop: '8px' }}>Keine SKEW/Left-Tail-Daten.</div>}
         </div>
 
-        <div style={{ ...glass, height: '100%' }}>
-          <div style={sectionLabel}>Volatilitäts-Indizes</div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginTop: '4px', justifyItems: 'center' }}>
+        <div style={{ ...glass, height: '100%', display: 'flex', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', width: '100%', justifyItems: 'center' }}>
             {[
-              { lab: 'RVX', val: v.rvx, lo: 12, hi: 45, t1: 22, t2: 30, dec: 1, tip: 'RVX — VIX-Äquivalent für Small Caps (Russell 2000).' },
-              { lab: 'VXN', val: v.vxn, lo: 12, hi: 50, t1: 23, t2: 33, dec: 1, tip: 'VXN — VIX-Äquivalent für den Nasdaq 100.' },
+              { lab: 'Volatilität der Nebenwerte', val: v.rvx, lo: 12, hi: 45, t1: 22, t2: 30, dec: 1, tip: 'RVX — VIX-Äquivalent für Small Caps (Russell 2000).' },
+              { lab: 'Volatilität auf den Nasdaq 100', val: v.vxn, lo: 12, hi: 50, t1: 23, t2: 33, dec: 1, tip: 'VXN — VIX-Äquivalent für den Nasdaq 100.' },
             ].map((t, i) => t.val > 0 ? (() => {
               const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
               const zc = t.val < t.t1 ? '#30D158' : t.val < t.t2 ? 'rgba(255,255,255,0.35)' : '#FF453A';
@@ -2862,7 +2860,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{...metricLabel, display:"flex", alignItems:"center", gap:"3px"}}>HY Credit Spread <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+              <div style={{...metricLabel, display:"flex", justifyContent:"center", alignItems:"center", gap:"3px"}}>HY Credit Spread <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
               {ri.hySpread > 0 ? (() => {
                 const hy = ri.hySpread;
                 const pct = hy < 2.8 ? Math.min(30, (hy / 2.8) * 30) : hy < 5 ? 30 + ((hy - 2.8) / (5 - 2.8)) * 30 : Math.min(100, 60 + ((hy - 5) / 7) * 40);
@@ -2870,7 +2868,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 const zl = hy < 2.8 ? 'Euphorie' : hy <= 5 ? 'neutral' : 'Panik';
                 return (
                   <div style={{ marginTop: '6px' }}>
-                    <Gauge type="macro" pct={pct} num={f(hy, 2) + '%'} zoneColor={zc} zoneLabel={zl} leftColor="#30D158" rightColor="#FF453A" zoneStart={30} zoneEnd={60} caption="ICE BofA OAS" tipKey="mkHY" tipText={'HY-Spread (ICE BofA OAS): eng = Euphorie/Komplacency, weit = Panik/Stress.'} />
+                    <Gauge type="macro" pct={pct} num={f(hy, 2) + '%'} zoneColor={zc} zoneLabel={zl} leftColor="#30D158" rightColor="#FF453A" zoneStart={30} zoneEnd={60} tipKey="mkHY" tipText={'HY-Spread (ICE BofA OAS): eng = Euphorie/Komplacency, weit = Panik/Stress.'} />
                   </div>
                 );
               })() : <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '4px' }}>—</div>}
@@ -2884,7 +2882,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{...metricLabel, display:"flex", alignItems:"center", gap:"3px"}}>US Dollar Index <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+              <div style={{...metricLabel, display:"flex", justifyContent:"center", alignItems:"center", gap:"3px"}}>US Dollar Index <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
               {ri.dxy > 0 ? (() => {
                 const dxy = ri.dxy;
                 const pct = Math.min(100, Math.max(0, ((dxy - 80) / (120 - 80)) * 100));
@@ -2892,7 +2890,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 const zl = dxy < 95 ? 'Kauf US' : dxy <= 103 ? 'neutral' : 'Verkauf US';
                 return (
                   <div style={{ marginTop: '6px' }}>
-                    <Gauge type="macro" pct={pct} num={f(dxy, 1)} zoneColor={zc} zoneLabel={zl} leftColor="#30D158" rightColor="#FF9F0A" zoneStart={37.5} zoneEnd={57.5} caption="DXY" tipKey="mkDXY" tipText={'US Dollar Index (EU-Sicht): schwacher Dollar = US-Aktien günstig (Kauf US), starker Dollar = Rückumtausch vorteilhaft (Verkauf US).'} />
+                    <Gauge type="macro" pct={pct} num={f(dxy, 1)} zoneColor={zc} zoneLabel={zl} leftColor="#30D158" rightColor="#FF9F0A" zoneStart={37.5} zoneEnd={57.5} tipKey="mkDXY" tipText={'US Dollar Index (EU-Sicht): schwacher Dollar = US-Aktien günstig (Kauf US), starker Dollar = Rückumtausch vorteilhaft (Verkauf US).'} />
                   </div>
                 );
               })() : <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '4px' }}>—</div>}
@@ -2901,7 +2899,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
           <TT id="goldSP">
             <div style={{ borderRadius: '8px', padding: '4px' }}>
-              <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>S&amp;P 500 / Gold</div>
+              <div style={{...metricLabel, display:'flex', justifyContent:'center', alignItems:'center', gap:'3px'}}>S&amp;P 500 / Gold</div>
               {goldSPRatio > 0 ? (() => {
                 const ratio = goldSPRatio;
                 const pct = Math.min(100, Math.max(0, ((ratio - 0.4) / (2.6 - 0.4)) * 100));
@@ -2909,7 +2907,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 const zl = ratio < 1.0 ? 'Gold verkaufen' : ratio <= 2.0 ? 'neutral' : 'Gold kaufen';
                 return (
                   <div style={{ marginTop: '6px' }}>
-                    <Gauge type="macro" pct={pct} num={f(ratio, 2)} zoneColor={zc} zoneLabel={zl} leftColor="#FF9F0A" rightColor="#FFD60A" zoneStart={27} zoneEnd={73} caption="SPX ÷ Gold" tipKey="mkGold" tipText={'S&P/Gold-Ratio: niedrig = Aktien günstig vs. Gold (Gold verkaufen), hoch = Aktien teuer vs. Gold (Gold als Absicherung kaufen).'} />
+                    <Gauge type="macro" pct={pct} num={f(ratio, 2)} zoneColor={zc} zoneLabel={zl} leftColor="#FF9F0A" rightColor="#FFD60A" zoneStart={27} zoneEnd={73} tipKey="mkGold" tipText={'S&P/Gold-Ratio: niedrig = Aktien günstig vs. Gold (Gold verkaufen), hoch = Aktien teuer vs. Gold (Gold als Absicherung kaufen).'} />
                   </div>
                 );
               })() : <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '4px' }}>—</div>}
@@ -2923,7 +2921,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
           >
-            <div style={{...metricLabel, display:'flex', alignItems:'center', gap:'3px'}}>Silber <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+            <div style={{...metricLabel, display:'flex', justifyContent:'center', alignItems:'center', gap:'3px'}}>Silber <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
             <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
               {'$'}{ri.silver ? f(ri.silver, 2) : '—'}
             </div>
@@ -2938,7 +2936,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
-              <div style={{...metricLabel, display:"flex", alignItems:"center", gap:"3px"}}>WTI Crude Oil <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+              <div style={{...metricLabel, display:"flex", justifyContent:"center", alignItems:"center", gap:"3px"}}>WTI Crude Oil <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
               {ri.wti > 0 ? (() => {
                 const wti = ri.wti;
                 const pct = Math.min(100, Math.max(0, ((wti - 30) / (130 - 30)) * 100));
@@ -2947,7 +2945,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 const macroText = wti < 60 ? 'Rezessionsangst' : wti <= 90 ? 'Gesundes Niveau' : 'Inflationsangst';
                 return (
                   <div style={{ marginTop: '6px' }}>
-                    <Gauge type="macro" pct={pct} num={'$' + f(wti, 1)} zoneColor={zc} zoneLabel={zl} leftColor="#30D158" rightColor="#FF453A" zoneStart={30} zoneEnd={60} caption="USD / Barrel" tipKey="mkWTI" tipText={'WTI Rohöl — Handel: niedrig = Öl kaufen, hoch = Öl verkaufen. Makro-Lesart aktuell: ' + macroText + ' (niedrig = Rezessionsangst, mittel = gesund, hoch = Inflationsangst).'} />
+                    <Gauge type="macro" pct={pct} num={'$' + f(wti, 1)} zoneColor={zc} zoneLabel={zl} leftColor="#30D158" rightColor="#FF453A" zoneStart={30} zoneEnd={60} tipKey="mkWTI" tipText={'WTI Rohöl — Handel: niedrig = Öl kaufen, hoch = Öl verkaufen. Makro-Lesart aktuell: ' + macroText + ' (niedrig = Rezessionsangst, mittel = gesund, hoch = Inflationsangst).'} />
                   </div>
                 );
               })() : <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '4px' }}>—</div>}
