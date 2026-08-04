@@ -2450,34 +2450,59 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           </div>
         );
       })()}
-      {/* Markt-Ampel — UI-Shell, gleiche Bauform (Logik folgt) */}
-      <div style={{ ...glass, height: '100%' }}>
-        <div style={sectionLabel}>Markt-Ampel</div>
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', padding: '10px', background: 'rgba(0,0,0,0.25)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
-            <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} />
-            <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} />
-            <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: 'rgba(255,255,255,0.07)' }} />
-          </div>
-          <div style={{ flex: 1, minWidth: isMobile ? '150px' : '200px' }}>
-            <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '-0.02em' }}>Logik folgt</div>
-            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginTop: '5px', lineHeight: 1.5 }}>Ampel für das generelle Investieren in den Markt — gleiche Bauform wie die Hedging-Ampel. Indikatoren &amp; Schwellen definieren wir im nächsten Schritt.</div>
-          </div>
-        </div>
-        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '14px' }}>Geplante Treiber</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px', marginTop: '8px' }}>
-          {['Trend', 'Marktbreite', 'Vola-Klasse', 'Momentum'].map((n, i) => (
-            <div key={i} style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '9px 11px' }}>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{n}</div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)' }} />
-                <span style={{ fontSize: '13px', fontWeight: 600, color: 'rgba(255,255,255,0.3)' }}>—</span>
+      {/* Markt-Ampel — antizyklisches Investieren (gegenläufig zur Hedging-Ampel) */}
+      {(() => {
+        const sigs = [
+          { lab: 'VIX', ok: v.vix > 30, hint: '„investieren" bei VIX > 30 (hohe Vola).' },
+          { lab: 'VIX/VXV', ok: v.vxv > 0 && (v.vix / v.vxv) > 1.0, hint: '„investieren" bei VIX/VXV > 1 (Backwardation = kurzfristiger Stress).' },
+          { lab: 'Fear & Greed', ok: v.fearGreed > 0 && v.fearGreed < 35, hint: '„investieren" bei Fear & Greed < 35 (Angst).' },
+          { lab: 'Equity P/C', ok: v.equityPutCall > 0.95, hint: '„investieren" bei Equity Put/Call > 0,95 (viel Absicherung/Angst).' },
+          { lab: 'VX1–Spot', ok: v.vx1 > 0 && (v.vx1 - v.vix) < 0, hint: '„investieren" bei VX1 unter Spot (Backwardation).' },
+        ];
+        const met = sigs.filter(s => s.ok).length;
+        const ausverkauf = idx.spxRsi != null && idx.ndxRsi != null && idx.spxRsi < 30 && idx.ndxRsi < 30;
+        const green = met === 5;
+        const red = met === 0;
+        const state = green ? 'g' : red ? 'r' : 'y';
+        const lampCol = { g: '#30D158', y: '#FFCC00', r: '#FF453A' };
+        const verdict = green ? 'Antizyklisch investieren' : red ? 'Vorsicht — zurückhalten' : 'Quote halten';
+        const sub = green
+          ? 'Alle 5 Angst-Signale erfüllt — Kapitulation, jetzt zukaufen.'
+          : red
+          ? 'Ruhiger/gieriger Markt — kein Angst-Signal. Neue Käufe zurückstellen, ggf. absichern.'
+          : `${met} von 5 Angst-Signalen erfüllt — gemischtes Bild, Quote halten.`;
+        return (
+          <div style={{ ...glass, height: '100%' }}>
+            <div style={sectionLabel}>Markt-Ampel</div>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', padding: '10px', background: 'rgba(0,0,0,0.25)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+                {['r', 'y', 'g'].map(c => (
+                  <div key={c} style={{ width: '22px', height: '22px', borderRadius: '50%', background: state === c ? lampCol[c] : 'rgba(255,255,255,0.07)', boxShadow: state === c ? `0 0 12px ${lampCol[c]}` : 'none', transition: 'all 0.2s' }} />
+                ))}
+              </div>
+              <div style={{ flex: 1, minWidth: isMobile ? '150px' : '200px' }}>
+                <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 700, color: lampCol[state], letterSpacing: '-0.02em' }}>{verdict}</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '5px', lineHeight: 1.5 }}>{sub}</div>
               </div>
             </div>
-          ))}
-        </div>
-        <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', marginTop: '10px' }}>UI-Vorschau · Logik in Vorbereitung</div>
-      </div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '14px' }}>Angst-Signale ({met}/5 · alle 5 = grün)</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px', marginTop: '8px' }}>
+              {sigs.map((s, i) => (
+                <HoverTip key={i} tipKey={'ma' + i} content={s.hint} width={200}>
+                  <div style={{ border: `0.5px solid ${s.ok ? 'rgba(48,209,88,0.3)' : 'rgba(255,255,255,0.08)'}`, borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
+                    <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>{s.lab}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
+                      <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: s.ok ? '#30D158' : 'rgba(255,255,255,0.2)' }} />
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: s.ok ? '#30D158' : 'rgba(255,255,255,0.35)' }}>{s.ok ? 'ja' : 'nein'}</span>
+                    </div>
+                  </div>
+                </HoverTip>
+              ))}
+            </div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '12px' }}>Trigger · Ausverkauf: <span style={{ color: ausverkauf ? '#30D158' : 'rgba(255,255,255,0.5)', fontWeight: 600 }}>{ausverkauf ? 'ja (SPX & NDX RSI < 30)' : 'nein'}</span></div>
+          </div>
+        );
+      })()}
       </div>
 
       {/* Top row: Fear & Greed + Breadth */}
