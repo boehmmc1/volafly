@@ -2378,9 +2378,9 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         const allCrit = groups.reduce((a, g) => a.concat(g.crit), []);
         const score = allCrit.filter(c => c.ok).length;
         const overheated = idx.spxRsi != null && idx.ndxRsi != null && idx.spxRsi > 70 && idx.ndxRsi > 70;
-        const cheap = score >= 6 ? 'g' : score >= 4 ? 'm' : 'b';
+        const cheap = score >= 6 ? 'g' : score >= 3 ? 'm' : 'b';
         let state, verdict, sub;
-        if (cheap === 'b') { state = 'b'; verdict = 'Absicherung aktuell teuer'; sub = 'Die Schwankung am Markt ist bereits erhöht — Absicherung ist teuer oder kommt zu spät.'; }
+        if (cheap === 'b') { state = 'b'; verdict = 'Absicherung aktuell teuer'; sub = 'Die Marktvolatilität ist bereits erhöht. Absicherungen sind daher aktuell vergleichsweise teuer.'; }
         else if (cheap === 'g' && (bedarfHigh || overheated)) { state = 'g'; verdict = 'Jetzt absichern'; sub = 'Absicherung ist günstig umsetzbar und der Bedarf hoch — guter Moment, um Schutz aufzubauen.'; }
         else if (cheap === 'g') { state = 'g'; verdict = 'Günstig absichern möglich'; sub = 'Absicherung wäre gerade günstig — aber der Bedarf ist niedrig und kein Überhitzungs-Signal.'; }
         else if (bedarfHigh) { state = 'm'; verdict = 'Absichern erwägen'; sub = 'Hoher Absicherungsbedarf, die Umsetzung ist aktuell jedoch nur bedingt günstig.'; }
@@ -2415,7 +2415,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               <div style={{ position: 'relative', height: '22px', marginTop: '10px', display: 'flex', borderRadius: '5px', overflow: 'hidden' }}>
                 <div style={{ flex: 1.5, background: 'rgba(255,255,255,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: 'rgba(255,255,255,0.56)' }}>niedrig</div>
                 <div style={{ flex: 1, background: 'rgba(255,204,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#3d2f00' }}>neutral</div>
-                <div style={{ flex: 1, background: 'rgba(48,209,88,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#04340f' }}>extrem hoch</div>
+                <div style={{ flex: 1, background: 'rgba(255,159,10,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', color: '#3d2600' }}>extrem hoch</div>
                 <div style={{ position: 'absolute', top: '-3px', left: `${Math.min(eq / 3.5 * 100, 99)}%`, width: '2px', height: '28px', background: '#F5F5F7' }} />
               </div>
             </div>
@@ -2492,19 +2492,22 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 700, color: lampCol[state], letterSpacing: '-0.02em' }}>{verdict}</div>
                 <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.6)', marginTop: '5px', lineHeight: 1.5 }}>{sub}</div>
               </div>
-              <span title="Grün = Angst-Signal aktiv (Stress/Angst). Alle 7 grün = antizyklisches Kaufsignal." style={{ fontSize: '12px', color: 'rgba(255,255,255,0.56)', flexShrink: 0, alignSelf: 'flex-start', cursor: 'help' }}>Angst-Signale: {met} von 7 aktiv</span>
+              <div title="Grün = Angst-Signal aktiv (Stress/Angst). Alle 7 grün = antizyklisches Kaufsignal." style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0, alignSelf: 'flex-start', cursor: 'help' }}>
+                <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.56)' }}>Aktive Angstsignale</span>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#F5F5F7', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '3px 9px', whiteSpace: 'nowrap' }}>{met} / 7 aktiv</span>
+              </div>
             </div>
             <div style={{ marginTop: '16px', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ display: 'flex' }}>
                 {sigs.map((s, i) => (
-                  <div key={'h' + i} title={s.hint} style={{ flex: 1, minWidth: 0, textAlign: 'center', paddingTop: '11px', paddingBottom: '11px', paddingLeft: '9px', paddingRight: i === sigs.length - 1 ? '16px' : '9px', borderLeft: i > 0 ? '0.5px solid rgba(255,255,255,0.035)' : 'none', borderBottom: '0.5px solid rgba(255,255,255,0.08)', fontSize: '10px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.2, cursor: 'help' }}>{s.lab}</div>
+                  <div key={'h' + i} title={s.hint} style={{ flex: 1, minWidth: 0, textAlign: 'center', paddingTop: '11px', paddingBottom: '11px', paddingLeft: '9px', paddingRight: i === sigs.length - 1 ? '20px' : '9px', borderLeft: i > 0 ? '0.5px solid rgba(255,255,255,0.025)' : 'none', borderBottom: '0.5px solid rgba(255,255,255,0.08)', fontSize: '10px', color: 'rgba(255,255,255,0.68)', lineHeight: 1.2, cursor: 'help' }}>{s.lab}</div>
                 ))}
               </div>
               <div style={{ display: 'flex' }}>
                 {sigs.map((s, i) => {
                   const col = s.zone ? zCol[s.zone] : 'rgba(255,255,255,0.3)';
                   return (
-                    <div key={'v' + i} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', paddingTop: '17px', paddingBottom: '17px', paddingLeft: '9px', paddingRight: i === sigs.length - 1 ? '16px' : '9px', borderLeft: i > 0 ? '0.5px solid rgba(255,255,255,0.035)' : 'none' }}>
+                    <div key={'v' + i} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', paddingTop: '17px', paddingBottom: '17px', paddingLeft: '9px', paddingRight: i === sigs.length - 1 ? '20px' : '9px', borderLeft: i > 0 ? '0.5px solid rgba(255,255,255,0.025)' : 'none' }}>
                       <span style={{ fontSize: (s.val.length > 6 ? '14px' : '16px'), fontWeight: 700, color: '#F5F5F7', fontVariantNumeric: 'tabular-nums' }}>{s.val}</span>
                       <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: col, flexShrink: 0 }} />
                     </div>
@@ -2556,11 +2559,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   {blocks.map((bl, i) => (
                     <HoverTip key={i} tipKey={'fgb' + i} content={bl.tip} width={210}>
                       <div style={{ textAlign: 'center', cursor: 'help' }}>
-                        <div style={{ width: '44px', height: '44px', margin: '0 auto', borderRadius: '50%', border: `1px solid ${bl.z.c}99`, background: `${bl.z.c}12`, boxShadow: `0 0 4px ${bl.z.c}1f`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: bl.z.c }}>
+                        <div style={{ width: '44px', height: '44px', margin: '0 auto', borderRadius: '50%', border: `1px solid ${bl.z.c}7a`, background: `${bl.z.c}12`, boxShadow: `0 0 3px ${bl.z.c}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: bl.z.c }}>
                           {icons[bl.ic]}
                         </div>
                         <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.56)', marginTop: '12px', lineHeight: 1.3 }}>{bl.t1}<br/>{bl.t2}</div>
-                        <div style={{ fontSize: '40px', fontWeight: 700, color: bl.z.c, marginTop: '10px', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{bl.num}</div>
+                        <div style={{ fontSize: '42px', fontWeight: 700, color: bl.z.c, marginTop: '10px', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{bl.num}</div>
                         <div style={{ fontSize: '13px', fontWeight: 600, color: bl.z.c, marginTop: '2px' }}>{bl.z.t}</div>
                       </div>
                     </HoverTip>
@@ -2600,7 +2603,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     <div style={{ height: '9px', borderRadius: '5px', background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
                       <div style={{ width: `${fill(item.val)}%`, height: '100%', borderRadius: '5px', background: col }} />
                     </div>
-                    <span style={{ fontSize: '13px', fontWeight: 500, color: '#F5F5F7', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{f(item.val, 0)}%</span>
+                    <span style={{ fontSize: '13px', fontWeight: 500, color: '#F5F5F7', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{f(item.val, 0)} %</span>
                   </div>
                 </HoverTip>
               );
@@ -2625,7 +2628,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             const C = 2 * Math.PI * 28;
             const segs = [
               { label: 'Senken', val: fed.cut ?? 0, col: '#30D158' },
-              { label: 'Unverändert', val: fed.hold ?? 0, col: '#8E8E93' },
+              { label: 'Unverändert', val: fed.hold ?? 0, col: '#AEAEB2' },
               { label: 'Anheben', val: fed.hike ?? 0, col: '#FF9F0A' },
             ];
             const iconBox = { width: '34px', height: '34px', borderRadius: '11px', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 };
@@ -2651,11 +2654,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     </div>
                   </div>
                 </div>
-                <div style={{ flex: 1, display: 'flex', justifyContent: 'space-around', gap: '6px', minWidth: isMobile ? '100%' : 'auto' }}>
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'space-between', gap: '6px', minWidth: isMobile ? '100%' : 'auto' }}>
                   {segs.map((s, i) => {
                     const filled = Math.max(0, Math.min(100, s.val)) / 100 * C;
                     return (
-                      <div key={i} style={{ textAlign: 'center' }}>
+                      <div key={i} style={{ flex: 1, textAlign: 'center' }}>
                         <svg viewBox="0 0 72 72" width="46" height="46" style={{ display: 'block', margin: '0 auto' }}>
                           <circle cx="36" cy="36" r="28" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
                           <circle cx="36" cy="36" r="28" fill="none" stroke={s.col} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${filled} ${C - filled}`} transform="rotate(-90 36 36)" />
@@ -2710,13 +2713,13 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             const mzl = mv < 80 ? 'ruhig' : mv <= 120 ? 'normal' : 'Stress';
             return (
               <HoverTip tipKey="moveT" content={'MOVE-Index — implizite Volatilität am US-Treasury-Markt (das „VIX der Anleihen"). Niedrig = ruhiger Zinsmarkt, hoch = Zins-Stress.'} width={230}>
-                <div style={{ border: '0.5px solid rgba(10,132,255,0.22)', borderRadius: '12px', padding: '14px 16px', height: '100%', background: 'rgba(10,132,255,0.05)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', cursor: 'help' }}>
+                <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 16px', height: '100%', background: 'rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', cursor: 'help' }}>
                   <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(10,132,255,0.12)', border: '0.5px solid rgba(10,132,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                   </div>
                   <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.56)' }}>Zinsvolatilität</div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', justifyContent: 'center', marginTop: '6px' }}>
-                    <span style={{ fontSize: '15px', fontWeight: 600, color: 'rgba(255,255,255,0.6)' }}>MOVE</span>
+                    <span style={{ fontSize: '15px', fontWeight: 600, color: '#0A84FF' }}>MOVE</span>
                     <span style={{ fontSize: '30px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' }}>{f(mv, 0)}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
@@ -2768,7 +2771,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                           <div style={{ width: '40%', background: 'rgba(255,255,255,0.15)' }} />
                           <div style={{ width: '30%', background: '#FF453A' }} />
                         </div>
-                        <div style={{ position: 'absolute', top: '-4px', left: `${Math.max(0, Math.min(100, rsi))}%`, width: '3px', height: '16px', borderRadius: '2px', background: '#F5F5F7', transform: 'translateX(-50%)' }} />
+                        <div style={{ position: 'absolute', top: '-4px', left: `${Math.max(0, Math.min(100, rsi))}%`, width: '2px', height: '16px', borderRadius: '1px', background: '#F5F5F7', transform: 'translateX(-50%)' }} />
                       </div>
                       <div style={{ position: 'relative', height: '13px', marginTop: '7px', fontSize: '10px', color: 'rgba(255,255,255,0.56)' }}>
                         <span style={{ position: 'absolute', left: '0%' }}>0</span>
@@ -2800,9 +2803,9 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg>
             </div>
-            <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>VIX Terminstruktur</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)', whiteSpace: 'nowrap' }}>VIX Terminstruktur</div>
             <HoverTip tipKey="vtsInfo" content={'VIX-Terminstruktur: VX1–VX5 sind die nächsten fünf VIX-Future-Kontrakte. Steigende Kurve (Contango) = ruhiger Markt; fallende (Backwardation) = akuter Stress. Die orange Linie ist der VIX-Spot.'} width={240}>
-              <span style={{ marginLeft: 'auto', width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.56)', cursor: 'help', flexShrink: 0 }}>i</span>
+              <span style={{ width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.56)', cursor: 'help', flexShrink: 0 }}>i</span>
             </HoverTip>
           </div>
 
