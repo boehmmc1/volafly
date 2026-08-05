@@ -2780,11 +2780,22 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         </div>
       </div>
 
-      {/* VIX Term Structure */}
-      <div style={{ ...glass, marginTop: '8px' }}>
-          <div style={sectionLabel}>VIX Term Structure</div>
+      {/* VIX Term Structure + Makrosignale */}
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1.5fr) minmax(0, 1fr)', gap: '8px', marginTop: '8px' }}>
 
-          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px', alignItems: 'center' }}>
+        {/* VIX Term Structure */}
+        <div style={{ ...glass, height: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(10,132,255,0.12)', border: '0.5px solid rgba(10,132,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg>
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)' }}>VIX Term Structure</div>
+            <HoverTip tipKey="vtsInfo" content={'VIX-Terminstruktur: VX1–VX5 sind die nächsten fünf VIX-Future-Kontrakte. Steigende Kurve (Contango) = ruhiger Markt; fallende (Backwardation) = akuter Stress. Die orange Linie ist der VIX-Spot.'} width={240}>
+              <span style={{ marginLeft: 'auto', width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.4)', cursor: 'help', flexShrink: 0 }}>i</span>
+            </HoverTip>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '12px', alignItems: 'stretch' }}>
           <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
           {(() => {
             const allVals = [v.vix, v.vx1, v.vx2, v.vx3, v.vx4, v.vx5];
@@ -2858,26 +2869,21 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             );
           })()}
           </div>
-          <div style={{ display: isMobile ? 'grid' : 'flex', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : undefined, flexDirection: 'column', gap: '6px', flexShrink: 0, width: isMobile ? '100%' : '150px' }}>
+          <div style={{ display: isMobile ? 'grid' : 'flex', gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : undefined, flexDirection: 'column', gap: '8px', flexShrink: 0, width: isMobile ? '100%' : '160px' }}>
             {[
               { label: 'VX1–Spot', val: v.vx1 - v.vix, base: v.vix, id: 'vx1spot' },
               { label: 'VX2–VX1', val: v.vx2 - v.vx1, base: v.vx1, id: 'vx2vx1' },
               { label: 'VX5–VX1', val: v.vx5 - v.vx1, base: v.vx1, id: 'vx5vx1' },
             ].map((s, i) => {
               const pct = s.base ? (s.val / s.base) * 100 : 0;
+              const col = s.val > 0 ? '#30D158' : '#FF453A';
+              const sign = s.val > 0 ? '+' : '';
               return (
               <TT key={i} id={s.id}>
-                <div style={{
-                  textAlign: 'center', padding: '8px 6px',
-                  background: 'rgba(255,255,255,0.02)', borderRadius: '8px',
-                }}>
-                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', marginBottom: '2px' }}>{s.label}</div>
-                  <div style={{ fontSize: '14px', fontWeight: 600, color: s.val > 0 ? '#30D158' : '#FF453A', fontVariantNumeric: 'tabular-nums' }}>
-                    {s.val > 0 ? '+' : ''}{f(s.val, 2)}
-                  </div>
-                  <div style={{ fontSize: '10px', fontWeight: 600, color: s.val > 0 ? '#30D158' : '#FF453A', opacity: 0.7, fontVariantNumeric: 'tabular-nums', marginTop: '1px' }}>
-                    {s.val > 0 ? '+' : ''}{f(pct, 1)}%
-                  </div>
+                <div style={{ flex: isMobile ? undefined : 1, textAlign: 'center', padding: '14px 8px', background: 'rgba(255,255,255,0.02)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginBottom: '8px' }}>{s.label}</div>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: col, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{sign}{f(s.val, 2)}</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: col, marginTop: '4px', fontVariantNumeric: 'tabular-nums' }}>({sign}{f(pct, 1)}%)</div>
                 </div>
               </TT>
               );
@@ -2886,113 +2892,50 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           </div>
       </div>
 
-      {/* Makrosignale */}
-      <div style={{ ...glass, marginTop: '8px' }}>
-        <div style={{ marginBottom: '12px' }}>
-          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Makrosignale</div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
-
-          <TT id="hySpread">
-            <div
-              onClick={() => window.open('https://de.tradingview.com/symbols/FRED-BAMLH0A0HYM2/?interval=D', '_blank')}
-              style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <div style={{...metricLabel, display:"flex", justifyContent:"center", alignItems:"center", gap:"3px"}}>HY Credit Spread <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-              {ri.hySpread > 0 ? (() => {
-                const hy = ri.hySpread;
-                const pct = hy < 2.8 ? Math.min(30, (hy / 2.8) * 30) : hy < 5 ? 30 + ((hy - 2.8) / (5 - 2.8)) * 30 : Math.min(100, 60 + ((hy - 5) / 7) * 40);
-                const zc = hy < 2.8 ? '#30D158' : hy <= 5 ? 'rgba(255,255,255,0.35)' : '#FF453A';
-                const zl = hy < 2.8 ? 'Euphorie' : hy <= 5 ? 'neutral' : 'Panik';
-                return (
-                  <div style={{ marginTop: '6px' }}>
-                    <Gauge type="macro" pct={pct} num={f(hy, 2) + '%'} zoneColor={zc} zoneLabel={zl} leftColor="#30D158" rightColor="#FF453A" zoneStart={30} zoneEnd={60} tipKey="mkHY" tipText={'HY-Spread (ICE BofA OAS): eng = Euphorie/Komplacency, weit = Panik/Stress.'} />
-                  </div>
-                );
-              })() : <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '4px' }}>—</div>}
+        {/* Makrosignale */}
+        <div style={{ ...glass, height: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(10,132,255,0.12)', border: '0.5px solid rgba(10,132,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="11" r="2"/><path d="M12 13v8"/><path d="M8.5 7.5a5 5 0 0 0 0 7"/><path d="M15.5 7.5a5 5 0 0 1 0 7"/><path d="M6 5a8 8 0 0 0 0 12"/><path d="M18 5a8 8 0 0 1 0 12"/></svg>
             </div>
-          </TT>
-
-          <TT id="dxy">
-            <div
-              onClick={() => window.open(TV_SYMBOLS['dxy'].tvUrl, '_blank')}
-              style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <div style={{...metricLabel, display:"flex", justifyContent:"center", alignItems:"center", gap:"3px"}}>US Dollar Index <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-              {ri.dxy > 0 ? (() => {
-                const dxy = ri.dxy;
-                const pct = Math.min(100, Math.max(0, ((dxy - 80) / (120 - 80)) * 100));
-                const zc = dxy < 95 ? '#30D158' : dxy <= 103 ? 'rgba(255,255,255,0.35)' : '#FF9F0A';
-                const zl = dxy < 95 ? 'Kauf US' : dxy <= 103 ? 'neutral' : 'Verkauf US';
-                return (
-                  <div style={{ marginTop: '6px' }}>
-                    <Gauge type="macro" pct={pct} num={f(dxy, 1)} zoneColor={zc} zoneLabel={zl} leftColor="#30D158" rightColor="#FF9F0A" zoneStart={37.5} zoneEnd={57.5} tipKey="mkDXY" tipText={'US Dollar Index (EU-Sicht): schwacher Dollar = US-Aktien günstig (Kauf US), starker Dollar = Rückumtausch vorteilhaft (Verkauf US).'} />
-                  </div>
-                );
-              })() : <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '4px' }}>—</div>}
-            </div>
-          </TT>
-
-          <TT id="goldSP">
-            <div style={{ borderRadius: '8px', padding: '4px' }}>
-              <div style={{...metricLabel, display:'flex', justifyContent:'center', alignItems:'center', gap:'3px'}}>S&amp;P 500 / Gold</div>
-              {goldSPRatio > 0 ? (() => {
-                const ratio = goldSPRatio;
-                const pct = Math.min(100, Math.max(0, ((ratio - 0.4) / (2.6 - 0.4)) * 100));
-                const zc = ratio < 1.0 ? '#FF9F0A' : ratio <= 2.0 ? 'rgba(255,255,255,0.35)' : '#FFD60A';
-                const zl = ratio < 1.0 ? 'Gold verkaufen' : ratio <= 2.0 ? 'neutral' : 'Gold kaufen';
-                return (
-                  <div style={{ marginTop: '6px' }}>
-                    <Gauge type="macro" pct={pct} num={f(ratio, 2)} zoneColor={zc} zoneLabel={zl} leftColor="#FF9F0A" rightColor="#FFD60A" zoneStart={27} zoneEnd={73} tipKey="mkGold" tipText={'S&P/Gold-Ratio: niedrig = Aktien günstig vs. Gold (Gold verkaufen), hoch = Aktien teuer vs. Gold (Gold als Absicherung kaufen).'} />
-                  </div>
-                );
-              })() : <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '4px' }}>—</div>}
-            </div>
-          </TT>
-
-          {/* SILBER — auskommentiert, bei Bedarf wieder einblenden
-          <div
-            onClick={() => window.open('https://www.tradingview.com/chart/?symbol=TVC%3ASILVER&interval=D', '_blank')}
-            style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-          >
-            <div style={{...metricLabel, display:'flex', justifyContent:'center', alignItems:'center', gap:'3px'}}>Silber <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-            <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>
-              {'$'}{ri.silver ? f(ri.silver, 2) : '—'}
-            </div>
-            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.2)', marginTop: '3px' }}>USD / Oz</div>
+            <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)' }}>Makrosignale</div>
           </div>
-          */}
-
-          <TT id="wti">
-            <div
-              onClick={() => window.open('https://www.tradingview.com/symbols/NYMEX-CL1!/?interval=D', '_blank')}
-              style={{ cursor: 'pointer', borderRadius: '8px', padding: '4px', transition: 'background 0.15s', position: 'relative' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <div style={{...metricLabel, display:"flex", justifyContent:"center", alignItems:"center", gap:"3px"}}>WTI Crude Oil <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
-              {ri.wti > 0 ? (() => {
-                const wti = ri.wti;
-                const pct = Math.min(100, Math.max(0, ((wti - 30) / (130 - 30)) * 100));
-                const zc = wti < 60 ? '#30D158' : wti <= 90 ? 'rgba(255,255,255,0.35)' : '#FF453A';
-                const zl = wti < 60 ? 'Öl kaufen' : wti <= 90 ? 'neutral' : 'Öl verkaufen';
-                const macroText = wti < 60 ? 'Rezessionsangst' : wti <= 90 ? 'Gesundes Niveau' : 'Inflationsangst';
-                return (
-                  <div style={{ marginTop: '6px' }}>
-                    <Gauge type="macro" pct={pct} num={'$' + f(wti, 1)} zoneColor={zc} zoneLabel={zl} leftColor="#30D158" rightColor="#FF453A" zoneStart={30} zoneEnd={60} tipKey="mkWTI" tipText={'WTI Rohöl — Handel: niedrig = Öl kaufen, hoch = Öl verkaufen. Makro-Lesart aktuell: ' + macroText + ' (niedrig = Rezessionsangst, mittel = gesund, hoch = Inflationsangst).'} />
-                  </div>
-                );
-              })() : <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '4px' }}>—</div>}
-            </div>
-          </TT>
-
+          {(() => {
+            const ICN = {
+              shield: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
+              dollar: <span style={{ fontSize: '22px', fontWeight: 700 }}>$</span>,
+              gold: <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="14" width="16" height="5" rx="1"/><rect x="6" y="8" width="5" height="5" rx="1"/><rect x="13" y="8" width="5" height="5" rx="1"/></svg>,
+              oil: <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2.7l5.7 5.7a8 8 0 1 1-11.4 0z"/></svg>,
+              yen: <span style={{ fontSize: '20px', fontWeight: 700 }}>¥</span>,
+            };
+            const hy = ri.hySpread, dxy = ri.dxy, ratio = goldSPRatio, wti = ri.wti;
+            const yen = (ri.yenCarry != null && ri.yenCarry > 0) ? ri.yenCarry : null;
+            const rows = [
+              hy > 0 && { name: 'HY Credit Spread', val: f(hy, 2) + '%', ic: 'shield', icc: '#30D158', z: hy < 2.8 ? { c: '#30D158', t: 'Euphorie' } : hy <= 5 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF453A', t: 'Panik' }, url: 'https://de.tradingview.com/symbols/FRED-BAMLH0A0HYM2/?interval=D', tip: 'HY-Spread (ICE BofA OAS): eng = Euphorie/Komplacency, weit = Panik/Stress.' },
+              dxy > 0 && { name: 'US Dollar Index', val: f(dxy, 1), ic: 'dollar', icc: '#0A84FF', z: dxy < 95 ? { c: '#30D158', t: 'Kauf US' } : dxy <= 103 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF9F0A', t: 'Verkauf US' }, url: TV_SYMBOLS['dxy'].tvUrl, tip: 'US Dollar Index (EU-Sicht): schwacher Dollar = US-Aktien günstig, starker Dollar = Rückumtausch vorteilhaft.' },
+              ratio > 0 && { name: 'S&P 500 / Gold', val: f(ratio, 2), ic: 'gold', icc: '#FFD60A', z: ratio < 1.0 ? { c: '#FF9F0A', t: 'Gold verk.' } : ratio <= 2.0 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FFD60A', t: 'Gold kauf.' }, tip: 'S&P/Gold-Ratio: niedrig = Aktien günstig vs. Gold, hoch = Aktien teuer vs. Gold.' },
+              wti > 0 && { name: 'WTI Crude Oil', val: '$' + f(wti, 1), ic: 'oil', icc: '#0A84FF', z: wti < 60 ? { c: '#30D158', t: 'Öl kaufen' } : wti <= 90 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF453A', t: 'Öl verk.' }, tip: 'WTI Rohöl: niedrig = Rezessionsangst, mittel = gesund, hoch = Inflationsangst.' },
+              { name: 'Yen Carry Stress Index', val: yen != null ? f(yen, 0) : '—', ic: 'yen', icc: '#BF5AF2', z: { c: '#8E8E93', t: 'Neutral' }, tip: 'Yen Carry Stress Index — Logik/Datenquelle folgt.' },
+            ].filter(Boolean);
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {rows.map((r, i) => (
+                  <HoverTip key={i} tipKey={'mk' + i} content={r.tip} width={230}>
+                    <div onClick={r.url ? () => window.open(r.url, '_blank') : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '11px 13px', cursor: r.url ? 'pointer' : 'help' }}>
+                      <div style={{ width: '42px', height: '42px', borderRadius: '11px', background: `${r.icc}1f`, border: `0.5px solid ${r.icc}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: r.icc, flexShrink: 0 }}>{ICN[r.ic]}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
+                        <div style={{ fontSize: '19px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{r.val}</div>
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: 600, color: r.z.c, border: `0.5px solid ${r.z.c}`, borderRadius: '8px', padding: '5px 10px', whiteSpace: 'nowrap', flexShrink: 0 }}>{r.z.t}</span>
+                    </div>
+                  </HoverTip>
+                ))}
+              </div>
+            );
+          })()}
         </div>
+
       </div>
 
     </>
