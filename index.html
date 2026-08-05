@@ -2497,6 +2497,22 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 <span style={{ fontSize: '12px', fontWeight: 700, color: '#F5F5F7', background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: '7px', padding: '3px 9px', whiteSpace: 'nowrap' }}>{met} / 7 aktiv</span>
               </div>
             </div>
+            {isMobile ? (
+              <div style={{ marginTop: '14px', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden' }}>
+                {sigs.map((s, i) => {
+                  const col = s.zone ? zCol[s.zone] : 'rgba(255,255,255,0.3)';
+                  return (
+                    <div key={'m' + i} title={s.hint} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderTop: i > 0 ? '0.5px solid rgba(255,255,255,0.05)' : 'none' }}>
+                      <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.68)' }}>{s.lab}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#F5F5F7', fontVariantNumeric: 'tabular-nums' }}>{s.val}</span>
+                        <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: col, flexShrink: 0 }} />
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
             <div style={{ marginTop: '16px', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ display: 'flex' }}>
                 {sigs.map((s, i) => (
@@ -2515,6 +2531,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 })}
               </div>
             </div>
+            )}
             <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginTop: '12px' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.56)' }}>Trigger · Ausverkauf: <span style={{ color: ausverkauf ? '#30D158' : 'rgba(255,255,255,0.6)', fontWeight: 600 }}>{ausverkauf ? 'ja (SPX & NDX RSI < 30)' : 'nein'}</span></span>
@@ -2530,6 +2547,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         <div style={{ ...glass, height: '100%' }}>
           {(() => {
             const fgZone = (x) => x < 25 ? { c: '#30D158', t: 'Extreme Angst' } : x < 45 ? { c: '#30D158', t: 'Angst' } : x < 55 ? { c: '#8E8E93', t: 'Neutral' } : x < 75 ? { c: '#FFCC00', t: 'Gier' } : { c: '#FF453A', t: 'Extreme Gier' };
+            const fgZoneKrypto = (x) => x < 21 ? { c: '#30D158', t: 'Extreme Angst' } : x < 36 ? { c: '#30D158', t: 'Angst' } : x < 65 ? { c: '#8E8E93', t: 'Neutral' } : x < 80 ? { c: '#FFCC00', t: 'Gier' } : { c: '#FF453A', t: 'Extreme Gier' };
             const cl = (x, lo, hi) => Math.max(0, Math.min(100, (x - lo) / (hi - lo) * 100));
             const cs1 = v.skewIndex > 0 ? cl(v.skewIndex, 110, 180) : null;
             const cs2 = v.leftTailVol > 0 ? cl(v.leftTailVol, 5, 20) : null;
@@ -2544,7 +2562,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             };
             const blocks = [
               { t1: 'Fear & Greed', t2: 'Aktien', ic: 'aktien', num: v.fearGreed > 0 ? f(v.fearGreed, 0) : '—', z: v.fearGreed > 0 ? fgZone(v.fearGreed) : emptyZone, tip: 'Fear & Greed (Aktien) — unter 25 Extreme Angst · 25–44 Angst · 45–54 Neutral · 55–74 Gier · über 75 Extreme Gier.' },
-              { t1: 'Fear & Greed', t2: 'Krypto', ic: 'krypto', num: v.cryptoFearGreed > 0 ? f(v.cryptoFearGreed, 0) : '—', z: v.cryptoFearGreed > 0 ? fgZone(v.cryptoFearGreed) : emptyZone, tip: 'Krypto Fear & Greed (CoinMarketCap) — gleiche Zonen wie Aktien.' },
+              { t1: 'Fear & Greed', t2: 'Krypto', ic: 'krypto', num: v.cryptoFearGreed > 0 ? f(v.cryptoFearGreed, 0) : '—', z: v.cryptoFearGreed > 0 ? fgZoneKrypto(v.cryptoFearGreed) : emptyZone, tip: 'Krypto Fear & Greed (CoinMarketCap) — 0–20 Extreme Angst · 21–35 Angst · 36–64 Neutral · 65–79 Gier · 80–100 Extreme Gier.' },
               { t1: 'Crash-', t2: 'Einpreisung', ic: 'crash', num: crashScore == null ? '—' : f(crashScore, 0), z: crashZone, tip: 'Tail-Risiko aus CBOE SKEW (110–180) und Left Tail Volatility (5–20). Hoch = viel bezahlte Crash-Absicherung.' },
             ];
             return (
@@ -2689,7 +2707,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           </div>
           <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>US Treasuries</div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '8px' }}>
           {[
             { m: '10Y', nom: y.y10, real: y.y10real, jahre: '10 Jahre' },
             { m: '30Y', nom: y.y30, real: y.y30real, jahre: '30 Jahre' },
@@ -2713,7 +2731,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             const mzl = mv < 80 ? 'ruhig' : mv <= 120 ? 'normal' : 'Stress';
             return (
               <HoverTip tipKey="moveT" content={'MOVE-Index — implizite Volatilität am US-Treasury-Markt (das „VIX der Anleihen"). Niedrig = ruhiger Zinsmarkt, hoch = Zins-Stress.'} width={230}>
-                <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 16px', height: '100%', background: 'rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', cursor: 'help' }}>
+                <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 16px', height: '100%', gridColumn: isMobile ? '1 / -1' : 'auto', background: 'rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', cursor: 'help' }}>
                   <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: 'rgba(10,132,255,0.12)', border: '0.5px solid rgba(10,132,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                   </div>
@@ -2741,7 +2759,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             </div>
             <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>Aktienindizes</div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '20px' }}>
             {[
               { label: 'S&P 500',    val: idx.spx, ma200: idx.spx200d, rsi: idx.spxRsi, url: 'https://www.tradingview.com/symbols/SP-SPX/?interval=D',    sub: 'SPX' },
               { label: 'Nasdaq 100', val: idx.ndx, ma200: idx.ndx200d, rsi: idx.ndxRsi, url: 'https://www.tradingview.com/symbols/NASDAQ-NDX/?interval=D', sub: 'NDX' },
@@ -3320,7 +3338,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   }}>{tab.label}</button>
                 ))}
               </div>
-              {lastImportDate && <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontVariantNumeric: 'tabular-nums' }}>Stand: {formatTime(lastImportDate)}</span>}
+              {lastImportDate && <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontVariantNumeric: 'tabular-nums' }}>Stand: {formatTime(lastImportDate)} <span style={{ color: 'rgba(255,255,255,0.28)' }}>· Build 2508-2120</span></span>}
             </div>
           </div>
         ) : (
@@ -3692,7 +3710,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               {configTab === 'start' && (
                 <div>
                   <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.52)', marginBottom: '16px' }}>Wie möchtest du vorgehen?</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '10px' }}>
                     {/* Template-Kachel */}
                     <div onClick={() => setConfigTab('templates')}
                       style={{ padding: '20px 16px', borderRadius: '14px', border: '0.5px solid rgba(10,132,255,0.3)', background: 'rgba(10,132,255,0.05)', cursor: 'pointer', transition: 'all 0.15s' }}
