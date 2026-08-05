@@ -755,7 +755,7 @@ Usage example:
               </svg>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', lineHeight: 1 }}>Volafly</span>
-                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em' }}>Volatilität lesen. On the fly.</span>
+                <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.06em' }}>Volatilität lesen. On the fly.</span>
               </div>
             </div>
 
@@ -764,7 +764,7 @@ Usage example:
               Den Markt lesen,<br/>
               <span style={{ color: '#0A84FF' }}>bevor er spricht.</span>
             </h1>
-            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.65, margin: '0 0 48px', maxWidth: '400px' }}>
+            <p style={{ fontSize: '15px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.65, margin: '0 0 48px', maxWidth: '400px' }}>
               Volafly aggregiert die wichtigsten Volatilitäts- und Sentiment-Indikatoren und übersetzt sie in eine klare Handlungsempfehlung — antizyklisch, datenbasiert, rational.
             </p>
 
@@ -804,7 +804,7 @@ Usage example:
                 </svg>
                 <div>
                   <div style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', lineHeight: 1 }}>Volafly</div>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.06em', marginTop: '3px' }}>Volatilität lesen. On the fly.</div>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.06em', marginTop: '3px' }}>Volatilität lesen. On the fly.</div>
                 </div>
               </div>
             )}
@@ -852,7 +852,7 @@ Usage example:
                 {mode === 'login' && (
                   <div style={{ textAlign: 'right', marginTop: '8px' }}>
                     <button type="button" onClick={handleReset} disabled={loading}
-                      style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
+                      style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', padding: 0 }}
                       onMouseEnter={e => e.currentTarget.style.color='rgba(255,255,255,0.6)'}
                       onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.3)'}>
                       Passwort vergessen?
@@ -956,7 +956,7 @@ Usage example:
               <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><defs><linearGradient id="vfLogoGrad3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#0A84FF"/><stop offset="100%" stopColor="#BF5AF2"/></linearGradient></defs><path d="M2 18 C 8 8, 12 8, 16 16 C 20 24, 24 24, 30 14" stroke="url(#vfLogoGrad3)" strokeWidth="2.5" fill="none" strokeLinecap="round"/><path d="M2 22 C 8 12, 12 12, 16 20 C 20 28, 24 28, 30 18" stroke="url(#vfLogoGrad3)" strokeWidth="2.5" fill="none" strokeLinecap="round" opacity="0.45"/></svg>
               <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em' }}>Volafly</span>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.09)', borderRadius: '20px', padding: '28px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.09)', borderRadius: '20px', padding: '28px' }}>
               {pwDone ? (
                 <div style={{ textAlign: 'center', padding: '12px 0' }}>
                   <div style={{ fontSize: '28px', marginBottom: '12px' }}>✓</div>
@@ -1130,22 +1130,22 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
         ].map((item, i) => (
           <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', marginBottom: i < 2 ? (isMobile ? '10px' : '16px') : '0' }}>
             <div style={{ padding: '3px 8px', borderRadius: '6px', background: `${item.color}15`, border: `0.5px solid ${item.color}30`, fontSize: '10px', fontWeight: 700, color: item.color, whiteSpace: 'nowrap', marginTop: '1px', flexShrink: 0 }}>{item.tab}</div>
-            <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>{item.desc}</div>
+            <div style={{ fontSize: isMobile ? '11px' : '12px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>{item.desc}</div>
           </div>
         ))}
 
         {/* Footer */}
-        <div style={{ marginTop: isMobile ? '16px' : '28px', paddingTop: isMobile ? '14px' : '20px', borderTop: '0.5px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ marginTop: isMobile ? '16px' : '28px', paddingTop: isMobile ? '14px' : '20px', borderTop: '0.5px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {!fromInfo ? (
             <label style={{ display: 'flex', alignItems: 'center', gap: '7px', cursor: 'pointer', userSelect: 'none' }}
               onClick={() => setNeverShow(v => !v)}>
               <div style={{ width: '16px', height: '16px', borderRadius: '4px', border: `1.5px solid ${neverShow ? '#0A84FF' : 'rgba(255,255,255,0.2)'}`, background: neverShow ? '#0A84FF' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease', flexShrink: 0 }}>
                 {neverShow && <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>}
               </div>
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Nicht mehr anzeigen</span>
+              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>Nicht mehr anzeigen</span>
             </label>
           ) : (
-            <button onClick={saveAndClose} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
+            <button onClick={saveAndClose} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Schließen</button>
           )}
           <button onClick={handleNext} style={{ padding: isMobile ? '9px 18px' : '10px 22px', borderRadius: '12px', border: 'none', background: '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
             Kurzführung →
@@ -1176,9 +1176,9 @@ const OnboardingOverlay = ({ onboardStep, setOnboardStep, setActiveTab, setShowP
         <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.65, marginBottom: '24px' }}>{step.desc}</div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           {step.isAction ? (
-            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.2)', fontStyle: 'italic' }}>Dieser Schritt ist wichtig für deine Auswertung.</span>
+            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', fontStyle: 'italic' }}>Dieser Schritt ist wichtig für deine Auswertung.</span>
           ) : (
-            <button onClick={saveAndClose} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.25)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Überspringen</button>
+            <button onClick={saveAndClose} style={{ fontSize: '12px', color: 'rgba(255,255,255,0.42)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Überspringen</button>
           )}
           <button onClick={handleNext} style={{ padding: '10px 22px', borderRadius: '12px', border: 'none', background: step.isAction ? '#30D158' : '#0A84FF', color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', boxShadow: step.isAction ? '0 4px 12px rgba(48,209,88,0.3)' : '0 4px 12px rgba(10,132,255,0.3)' }}>
             {step.cta}
@@ -2041,7 +2041,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
   };
 
   const glass = {
-    background: 'rgba(255,255,255,0.04)',
+    background: 'rgba(255,255,255,0.03)',
     backdropFilter: 'blur(40px) saturate(150%)',
     WebkitBackdropFilter: 'blur(40px) saturate(150%)',
     border: '0.5px solid rgba(255,255,255,0.08)',
@@ -2051,10 +2051,10 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
   const sectionLabel = {
     fontSize: '11px', fontWeight: 600, textTransform: 'uppercase',
-    letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: '12px',
+    letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)', marginBottom: '12px',
   };
 
-  const metricLabel = { fontSize: '10px', color: 'rgba(255,255,255,0.3)', fontWeight: 500, marginBottom: '2px' };
+  const metricLabel = { fontSize: '10px', color: 'rgba(255,255,255,0.45)', fontWeight: 500, marginBottom: '2px' };
   const metricValue = (color = '#F5F5F7') => ({ fontSize: '18px', fontWeight: 600, color, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' });
 
   // ── Anticyclical Volatility Classification ──
@@ -2321,7 +2321,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           <text x={cx} y={cy - (small ? 3 : 5)} textAnchor="middle" fontSize={small ? 15 : (isMacro ? 19 : 22)} fontWeight="700" fill={numColor} style={{ letterSpacing: '-0.02em' }}>{numTxt}</text>
         </svg>
         <div style={{ fontSize: '10px', marginTop: '1px', textAlign: 'center', lineHeight: 1.2 }}>
-          {caption && <span style={{ color: 'rgba(255,255,255,0.4)' }}>{caption} · </span>}
+          {caption && <span style={{ color: 'rgba(255,255,255,0.5)' }}>{caption} · </span>}
           <span style={{ color: zone.c, fontWeight: 600 }}>{zone.t}</span>
         </div>
       </div>
@@ -2383,7 +2383,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         if (cheap === 'b') { state = 'b'; verdict = 'Hedges teuer'; sub = 'Die Schwankung am Markt ist bereits erhöht — Absicherung ist teuer oder kommt zu spät.'; }
         else if (cheap === 'g' && (bedarfHigh || overheated)) { state = 'g'; verdict = 'Jetzt absichern'; sub = 'Absicherung ist günstig umsetzbar und der Bedarf hoch — guter Moment, um Schutz aufzubauen.'; }
         else if (cheap === 'g') { state = 'g'; verdict = 'Günstig absichern möglich'; sub = 'Absicherung wäre gerade günstig — aber der Bedarf ist niedrig und kein Überhitzungs-Signal.'; }
-        else if (bedarfHigh) { state = 'm'; verdict = 'Absichern erwägen'; sub = 'Der hohe Bedarf spricht klar für Absicherung — aber sie ist zuletzt etwas teurer geworden, kein günstiger Volltreffer.'; }
+        else if (bedarfHigh) { state = 'm'; verdict = 'Absichern erwägen'; sub = 'Hoher Absicherungsbedarf, die Umsetzung ist aktuell jedoch nur bedingt günstig.'; }
         else { state = 'm'; verdict = 'Abwarten'; sub = 'Noch kein klares Signal — weder viel Bedarf noch besonders günstige Absicherung.'; }
         const COL = { g: '#30D158', m: '#FFCC00', b: '#FF453A' };
         const sc = COL[state];
@@ -2392,7 +2392,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           <div style={{ ...glass, height: '100%' }}>
             <div style={sectionLabel}>Hedging-Ampel</div>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', padding: '10px', background: 'rgba(0,0,0,0.25)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', padding: '10px', background: 'rgba(0,0,0,0.25)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
                 {['b', 'm', 'g'].map(s => (
                   <div key={s} style={{ width: '22px', height: '22px', borderRadius: '50%', background: state === s ? COL[s] : 'rgba(255,255,255,0.07)', boxShadow: state === s ? `0 0 14px ${COL[s]}` : 'none', transition: 'all 0.3s' }} />
                 ))}
@@ -2402,9 +2402,9 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginTop: '5px', lineHeight: 1.5 }}>{sub}</div>
               </div>
             </div>
-            <div style={{ marginTop: '14px', padding: '11px', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+            <div style={{ marginTop: '14px', padding: '11px', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
-                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5, flex: 1 }}>
+                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5, flex: 1 }}>
                   {bedarfHigh ? 'Einzelwerte schwanken viel stärker als der Index → hoher Bedarf, Index-Schutz relativ günstig.' : bedarfLevel === 'neutral' ? 'Etwas erhöhte Streuung zwischen Einzelwerten und Index.' : 'Einzelwerte und Index schwanken ähnlich — wenig Anlass zur Absicherung.'}
                 </span>
                 <span style={{ fontSize: '11px', fontWeight: 600, color: '#F5F5F7', whiteSpace: 'nowrap' }}>{f(eq, 2)} · {bedarfLevel}</span>
@@ -2424,7 +2424,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   <HoverTip key={i} tipKey={'ampchip' + i} width={230}
                     content={g.crit.map(c => `${c.t} ${c.ok ? '\u2713' : '\u2717'} (${c.val})`).join('   \u00b7   ')}>
                     <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
-                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>{g.name}</div>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>{g.name}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: chipCol(info) }} />
                         <span style={{ fontSize: '13px', fontWeight: 600, color: chipCol(info) }}>{nOk}/{g.crit.length}</span>
@@ -2436,7 +2436,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               <HoverTip tipKey="ampOverheat" width={230}
                 content={`S&P 500 RSI ${f(idx.spxRsi || 0)} · Nasdaq 100 RSI ${f(idx.ndxRsi || 0)} — beide über 70 nötig`}>
                 <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '9px 11px', cursor: 'help' }}>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>Überhitzung</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>Überhitzung</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
                     <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: overheated ? '#30D158' : '#FF453A' }} />
                     <span style={{ fontSize: '13px', fontWeight: 600, color: overheated ? '#30D158' : '#FF453A' }}>{overheated ? 'aktiv' : 'nein'}</span>
@@ -2480,29 +2480,29 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           <div style={{ ...glass, height: '100%' }}>
             <div style={sectionLabel}>Markt-Ampel</div>
             <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', padding: '10px', background: 'rgba(0,0,0,0.25)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '7px', padding: '10px', background: 'rgba(0,0,0,0.25)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
                 {['r', 'y', 'g'].map(c => (
                   <div key={c} style={{ width: '22px', height: '22px', borderRadius: '50%', background: state === c ? lampCol[c] : 'rgba(255,255,255,0.07)', boxShadow: state === c ? `0 0 12px ${lampCol[c]}` : 'none', transition: 'all 0.2s' }} />
                 ))}
               </div>
               <div style={{ flex: 1, minWidth: isMobile ? '150px' : '200px' }}>
                 <div style={{ fontSize: isMobile ? '18px' : '20px', fontWeight: 700, color: lampCol[state], letterSpacing: '-0.02em' }}>{verdict}</div>
-                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginTop: '5px', lineHeight: 1.5 }}>{sub}</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)', marginTop: '5px', lineHeight: 1.5 }}>{sub}</div>
               </div>
-              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', flexShrink: 0, alignSelf: 'flex-start' }}>Angst-Signale ({met}/7 – alle 7 = grün)</span>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', flexShrink: 0, alignSelf: 'flex-start' }}>Angst-Signale ({met}/7 – alle 7 = grün)</span>
             </div>
             <div style={{ marginTop: '16px', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden' }}>
               <div style={{ display: 'flex' }}>
                 {sigs.map((s, i) => (
-                  <div key={'h' + i} title={s.hint} style={{ flex: 1, minWidth: 0, textAlign: 'center', padding: '9px 6px', borderLeft: i > 0 ? '0.5px solid rgba(255,255,255,0.06)' : 'none', borderBottom: '0.5px solid rgba(255,255,255,0.08)', fontSize: '11px', color: 'rgba(255,255,255,0.55)', lineHeight: 1.25, cursor: 'help' }}>{s.lab}</div>
+                  <div key={'h' + i} title={s.hint} style={{ flex: 1, minWidth: 0, textAlign: 'center', padding: '11px 9px', borderLeft: i > 0 ? '0.5px solid rgba(255,255,255,0.05)' : 'none', borderBottom: '0.5px solid rgba(255,255,255,0.08)', fontSize: '11px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.25, cursor: 'help' }}>{s.lab}</div>
                 ))}
               </div>
               <div style={{ display: 'flex' }}>
                 {sigs.map((s, i) => {
                   const col = s.zone ? zCol[s.zone] : 'rgba(255,255,255,0.3)';
                   return (
-                    <div key={'v' + i} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', padding: '12px 4px', borderLeft: i > 0 ? '0.5px solid rgba(255,255,255,0.06)' : 'none' }}>
-                      <span style={{ fontSize: (s.val.length > 6 ? '12px' : '15px'), fontWeight: 700, color: '#F5F5F7', fontVariantNumeric: 'tabular-nums' }}>{s.val}</span>
+                    <div key={'v' + i} style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px', padding: '15px 9px', borderLeft: i > 0 ? '0.5px solid rgba(255,255,255,0.05)' : 'none' }}>
+                      <span style={{ fontSize: (s.val.length > 6 ? '13px' : '15px'), fontWeight: 700, color: '#F5F5F7', fontVariantNumeric: 'tabular-nums' }}>{s.val}</span>
                       <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: col, flexShrink: 0 }} />
                     </div>
                   );
@@ -2511,7 +2511,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginTop: '12px' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)' }}>Trigger · Ausverkauf: <span style={{ color: ausverkauf ? '#30D158' : 'rgba(255,255,255,0.6)', fontWeight: 600 }}>{ausverkauf ? 'ja (SPX & NDX RSI < 30)' : 'nein'}</span></span>
+              <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Trigger · Ausverkauf: <span style={{ color: ausverkauf ? '#30D158' : 'rgba(255,255,255,0.6)', fontWeight: 600 }}>{ausverkauf ? 'ja (SPX & NDX RSI < 30)' : 'nein'}</span></span>
             </div>
           </div>
         );
@@ -2547,7 +2547,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)' }}>Markt-Sentiment</div>
+                  <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>Markt-Sentiment</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   {blocks.map((bl, i) => (
@@ -2574,7 +2574,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="4" r="1.6"/><circle cx="19.5" cy="8" r="1.6"/><circle cx="19.5" cy="16" r="1.6"/><circle cx="4.5" cy="16" r="1.6"/><circle cx="4.5" cy="8" r="1.6"/><line x1="12" y1="10" x2="12" y2="5.5"/><line x1="13.7" y1="11.2" x2="18" y2="8.8"/><line x1="13.7" y1="12.8" x2="18" y2="15.2"/><line x1="10.3" y1="12.8" x2="6" y2="15.2"/><line x1="10.3" y1="11.2" x2="6" y2="8.8"/></svg>
             </div>
-            <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)' }}>S&amp;P 500 Breadth</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>S&amp;P 500 Breadth</div>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {[
@@ -2605,7 +2605,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
             </div>
-            <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)' }}>Nächste FED-Sitzung</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>Nächste FED-Sitzung</div>
           </div>
           {fed.date > 0 && fed.hold != null ? (() => {
             const fy = Math.floor(fed.date / 10000), fm = Math.floor(fed.date / 100) % 100, fdd = fed.date % 100;
@@ -2631,12 +2631,12 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                       <div style={{ fontSize: '13px', color: '#0A84FF', fontWeight: 600 }}>in {daysTo} {daysTo === 1 ? 'Tag' : 'Tagen'}</div>
                     </div>
                   </div>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '14px', paddingTop: '14px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '14px', paddingTop: '14px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
                     <div style={iconBox}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
                     </div>
                     <div>
-                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>aktueller Leitzins</div>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>aktueller Leitzins</div>
                       <div style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{f(fed.bandLow, 2)}–{f(fed.bandHigh, 2)} %</div>
                     </div>
                   </div>
@@ -2659,7 +2659,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               </div>
             );
           })() : (
-            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)' }}>Noch keine FedWatch-Daten.</div>
+            <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)' }}>Noch keine FedWatch-Daten.</div>
           )}
         </div>
 
@@ -2674,12 +2674,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
           </div>
-          <div style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em' }}>US Treasuries</div>
+          <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>US Treasuries</div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '8px' }}>
           {[
-            { m: '2Y',  nom: y.y2,  real: null, jahre: '2 Jahre' },
-            { m: '10Y', nom: y.y10, real: y.y10real, hl: true, jahre: '10 Jahre' },
+            { m: '10Y', nom: y.y10, real: y.y10real, jahre: '10 Jahre' },
             { m: '30Y', nom: y.y30, real: y.y30real, jahre: '30 Jahre' },
           ].map((p, i) => {
             const be = p.real != null && p.nom > 0 ? p.nom - p.real : null;
@@ -2689,11 +2688,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   <span style={{ fontSize: '15px', fontWeight: 700, color: '#F5F5F7' }}>{p.m}</span>
                   <span style={{ fontSize: '10px', fontWeight: 600, color: p.hl ? '#0A84FF' : 'rgba(255,255,255,0.4)', background: p.hl ? 'rgba(10,132,255,0.14)' : 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '6px' }}>{p.jahre}</span>
                 </div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>Nominalrendite</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '10px' }}>Nominalrendite</div>
                 <div style={{ fontSize: '22px', fontWeight: 700, color: '#F5F5F7', marginTop: '1px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{p.nom > 0 ? f(p.nom, 2) + ' %' : '—'}</div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '14px' }}>Realrendite (TIPS)</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '14px' }}>Realrendite (TIPS)</div>
                 <div style={{ fontSize: '15px', fontWeight: 600, color: p.real != null ? '#0A84FF' : 'rgba(255,255,255,0.3)', marginTop: '1px', fontVariantNumeric: 'tabular-nums' }}>{p.real != null ? f(p.real, 2) + ' %' : '—'}</div>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginTop: '10px' }}>Break-even-Inflation</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginTop: '10px' }}>Break-even-Inflation</div>
                 <div style={{ fontSize: '15px', fontWeight: 600, color: be != null ? '#0A84FF' : 'rgba(255,255,255,0.3)', marginTop: '1px', fontVariantNumeric: 'tabular-nums' }}>{be != null ? '+' + f(be, 2) + ' %' : '—'}</div>
               </div>
             );
@@ -2728,7 +2727,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
             </div>
-            <div style={{ fontSize: '18px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em' }}>Aktienindizes</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>Aktienindizes</div>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
             {[
@@ -2749,7 +2748,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     </div>
                   )}
                   {rsi != null && (
-                    <div style={{ marginTop: '18px', borderTop: '0.5px solid rgba(255,255,255,0.06)', paddingTop: '16px' }}>
+                    <div style={{ marginTop: '18px', borderTop: '0.5px solid rgba(255,255,255,0.08)', paddingTop: '16px' }}>
                       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '10px' }}>
                         <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)' }}>RSI</span>
                         <span style={{ fontSize: '17px', fontWeight: 700, color: '#F5F5F7', fontVariantNumeric: 'tabular-nums' }}>{f(rsi, 1)}</span>
@@ -2763,15 +2762,20 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                         </div>
                         <div style={{ position: 'absolute', top: '-3px', left: `${Math.max(0, Math.min(100, rsi))}%`, width: '14px', height: '14px', borderRadius: '50%', background: '#fff', transform: 'translateX(-50%)', border: '2px solid #0e0e0e' }} />
                       </div>
-                      <div style={{ position: 'relative', height: '13px', marginTop: '7px', fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>
+                      <div style={{ position: 'relative', height: '13px', marginTop: '7px', fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>
                         <span style={{ position: 'absolute', left: '0%' }}>0</span>
                         <span style={{ position: 'absolute', left: '30%', transform: 'translateX(-50%)' }}>30</span>
                         <span style={{ position: 'absolute', left: '70%', transform: 'translateX(-50%)' }}>70</span>
                         <span style={{ position: 'absolute', left: '100%', transform: 'translateX(-100%)' }}>100</span>
                       </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontSize: '9px', fontWeight: 600 }}>
+                        <span style={{ color: '#30D158' }}>überverkauft</span>
+                        <span style={{ color: 'rgba(255,255,255,0.5)' }}>neutral</span>
+                        <span style={{ color: '#FF453A' }}>überkauft</span>
+                      </div>
                     </div>
                   )}
-                  {aboveMA === null && rsi == null && <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', marginTop: '4px' }}>{item.sub}</div>}
+                  {aboveMA === null && rsi == null && <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', marginTop: '4px' }}>{item.sub}</div>}
                 </div>
               );
             })}
@@ -2785,12 +2789,12 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         {/* VIX Term Structure */}
         <div style={{ ...glass, height: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(10,132,255,0.12)', border: '0.5px solid rgba(10,132,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg>
+            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3-4 4 3 5-7"/></svg>
             </div>
-            <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)' }}>VIX Term Structure</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>VIX Term Structure</div>
             <HoverTip tipKey="vtsInfo" content={'VIX-Terminstruktur: VX1–VX5 sind die nächsten fünf VIX-Future-Kontrakte. Steigende Kurve (Contango) = ruhiger Markt; fallende (Backwardation) = akuter Stress. Die orange Linie ist der VIX-Spot.'} width={240}>
-              <span style={{ marginLeft: 'auto', width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.4)', cursor: 'help', flexShrink: 0 }}>i</span>
+              <span style={{ marginLeft: 'auto', width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.5)', cursor: 'help', flexShrink: 0 }}>i</span>
             </HoverTip>
           </div>
 
@@ -2806,7 +2810,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             const yMin = Math.floor((rawMin - pad) / niceStep) * niceStep;
             const yMax = Math.ceil((rawMax + pad) / niceStep) * niceStep;
             const yRange = yMax - yMin;
-            const chartH = 180;
+            const chartH = 230;
             const yBase = 215;
             const toY = (val) => yBase - ((val - yMin) / yRange) * chartH;
             // nice grid lines: ~4-5 steps
@@ -2879,10 +2883,10 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               const sign = s.val > 0 ? '+' : '';
               return (
               <TT key={i} id={s.id}>
-                <div style={{ flex: isMobile ? undefined : 1, textAlign: 'center', padding: '14px 8px', background: 'rgba(255,255,255,0.02)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginBottom: '8px' }}>{s.label}</div>
-                  <div style={{ fontSize: '24px', fontWeight: 700, color: col, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{sign}{f(s.val, 2)}</div>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: col, marginTop: '4px', fontVariantNumeric: 'tabular-nums' }}>({sign}{f(pct, 1)}%)</div>
+                <div style={{ textAlign: 'center', padding: '10px 8px', background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px' }}>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '4px' }}>{s.label}</div>
+                  <div style={{ fontSize: '18px', fontWeight: 700, color: col, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{sign}{f(s.val, 2)}</div>
+                  <div style={{ fontSize: '11px', fontWeight: 600, color: col, marginTop: '2px', fontVariantNumeric: 'tabular-nums' }}>({sign}{f(pct, 1)}%)</div>
                 </div>
               </TT>
               );
@@ -2894,10 +2898,10 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         {/* Makrosignale */}
         <div style={{ ...glass, height: '100%' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(10,132,255,0.12)', border: '0.5px solid rgba(10,132,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#0A84FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="11" r="2"/><path d="M12 13v8"/><path d="M8.5 7.5a5 5 0 0 0 0 7"/><path d="M15.5 7.5a5 5 0 0 1 0 7"/><path d="M6 5a8 8 0 0 0 0 12"/><path d="M18 5a8 8 0 0 1 0 12"/></svg>
+            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="11" r="2"/><path d="M12 13v8"/><path d="M8.5 7.5a5 5 0 0 0 0 7"/><path d="M15.5 7.5a5 5 0 0 1 0 7"/><path d="M6 5a8 8 0 0 0 0 12"/><path d="M18 5a8 8 0 0 1 0 12"/></svg>
             </div>
-            <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.55)' }}>Makrosignale</div>
+            <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>Makrosignale</div>
           </div>
           {(() => {
             const ICN = {
@@ -2926,7 +2930,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                         <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.name}</div>
                         <div style={{ fontSize: '19px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{r.val}</div>
                       </div>
-                      <span style={{ fontSize: '12px', fontWeight: 600, color: r.z.c, border: `0.5px solid ${r.z.c}`, borderRadius: '8px', padding: '5px 10px', whiteSpace: 'nowrap', flexShrink: 0 }}>{r.z.t}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 600, color: r.z.c, border: `0.5px solid ${r.z.c}`, borderRadius: '7px', padding: '4px 9px', whiteSpace: 'nowrap', flexShrink: 0 }}>{r.z.t}</span>
                     </div>
                   </HoverTip>
                 ))}
@@ -3005,7 +3009,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
             {/* Links: Vola-Klasse */}
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)', marginBottom: '10px' }}>
                 Volatilitätsklasse
               </div>
               <div style={{
@@ -3018,7 +3022,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               <div style={{ fontSize: '20px', fontWeight: 600, color: currentClass.color, marginTop: '8px', letterSpacing: '-0.01em' }}>
                 {currentClass.label}
               </div>
-              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '4px' }}>
+              <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginTop: '4px' }}>
                 {currentClass.subtitle || null}
               </div>
             </div>
@@ -3028,7 +3032,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
             {/* Rechts: Investitionsgrad */}
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.3)', marginBottom: '10px' }}>
+              <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(255,255,255,0.45)', marginBottom: '10px' }}>
                 Investitionsgrad
               </div>
               <div style={{ fontSize: '52px', fontWeight: 700, color: currentClass.color, letterSpacing: '-0.04em', lineHeight: 1 }}>
@@ -3059,7 +3063,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px' }}>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', padding: '5px 12px', borderRadius: '20px', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)' }}>
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', fontWeight: 600, letterSpacing: '0.01em' }}>{activeTemplateName}</span>
+                      <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)', fontWeight: 600, letterSpacing: '0.01em' }}>{activeTemplateName}</span>
                     </div>
                   </div>
                 )}
@@ -3094,7 +3098,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         <div style={{ ...glass, marginBottom: '8px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <div style={sectionLabel}>Signalverteilung</div>
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)' }}>{indicators.length} Indikatoren</div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.42)' }}>{indicators.length} Indikatoren</div>
           </div>
           <div style={{ display: 'flex', gap: '3px', height: '6px', borderRadius: '4px', overflow: 'hidden' }}>
             {levelDistribution.map((count, i) => (
@@ -3140,7 +3144,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
           {/* Collapsible content */}
           {expertOpen && (
-            <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.06)', padding: '12px' }}>
+            <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.08)', padding: '12px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
                 {groupedIndicators.map((g, gi) => (
                   <div key={gi} style={{ ...glass, ...({}) }}>
@@ -3212,7 +3216,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 )}
                 {activeTab === 'analysis' && (
                   <button onClick={() => { const eq = computeEqualWeights(JSON.parse(JSON.stringify(thresholds))); setDraftThresholds(eq); setDraftVolaClasses(JSON.parse(JSON.stringify(volaClasses))); setValidationErrors({}); setInputTexts({}); setConfigTab('start'); setShowSaveTemplate(false); setNewTemplateName(''); setSaveTemplateMsg(null); setShowConfig(true); }}
-                    style={{ padding: '7px 12px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: 'inherit' }}>
+                    style={{ padding: '7px 12px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontFamily: 'inherit' }}>
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
                     Risikokonfig.
                   </button>
@@ -3235,8 +3239,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                       </button>
                       {mobileMenuOpen && (
                         <div style={{ position: 'absolute', top: '38px', right: 0, background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '14px', padding: '6px', minWidth: '200px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 200 }}>
-                          <div style={{ padding: '8px 10px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
-                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '2px' }}>Eingeloggt als</div>
+                          <div style={{ padding: '8px 10px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.08)', marginBottom: '4px' }}>
+                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: '2px' }}>Eingeloggt als</div>
                             <div style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F7', wordBreak: 'break-all' }}>{user?.email}</div>
                           </div>
                           <button onClick={() => { setMobileMenuOpen(false); setShowContact && setShowContact(true); }}
@@ -3252,7 +3256,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                             onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                             Benachrichtigungen
-                            {(notifyWeeklyReport || notifyLevelChange) ? <span style={{ marginLeft: 'auto', fontSize: '9px', fontWeight: 700, color: '#30D158', background: 'rgba(48,209,88,0.12)', border: '0.5px solid rgba(48,209,88,0.25)', padding: '1px 7px', borderRadius: '20px' }}>AN</span> : <span style={{ marginLeft: 'auto', fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', padding: '1px 7px', borderRadius: '20px' }}>AUS</span>}
+                            {(notifyWeeklyReport || notifyLevelChange) ? <span style={{ marginLeft: 'auto', fontSize: '9px', fontWeight: 700, color: '#30D158', background: 'rgba(48,209,88,0.12)', border: '0.5px solid rgba(48,209,88,0.25)', padding: '1px 7px', borderRadius: '20px' }}>AN</span> : <span style={{ marginLeft: 'auto', fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', padding: '1px 7px', borderRadius: '20px' }}>AUS</span>}
                           </button>
                           {/* Onboarding */}
                           <button onClick={() => { setMobileMenuOpen(false); setOnboardStep(0); setOnboardingFromInfo(true); setShowOnboarding(true); }}
@@ -3265,7 +3269,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                           <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.07)', margin: '4px 0' }} />
                           {[['Impressum', '/impressum.html'], ['Datenschutz', '/datenschutz.html'], ['Disclaimer', '/disclaimer.html']].map(([label, href]) => (
                             <a key={href} href={href}
-                              style={{ width: '100%', padding: '7px 10px', borderRadius: '10px', background: 'transparent', color: 'rgba(255,255,255,0.25)', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none', fontFamily: 'inherit' }}
+                              style={{ width: '100%', padding: '7px 10px', borderRadius: '10px', background: 'transparent', color: 'rgba(255,255,255,0.42)', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none', fontFamily: 'inherit' }}
                               onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.5)'; }}
                               onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='rgba(255,255,255,0.25)'; }}>
                               {label}
@@ -3305,7 +3309,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   }}>{tab.label}</button>
                 ))}
               </div>
-              {lastImportDate && <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontVariantNumeric: 'tabular-nums' }}>Stand: {formatTime(lastImportDate)}</span>}
+              {lastImportDate && <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.42)', fontVariantNumeric: 'tabular-nums' }}>Stand: {formatTime(lastImportDate)}</span>}
             </div>
           </div>
         ) : (
@@ -3320,7 +3324,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             </svg>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', lineHeight: 1 }}>Volafly</span>
-              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', letterSpacing: '0.04em', fontWeight: 500 }}>Volatilität lesen. On the fly.</span>
+              <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em', fontWeight: 500 }}>Volatilität lesen. On the fly.</span>
             </div>
           </div>
 
@@ -3359,7 +3363,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
             {/* Timestamp — beide Varianten immer gerendert, Breite bleibt konstant */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', opacity: lastImportDate ? 1 : 0, transition: 'opacity 0.2s ease', pointerEvents: lastImportDate ? 'auto' : 'none' }}>
+              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', opacity: lastImportDate ? 1 : 0, transition: 'opacity 0.2s ease', pointerEvents: lastImportDate ? 'auto' : 'none' }}>
                 Stand: {lastImportDate ? formatTime(lastImportDate) : '––.––.–––– · ––:––'}
               </span>
               <span style={{ position: 'absolute', right: 0, fontSize: '11px', color: 'rgba(255,159,10,0.6)', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap', opacity: lastImportDate ? 0 : 1, transition: 'opacity 0.2s ease', pointerEvents: lastImportDate ? 'none' : 'auto' }}>
@@ -3385,7 +3389,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               {/* Grenzwerte — nur auf Bewertung */}
               <button
                 onClick={() => { const eq = computeEqualWeights(JSON.parse(JSON.stringify(thresholds))); setDraftThresholds(eq); setDraftVolaClasses(JSON.parse(JSON.stringify(volaClasses))); setValidationErrors({}); setInputTexts({}); setConfigTab('start'); setShowSaveTemplate(false); setNewTemplateName(''); setSaveTemplateMsg(null); setShowConfig(true); }}
-                style={{ position: 'absolute', inset: 0, padding: '0 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontFamily: 'inherit', transition: 'opacity 0.15s ease', opacity: activeTab === 'analysis' ? 1 : 0, pointerEvents: activeTab === 'analysis' ? 'auto' : 'none' }}
+                style={{ position: 'absolute', inset: 0, padding: '0 10px', borderRadius: '14px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', fontFamily: 'inherit', transition: 'opacity 0.15s ease', opacity: activeTab === 'analysis' ? 1 : 0, pointerEvents: activeTab === 'analysis' ? 'auto' : 'none' }}
                 onMouseEnter={e => { if (activeTab === 'analysis') { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}}
                 onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}>
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -3420,8 +3424,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   {menuOpen && (
                     <div style={{ position: 'absolute', top: '38px', right: 0, background: '#1C1C1E', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '14px', padding: '6px', minWidth: '200px', boxShadow: '0 8px 32px rgba(0,0,0,0.5)', zIndex: 100 }}>
                       {/* E-Mail */}
-                      <div style={{ padding: '8px 10px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
-                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', marginBottom: '2px' }}>Eingeloggt als</div>
+                      <div style={{ padding: '8px 10px 10px', borderBottom: '0.5px solid rgba(255,255,255,0.08)', marginBottom: '4px' }}>
+                        <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', marginBottom: '2px' }}>Eingeloggt als</div>
                         <div style={{ fontSize: '12px', fontWeight: 600, color: '#F5F5F7', wordBreak: 'break-all' }}>{user?.email}</div>
                       </div>
                       {/* Kontakt */}
@@ -3441,7 +3445,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                         onMouseLeave={e => e.currentTarget.style.background='transparent'}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                         Benachrichtigungen
-                        {(notifyWeeklyReport || notifyLevelChange) ? <span style={{ marginLeft: 'auto', fontSize: '9px', fontWeight: 700, color: '#30D158', background: 'rgba(48,209,88,0.12)', border: '0.5px solid rgba(48,209,88,0.25)', padding: '1px 7px', borderRadius: '20px' }}>AN</span> : <span style={{ marginLeft: 'auto', fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.2)', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', padding: '1px 7px', borderRadius: '20px' }}>AUS</span>}
+                        {(notifyWeeklyReport || notifyLevelChange) ? <span style={{ marginLeft: 'auto', fontSize: '9px', fontWeight: 700, color: '#30D158', background: 'rgba(48,209,88,0.12)', border: '0.5px solid rgba(48,209,88,0.25)', padding: '1px 7px', borderRadius: '20px' }}>AN</span> : <span style={{ marginLeft: 'auto', fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.08)', padding: '1px 7px', borderRadius: '20px' }}>AUS</span>}
                       </button>
                       {/* Onboarding */}
                       <button
@@ -3456,7 +3460,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                       {/* Legal */}
                       {[['Impressum', '/impressum.html'], ['Datenschutz', '/datenschutz.html'], ['Disclaimer', '/disclaimer.html']].map(([label, href]) => (
                         <a key={href} href={href}
-                          style={{ width: '100%', padding: '7px 10px', borderRadius: '10px', background: 'transparent', color: 'rgba(255,255,255,0.25)', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none', fontFamily: 'inherit' }}
+                          style={{ width: '100%', padding: '7px 10px', borderRadius: '10px', background: 'transparent', color: 'rgba(255,255,255,0.42)', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', textDecoration: 'none', fontFamily: 'inherit' }}
                           onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.5)'; }}
                           onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color='rgba(255,255,255,0.25)'; }}>
                           {label}
@@ -3497,7 +3501,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <div>
                   <h3 style={{ fontSize: '17px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Benachrichtigungen</h3>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '3px' }}>{user?.email}</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginTop: '3px' }}>{user?.email}</div>
                 </div>
                 <button onClick={() => closeProfilePanel()} style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
               </div>
@@ -3505,7 +3509,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {/* Active config info */}
                 <div style={{ padding: '10px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.07)' }}>
-                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '6px' }}>Konfiguration für Benachrichtigungen</div>
+                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: '6px' }}>Konfiguration für Benachrichtigungen</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                     {activeTemplateId && activeTemplateId.startsWith('profile-') ? (
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(10,132,255,0.7)" strokeWidth="2" strokeLinecap="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -3519,10 +3523,10 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.07)' }}>
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', padding: '2px 6px', borderRadius: '4px', background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.07)' }}>
                       {activeTemplateId && activeTemplateId.startsWith('profile-') ? 'Eigenes Profil' : activeTemplateId ? 'Preset-Template' : 'Standard'}
                     </span>
-                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>
                       {volaClasses.length} Klassen · {Object.values(thresholds).filter(v => v.active !== false).length} Indikatoren
                     </span>
                   </div>
@@ -3538,7 +3542,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     </div>
                     <div>
                       <div style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7', marginBottom: '4px' }}>Wöchentlicher Risiko-Report</div>
-                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>Jeden Montag erhältst du eine persönliche Zusammenfassung des Bewertungs-Tabs auf Basis deiner aktiven Konfiguration — aktuelle Vola-Klasse, Investitionsgrad und wichtigste Signale.</div>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>Jeden Montag erhältst du eine persönliche Zusammenfassung des Bewertungs-Tabs auf Basis deiner aktiven Konfiguration — aktuelle Vola-Klasse, Investitionsgrad und wichtigste Signale.</div>
                     </div>
                   </div>
                 </div>
@@ -3552,13 +3556,13 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     </div>
                     <div>
                       <div style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7', marginBottom: '4px' }}>Benachrichtigung bei Investitionsgradänderung</div>
-                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>Sobald sich die empfohlene Volatilitätsklasse ändert und damit ein anderer Investitionsgrad gilt, wirst du sofort per Mail informiert.</div>
+                      <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.5 }}>Sobald sich die empfohlene Volatilitätsklasse ändert und damit ein anderer Investitionsgrad gilt, wirst du sofort per Mail informiert.</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div style={{ marginTop: '16px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.02)', fontSize: '10px', color: 'rgba(255,255,255,0.2)', lineHeight: 1.5 }}>
+              <div style={{ marginTop: '16px', padding: '10px 12px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', fontSize: '10px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>
                 {notifyLoading ? '⏳ Wird gespeichert…' : <>Mails werden an <strong style={{ color: 'rgba(255,255,255,0.35)' }}>{user?.email}</strong> gesendet. Änderungen werden sofort gespeichert.</>}
               </div>
             </div>
@@ -3589,7 +3593,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>×</button>
               </div>
-              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.4)', marginBottom: '12px' }}>
+              <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)', marginBottom: '12px' }}>
                 Kopiere diesen Inhalt und speichere ihn als .csv Datei. Werte mit Komma als Dezimaltrennzeichen.
               </p>
               <div style={{
@@ -3660,7 +3664,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                      'Indikatoren & Grenzwerte'}
                   </h3>
                   {configTab !== 'start' && (
-                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)', fontWeight: 500 }}>
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 500 }}>
                       {configTab === 'classes' ? '· Schritt 1 von 2' :
                        configTab === 'thresholds' ? '· Schritt 2 von 2' : ''}
                     </span>
@@ -3676,7 +3680,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               {/* ── START: Einstiegskacheln ── */}
               {configTab === 'start' && (
                 <div>
-                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.3)', marginBottom: '16px' }}>Wie möchtest du vorgehen?</div>
+                  <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.45)', marginBottom: '16px' }}>Wie möchtest du vorgehen?</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                     {/* Template-Kachel */}
                     <div onClick={() => setConfigTab('templates')}
@@ -3698,16 +3702,16 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                       <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', lineHeight: 1.5, marginBottom: '12px' }}>Klassen definieren, dann Grenzwerte setzen — vollständige Kontrolle.</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <div style={{ fontSize: '10px', fontWeight: 700, color: '#fff', background: '#0A84FF', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>1</div>
-                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>Klassen</span>
-                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.2)' }}>→</span>
-                        <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.3)', border: '1.5px solid rgba(255,255,255,0.15)', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>2</div>
-                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)' }}>Risikokonfig.</span>
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)' }}>Klassen</span>
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>→</span>
+                        <div style={{ fontSize: '10px', fontWeight: 700, color: 'rgba(255,255,255,0.45)', border: '1.5px solid rgba(255,255,255,0.15)', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>2</div>
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.42)' }}>Risikokonfig.</span>
                       </div>
                     </div>
                   </div>
                   {/* Eigene gespeicherte Konfigs */}
-                  <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
-                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '8px' }}>
+                  <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '8px' }}>
                       Gespeicherte Konfigurationen
                       <span style={{ color: 'rgba(255,255,255,0.15)', fontWeight: 400, textTransform: 'none', letterSpacing: 0, marginLeft: '6px' }}>· {profiles.length} / 3 genutzt</span>
                     </div>
@@ -3720,7 +3724,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                           </div>
                           <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                             <button onClick={() => { const merged = { ...defaultThresholds, ...p.thresholds }; setThresholds(merged); setDraftThresholds(computeEqualWeights(JSON.parse(JSON.stringify(merged)))); setActiveProfileId(p.id); setActiveTemplateId(`profile-${p.id}`); setDefaultPresetId(null); setShowConfig(false); }}
-                              style={{ padding: '5px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                              style={{ padding: '5px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                               onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
                               onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.5)'; }}>
                               Laden
@@ -3743,7 +3747,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                         </div>
                       ))}
                       {profiles.length >= 3 && (
-                        <div style={{ padding: '8px 14px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.06)', background: 'transparent', fontSize: '11px', color: 'rgba(255,255,255,0.2)', textAlign: 'center' }}>
+                        <div style={{ padding: '8px 14px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.08)', background: 'transparent', fontSize: '11px', color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
                           Limit erreicht — lösche eine Konfiguration um eine neue zu speichern.
                         </div>
                       )}
@@ -3756,7 +3760,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               {configTab === 'templates' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {/* Section: Vorgefertigte Templates */}
-                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '2px' }}>Vorgefertigte Konfigurationen</div>
+                  <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '2px' }}>Vorgefertigte Konfigurationen</div>
                   {PRESET_TEMPLATES.map(tpl => {
                     const isDefault = defaultPresetId === tpl.id;
                     const isExpanded = expandedTplId === tpl.id;
@@ -3787,12 +3791,12 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                               <span style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7' }}>{tpl.name}</span>
                               {isDefault && <span style={{ fontSize: '9px', fontWeight: 700, color: '#0A84FF', background: 'rgba(10,132,255,0.15)', padding: '1px 6px', borderRadius: '5px', textTransform: 'uppercase', letterSpacing: '.04em' }}>Standard</span>}
                             </div>
-                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)', lineHeight: 1.4, marginBottom: '7px' }}>{tpl.desc}</div>
+                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)', lineHeight: 1.4, marginBottom: '7px' }}>{tpl.desc}</div>
                             <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
                               {tpl.classes.map((c, i) => (
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                                   <div style={{ width: '7px', height: '7px', borderRadius: '50%', background: c.color }} />
-                                  <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600 }}>{c.label}</span>
+                                  <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600 }}>{c.label}</span>
                                 </div>
                               ))}
                             </div>
@@ -3837,12 +3841,12 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                         {/* Expandable config view */}
                         {isExpanded && bars.length > 0 && (
                           <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.07)', padding: '14px 14px 16px', background: 'rgba(0,0,0,0.15)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em' }}>Risikokonfig.</div>
+                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em' }}>Risikokonfig.</div>
                             {bars.map(bar => (
                               <div key={bar.key}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
                                   <span style={{ fontSize: '11px', fontWeight: 600, color: '#F5F5F7' }}>{bar.label}</span>
-                                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)' }}>{bar.dir === 'asc' ? '↑ steigend' : '↓ fallend'}</span>
+                                  <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.42)' }}>{bar.dir === 'asc' ? '↑ steigend' : '↓ fallend'}</span>
                                 </div>
                                 {/* Color bar */}
                                 <div style={{ display: 'flex', gap: '1px', height: '6px', borderRadius: '4px', overflow: 'hidden' }}>
@@ -3859,7 +3863,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                                                        isLast ? (bar.dir === 'asc' ? `>${bar.values[bar.values.length-1]}` : `<${bar.values[bar.values.length-1]}`) :
                                                        String(v);
                                     return (
-                                      <span key={i} style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textAlign: i === 0 ? 'left' : i === bar.values.length ? 'right' : 'center', flex: 1 }}>
+                                      <span key={i} style={{ fontSize: '9px', color: 'rgba(255,255,255,0.45)', textAlign: i === 0 ? 'left' : i === bar.values.length ? 'right' : 'center', flex: 1 }}>
                                         {i < bar.values.length ? String(bar.values[i]) : ''}
                                       </span>
                                     );
@@ -3881,7 +3885,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                           </div>
                         )}
                         {isExpanded && bars.length === 0 && (
-                          <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.07)', padding: '12px 14px', background: 'rgba(0,0,0,0.15)', fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
+                          <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.07)', padding: '12px 14px', background: 'rgba(0,0,0,0.15)', fontSize: '11px', color: 'rgba(255,255,255,0.45)' }}>
                             Dieses Template nutzt Standard-Grenzwerte.
                           </div>
                         )}
@@ -3893,7 +3897,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   {profiles.length > 0 && (
                     <>
                       <div style={{ marginTop: '8px', paddingTop: '14px', borderTop: '0.5px solid rgba(255,255,255,0.07)' }}>
-                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '8px' }}>Eigene Konfigurationen</div>
+                        <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.07em', marginBottom: '8px' }}>Eigene Konfigurationen</div>
                           {profiles.map(p => (
                             <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 14px', borderRadius: '12px', border: p.is_default ? '2px solid rgba(10,132,255,0.35)' : '0.5px solid rgba(255,255,255,0.07)', background: p.is_default ? 'rgba(10,132,255,0.05)' : 'rgba(255,255,255,0.02)', marginBottom: '6px' }}>
                               <div style={{ flex: 1, minWidth: 0 }}>
@@ -3901,7 +3905,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                                   <span style={{ fontSize: '13px', fontWeight: 700, color: '#F5F5F7' }}>{p.name}</span>
                                   {p.is_default && <span style={{ fontSize: '9px', fontWeight: 700, color: '#0A84FF', background: 'rgba(10,132,255,0.15)', padding: '1px 6px', borderRadius: '5px', textTransform: 'uppercase', letterSpacing: '.04em' }}>Standard</span>}
                                 </div>
-                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>Gespeichert am {new Date(p.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
+                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)' }}>Gespeichert am {new Date(p.created_at).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' })}</div>
                               </div>
                               <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                                 <button
@@ -3916,7 +3920,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                                     setConfigTab('thresholds');
                                     setShowConfig(false);
                                   }}
-                                  style={{ padding: '5px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
+                                  style={{ padding: '5px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}
                                   onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
                                   onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.5)'; }}>
                                   Laden
@@ -3944,7 +3948,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     </>
                   )}
                   {profiles.length === 0 && (
-                    <div style={{ marginTop: '8px', paddingTop: '14px', borderTop: '0.5px solid rgba(255,255,255,0.07)', fontSize: '11px', color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: '16px' }}>
+                    <div style={{ marginTop: '8px', paddingTop: '14px', borderTop: '0.5px solid rgba(255,255,255,0.07)', fontSize: '11px', color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '16px' }}>
                       Eigene Konfigurationen erscheinen hier — nach „Grenzwerte übernehmen" speichern.
                     </div>
                   )}
@@ -3955,10 +3959,10 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               {configTab === 'classes' && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
                   {/* Header row */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '16px 28px 1fr 80px 32px', gap: '8px', alignItems: 'center', padding: '0 4px 8px', borderBottom: '0.5px solid rgba(255,255,255,0.06)', marginBottom: '4px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '16px 28px 1fr 80px 32px', gap: '8px', alignItems: 'center', padding: '0 4px 8px', borderBottom: '0.5px solid rgba(255,255,255,0.08)', marginBottom: '4px' }}>
                     <div/><div/>
-                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Name · Kurzbeschreibung · Handlungssatz</div>
-                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', textAlign: 'center' }}>Invest.</div>
+                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em' }}>Name · Kurzbeschreibung · Handlungssatz</div>
+                    <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '.06em', textAlign: 'center' }}>Invest.</div>
                     <div/>
                   </div>
                   {draftVolaClasses.map((vc, i) => {
@@ -4000,7 +4004,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                               onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, investPct: parseInt(e.target.value)||0} : c))}
                               style={{ background: 'transparent', border: 'none', fontSize: '13px', fontWeight: 700, color: '#F5F5F7', textAlign: 'right', width: '100%', outline: 'none' }}
                             />
-                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', flexShrink: 0 }}>%</span>
+                            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', flexShrink: 0 }}>%</span>
                           </div>
                           {draftVolaClasses.length > 2 ? (
                             <button onClick={() => setDraftVolaClasses(prev => prev.filter((_,j) => j!==i))}
@@ -4016,7 +4020,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                             <input value={vc.subtitle || ''}
                               placeholder="Kurzbeschreibung (z.B. Selektiv aufbauen)"
                               onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, subtitle: e.target.value} : c))}
-                              style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: '7px', padding: '5px 10px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', outline: 'none', width: '100%', boxSizing: 'border-box' }}
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: '7px', padding: '5px 10px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', outline: 'none', width: '100%', boxSizing: 'border-box' }}
                               onFocus={e => e.target.style.borderColor='rgba(255,255,255,0.2)'}
                               onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.07)'}
                             />
@@ -4024,7 +4028,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                               placeholder="Handlungssatz (z.B. Erhöhte Unsicherheit — Investitionsgrad bis zu X% ist rational.)"
                               onChange={e => setDraftVolaClasses(prev => prev.map((c,j) => j===i ? {...c, desc: e.target.value} : c))}
                               rows={2}
-                              style={{ background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: '7px', padding: '5px 10px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', outline: 'none', width: '100%', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit', lineHeight: 1.5 }}
+                              style={{ background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.07)', borderRadius: '7px', padding: '5px 10px', fontSize: '11px', color: 'rgba(255,255,255,0.6)', outline: 'none', width: '100%', boxSizing: 'border-box', resize: 'none', fontFamily: 'inherit', lineHeight: 1.5 }}
                               onFocus={e => e.target.style.borderColor='rgba(255,255,255,0.2)'}
                               onBlur={e => e.target.style.borderColor='rgba(255,255,255,0.07)'}
                             />
@@ -4043,7 +4047,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     onMouseLeave={e => { e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'; e.currentTarget.style.color='rgba(255,255,255,0.35)'; }}>
                     + Klasse hinzufügen
                   </button>
-                  <div style={{ marginTop: '12px', fontSize: '11px', color: 'rgba(255,255,255,0.2)', lineHeight: 1.5 }}>
+                  <div style={{ marginTop: '12px', fontSize: '11px', color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>
                     Die letzte Klasse gilt für alle Werte oberhalb des letzten Grenzwerts. Reihenfolge = aufsteigend von Stille zu Panik.
                   </div>
                 </div>
@@ -4059,10 +4063,10 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     const lastVC = volaClasses[n - 1];
                     const t4 = cfg.values[n - 2] ?? cfg.values[cfg.values.length - 1];
                     return (
-                      <div key={key} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '12px', border: `0.5px solid ${err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.06)'}` }}>
+                      <div key={key} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '12px', border: `0.5px solid ${err ? 'rgba(255,69,58,0.3)' : 'rgba(255,255,255,0.06)'}` }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                           <span style={{ fontSize: '13px', fontWeight: 600, color: '#F5F5F7' }}>{cfg.label}</span>
-                          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.3)' }}>{cfg.dir === 'asc' ? '↑ aufsteigend' : '↓ absteigend'}</span>
+                          <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.45)' }}>{cfg.dir === 'asc' ? '↑ aufsteigend' : '↓ absteigend'}</span>
                         </div>
                         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${n - 1}, 1fr)`, gap: '6px' }}>
                           {Array.from({length: n - 1}).map((_, vi) => {
@@ -4143,13 +4147,13 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               })()}
 
               <div style={{ display: 'grid', gridTemplateColumns: `130px 44px repeat(${draftVolaClasses.length - 1}, 1fr) 70px 54px 32px`, gap: '5px', marginBottom: '2px', padding: '0 4px' }}>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Indikator</div>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gew.</div>
+                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Indikator</div>
+                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Gew.</div>
                 {draftVolaClasses.slice(0, -1).map((vc, i) => (
                   <div key={i} style={{ fontSize: '9px', color: vc.color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{vc.label}</div>
                 ))}
                 <div style={{ fontSize: '9px', color: draftVolaClasses[draftVolaClasses.length-1].color, fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{draftVolaClasses[draftVolaClasses.length-1].label}</div>
-                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Richtg.</div>
+                <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Richtg.</div>
                 <div/>
               </div>
 
@@ -4262,7 +4266,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                         {cfg.dir === 'asc' ? `>${String(t4).replace('.', ',')}` : `<${String(t4).replace('.', ',')}`}
                       </div>;
                     })()}
-                    <div style={{ fontSize: '9px', fontWeight: 600, textAlign: 'center', color: 'rgba(255,255,255,0.3)', padding: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
+                    <div style={{ fontSize: '9px', fontWeight: 600, textAlign: 'center', color: 'rgba(255,255,255,0.45)', padding: '4px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
                       {(() => {
                         const isBin = (cfg.range[1] - cfg.range[0]) <= 1 && Number.isInteger(cfg.range[0]) && Number.isInteger(cfg.range[1]);
                         return isBin ? 'über/unter' : (cfg.dir === 'asc' ? '↑ steig.' : '↓ fall.');
@@ -4281,13 +4285,13 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
               {/* Inactive indicators */}
               {Object.entries(draftThresholds).some(([,c]) => c.active === false) && (
-                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.06)' }}>
-                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.25)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>Nicht aktiv — zum Hinzufügen klicken</div>
+                <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
+                  <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.42)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>Nicht aktiv — zum Hinzufügen klicken</div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                     {Object.entries(draftThresholds).filter(([,c]) => c.active === false).map(([key, cfg]) => (
                       <button key={key}
                         onClick={() => setDraftThresholds(prev => ({ ...prev, [key]: { ...prev[key], active: true } }))}
-                        style={{ padding: '5px 12px', borderRadius: '20px', border: '0.5px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.45)', fontSize: '11px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '5px' }}
+                        style={{ padding: '5px 12px', borderRadius: '20px', border: '0.5px solid rgba(255,255,255,0.12)', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.55)', fontSize: '11px', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: '5px' }}
                         onMouseEnter={e => { e.currentTarget.style.background='rgba(10,132,255,0.1)'; e.currentTarget.style.color='#0A84FF'; e.currentTarget.style.borderColor='rgba(10,132,255,0.3)'; }}
                         onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.45)'; e.currentTarget.style.borderColor='rgba(255,255,255,0.12)'; }}>
                         + {cfg.label}
@@ -4297,8 +4301,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 </div>
               )}
 
-              <div style={{ marginTop: '12px', fontSize: '10px', color: 'rgba(255,255,255,0.25)', lineHeight: 1.5 }}>
-                <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↑ steigend:</strong> Werte müssen aufsteigend und unterschiedlich sein · <strong style={{ color: 'rgba(255,255,255,0.4)' }}>↓ fallend:</strong> absteigend
+              <div style={{ marginTop: '12px', fontSize: '10px', color: 'rgba(255,255,255,0.42)', lineHeight: 1.5 }}>
+                <strong style={{ color: 'rgba(255,255,255,0.5)' }}>↑ steigend:</strong> Werte müssen aufsteigend und unterschiedlich sein · <strong style={{ color: 'rgba(255,255,255,0.5)' }}>↓ fallend:</strong> absteigend
               </div>
                 </>
               ))} {/* end thresholds tab */}
@@ -4324,7 +4328,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                       setDraftVolaClasses(JSON.parse(JSON.stringify(defaultVolaClasses)));
                       setClassesError('');
                     }}
-                    style={{ padding: '12px 16px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit' }}
+                    style={{ padding: '12px 16px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit' }}
                     onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
                     onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.4)'; }}>
                     ↺ Zurücksetzen
@@ -4375,7 +4379,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                       setValidationErrors({});
                       setInputTexts({});
                     }}
-                    style={{ padding: '12px 16px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit' }}
+                    style={{ padding: '12px 16px', borderRadius: '12px', border: '0.5px solid rgba(255,255,255,0.1)', cursor: 'pointer', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', fontFamily: 'inherit' }}
                     onMouseEnter={e => { e.currentTarget.style.background='rgba(255,255,255,0.08)'; e.currentTarget.style.color='#F5F5F7'; }}
                     onMouseLeave={e => { e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.color='rgba(255,255,255,0.4)'; }}>
                     ↺ Zurücksetzen
@@ -4408,7 +4412,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#30D158" strokeWidth="2" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
                     <span style={{ fontSize: '13px', fontWeight: 700, color: '#30D158' }}>Grenzwerte übernommen</span>
                   </div>
-                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)', marginBottom: '14px' }}>Möchtest du diese Konfiguration als eigenes Template speichern?</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', marginBottom: '14px' }}>Möchtest du diese Konfiguration als eigenes Template speichern?</div>
                   {saveTemplateMsg ? (
                     <div style={{ fontSize: '12px', color: saveTemplateMsg.type === 'success' ? '#30D158' : '#FF453A' }}>
                       {saveTemplateMsg.type === 'success' ? '✓' : '⚠'} {saveTemplateMsg.text}
@@ -4465,7 +4469,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                       </button>
                       <button
                         onClick={() => { setShowSaveTemplate(false); setShowConfig(false); }}
-                        style={{ padding: '9px 12px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.4)', fontSize: '13px', fontFamily: 'inherit', cursor: 'pointer' }}>
+                        style={{ padding: '9px 12px', borderRadius: '10px', border: '0.5px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.5)', fontSize: '13px', fontFamily: 'inherit', cursor: 'pointer' }}>
                         Überspringen
                       </button>
                     </div>
@@ -4489,7 +4493,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <span>{csvStatus.type === 'success' ? '✓' : '⚠'} {csvStatus.msg}</span>
             <button onClick={() => setCsvStatus(null)} style={{
               marginLeft: 'auto', background: 'none', border: 'none',
-              color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: '14px', lineHeight: 1,
+              color: 'rgba(255,255,255,0.45)', cursor: 'pointer', fontSize: '14px', lineHeight: 1,
             }}>×</button>
           </div>
         )}
@@ -4498,7 +4502,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         {activeTab === 'data' ? <DataView /> : (
           <>
             {/* Option A — Kontext-Banner oben im Bewertungs-Tab */}
-            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px', padding: '9px 14px', background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.06)', borderRadius: '12px' }}>
+            <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px', padding: '9px 14px', background: 'rgba(255,255,255,0.03)', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: lastImportDate ? '#30D158' : '#FF9F0A', boxShadow: lastImportDate ? '0 0 6px #30D158' : '0 0 6px #FF9F0A', flexShrink: 0 }} />
                 <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)', fontVariantNumeric: 'tabular-nums' }}>
@@ -4509,7 +4513,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               </div>
               <button
                 onClick={() => setActiveTab('data')}
-                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', alignSelf: isMobile ? 'flex-end' : 'auto' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '8px', border: '0.5px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.03)', color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', alignSelf: isMobile ? 'flex-end' : 'auto' }}
                 onMouseEnter={e => { e.currentTarget.style.color = '#F5F5F7'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
                 onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
@@ -4551,7 +4555,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <div>
                 <h3 style={{ fontSize: '18px', fontWeight: 700, margin: 0, color: '#F5F5F7' }}>Kontakt</h3>
-                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)', marginTop: '3px' }}>Wir freuen uns über dein Feedback</div>
+                <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.45)', marginTop: '3px' }}>Wir freuen uns über dein Feedback</div>
               </div>
               <button onClick={() => { setShowContact(false); setContactEmail(''); setContactMsg(''); setContactError(''); setContactSent(false); }}
                 style={{ background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: '50%', width: '28px', height: '28px', cursor: 'pointer', color: '#F5F5F7', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
