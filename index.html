@@ -2768,8 +2768,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               const rsi = item.rsi;
               const rz = rsi == null ? null : rsi <= 30 ? { c: '#30D158', t: 'überverkauft' } : rsi >= 70 ? { c: '#FF453A', t: 'überkauft' } : { c: 'rgba(255,255,255,0.6)', t: 'neutral' };
               return (
-                <div key={i} onClick={() => window.open(item.url, '_blank')} style={{ cursor: 'pointer' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>{item.label} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
+                <div key={i} onClick={() => window.open(item.url, '_blank')} style={{ cursor: 'pointer', textAlign: isMobile ? 'center' : undefined }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: isMobile ? 'center' : 'flex-start', gap: '6px', fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>{item.label} <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></div>
                   <div style={{ fontSize: '32px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', marginTop: '6px' }}>{item.val ? item.val.toLocaleString('de-DE', {maximumFractionDigits: 0}) : '—'}</div>
                   {aboveMA !== null && (
                     <div style={{ marginTop: '10px', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '7px', background: aboveMA ? 'rgba(48,209,88,0.12)' : 'rgba(255,69,58,0.12)', border: `0.5px solid ${aboveMA ? 'rgba(48,209,88,0.3)' : 'rgba(255,69,58,0.3)'}` }}>
@@ -3338,7 +3338,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   }}>{tab.label}</button>
                 ))}
               </div>
-              {lastImportDate && <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontVariantNumeric: 'tabular-nums' }}>Stand: {formatTime(lastImportDate)} <span style={{ color: 'rgba(255,255,255,0.28)' }}>· Build 2508-2120</span></span>}
+              {lastImportDate && <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontVariantNumeric: 'tabular-nums' }}>Stand: {formatTime(lastImportDate)}</span>}
             </div>
           </div>
         ) : (
