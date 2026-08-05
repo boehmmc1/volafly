@@ -1300,7 +1300,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     },
     yieldCurve: { y2: 0, y10: 0, y30: 0, y10real: 0, y30real: 0 },
     movingAverages: { breadth: { above5day: 0, above20day: 0, above50day: 0, above200day: 0 } },
-    riskIndicators: { hySpread: 0, dxy: 0, goldSP: 0, gold: 0, silver: 0, wti: 0 },
+    riskIndicators: { hySpread: 0, dxy: 0, goldSP: 0, gold: 0, silver: 0, wti: 0, usdjpy: 0, japan2Y: 0 },
     indices: { spx: 0, ndx: 0, rut: 0, spx200d: 0, ndx200d: 0, spxRsi: null, ndxRsi: null },
     fed: { date: 0, bandLow: 0, bandHigh: 0, cut: null, hold: null, hike: null }
   });
@@ -1485,6 +1485,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         gold:     data.Gold           ?? marketData.riskIndicators.gold,
         wti:      data.WTI            ?? marketData.riskIndicators.wti,
         silver:   data.Silver          ?? marketData.riskIndicators.silver,
+        usdjpy:   data.USDJPY        ?? marketData.riskIndicators.usdjpy,
+        japan2Y:  data.Japan_2Y      ?? marketData.riskIndicators.japan2Y,
       },
       indices: {
         spx: data.SPX ?? marketData.indices.spx,
@@ -1980,6 +1982,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             gold:     data.Gold     ?? marketData.riskIndicators.gold,
             wti:      data.WTI      ?? marketData.riskIndicators.wti,
             silver:   data.Silver    ?? marketData.riskIndicators.silver,
+            usdjpy:   data.USDJPY     ?? marketData.riskIndicators.usdjpy,
+            japan2Y:  data.Japan_2Y   ?? marketData.riskIndicators.japan2Y,
           },
           indices: {
             spx: data.SPX ?? marketData.indices.spx,
@@ -2941,13 +2945,23 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               yen: <span style={{ fontSize: '20px', fontWeight: 700 }}>¥</span>,
             };
             const hy = ri.hySpread, dxy = ri.dxy, ratio = goldSPRatio, wti = ri.wti;
-            const yen = (ri.yenCarry != null && ri.yenCarry > 0) ? ri.yenCarry : null;
+            const usdjpy = ri.usdjpy, jp2 = ri.japan2Y, us2 = y.y2;
+            const carryOk = usdjpy > 0 && jp2 > 0 && us2 > 0;
+            const carryDiff = carryOk ? us2 - jp2 : null;                       // US-JP 2J-Differenz (pp)
+            const clC = (x, lo, hi) => Math.max(0, Math.min(1, (x - lo) / (hi - lo)));
+            const sDiff = carryOk ? clC(4.0 - carryDiff, 0, 2.0) : null;         // 4pp entspannt · 2pp max Stress
+            const sFx = carryOk ? clC(usdjpy - 140, 0, 25) : null;              // 140 entspannt · 165 max Stress
+            const carryStress = carryOk ? Math.round((0.7 * sDiff + 0.3 * sFx) * 100) : null;
+            const carryZone = carryStress == null ? { c: '#8E8E93', t: '—' }
+              : carryStress < 35 ? { c: '#30D158', t: 'niedrig' }
+              : carryStress <= 65 ? { c: '#FFCC00', t: 'erhöht' }
+              : { c: '#FF453A', t: 'hoch' };
             const rows = [
               hy > 0 && { name: 'HY Credit Spread', val: f(hy, 2) + '%', ic: 'shield', icc: '#0A84FF', z: hy < 2.8 ? { c: '#30D158', t: 'Euphorie' } : hy <= 5 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF453A', t: 'Panik' }, url: 'https://de.tradingview.com/symbols/FRED-BAMLH0A0HYM2/?interval=D', tip: 'HY-Spread (ICE BofA OAS): eng = Euphorie/Komplacency, weit = Panik/Stress.' },
               dxy > 0 && { name: 'US Dollar Index', val: f(dxy, 1), ic: 'dollar', icc: '#0A84FF', z: dxy < 95 ? { c: '#30D158', t: 'Kauf US' } : dxy <= 103 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF9F0A', t: 'Verkauf US' }, url: TV_SYMBOLS['dxy'].tvUrl, tip: 'US Dollar Index (EU-Sicht): schwacher Dollar = US-Aktien günstig, starker Dollar = Rückumtausch vorteilhaft.' },
               ratio > 0 && { name: 'S&P 500 / Gold', val: f(ratio, 2), ic: 'gold', icc: '#FFD60A', z: ratio < 1.0 ? { c: '#FF9F0A', t: 'Gold verk.' } : ratio <= 2.0 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FFD60A', t: 'Gold kauf.' }, tip: 'S&P/Gold-Ratio: niedrig = Aktien günstig vs. Gold, hoch = Aktien teuer vs. Gold.' },
               wti > 0 && { name: 'WTI Crude Oil', val: '$' + f(wti, 1), ic: 'oil', icc: '#0A84FF', z: wti < 60 ? { c: '#30D158', t: 'Öl kaufen' } : wti <= 90 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF453A', t: 'Öl verk.' }, tip: 'WTI Rohöl: niedrig = Rezessionsangst, mittel = gesund, hoch = Inflationsangst.' },
-              { name: 'Yen Carry Stress Index', val: yen != null ? f(yen, 0) : '—', ic: 'yen', icc: '#BF5AF2', z: { c: '#8E8E93', t: 'Neutral' }, tip: 'Yen Carry Stress Index — Logik/Datenquelle folgt.' },
+              { name: 'Yen Carry Stress Index', val: carryStress != null ? f(carryStress, 0) : '—', ic: 'yen', icc: '#BF5AF2', z: carryZone, tip: carryOk ? `Carry-Unwind-Stress 0–100. USD/JPY ${f(usdjpy, 1)} · US-JP 2J-Differenz ${f(carryDiff, 2)} pp. Enge Differenz + schwacher Yen = höheres Unwind-Risiko. Score = 0,7×Differenz + 0,3×USD/JPY-Niveau. Zonen: <35 niedrig · 35–65 erhöht · >65 hoch.` : 'Yen Carry Stress Index — wartet auf USDJPY + Japan_2Y aus dem Sheet.' },
             ].filter(Boolean);
             return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
