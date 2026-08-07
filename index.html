@@ -2980,27 +2980,27 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   </HoverTip>
                 ))}
                 {(carryOk || usdjpy > 0) && (
-                  <div style={{ border: '0.5px solid rgba(191,90,242,0.25)', borderRadius: '12px', padding: '13px', background: 'rgba(191,90,242,0.04)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                      <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'rgba(191,90,242,0.15)', border: '0.5px solid rgba(191,90,242,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#BF5AF2', flexShrink: 0, fontSize: '20px', fontWeight: 700 }}>¥</div>
-                      <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>Yen Carry Stress</div>
+                  <div style={{ border: '0.5px solid rgba(191,90,242,0.25)', borderRadius: '12px', padding: '11px 12px', background: 'rgba(191,90,242,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '9px' }}>
+                      <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(191,90,242,0.15)', border: '0.5px solid rgba(191,90,242,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#BF5AF2', flexShrink: 0, fontSize: '15px', fontWeight: 700 }}>¥</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Yen Carry Stress</div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
                       <HoverTip tipKey="carryDiff" content={carryOk ? `US-2J − JP-2J = ${f(us2, 2)} − ${f(jp2, 2)} = ${f(carryDiff, 2)} pp. Enge Differenz = Carry unattraktiver, Unwind-Risiko steigt. Zonen: ≥ 3,0 niedrig · 1,5–3,0 erhöht · < 1,5 hoch.` : 'Wartet auf Japan_2Y aus dem Sheet.'} width={230}>
-                        <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '13px', cursor: 'help', height: '100%' }}>
-                          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>Yen Zinsdifferenz (2J)</div>
-                          <div style={{ fontSize: '24px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>{carryDiff != null ? f(carryDiff, 2) + ' pp' : '—'}</div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: carryZone.c, border: `0.5px solid ${carryZone.c}66`, borderRadius: '7px', padding: '3px 10px' }}>{carryZone.t}</span>
+                        <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px', cursor: 'help', height: '100%' }}>
+                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>Yen Zinsdifferenz (2J)</div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginTop: '3px' }}>
+                            <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{carryDiff != null ? f(carryDiff, 2) + ' pp' : '—'}</span>
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: carryZone.c, border: `0.5px solid ${carryZone.c}66`, borderRadius: '6px', padding: '2px 8px', whiteSpace: 'nowrap', flexShrink: 0 }}>{carryZone.t}</span>
                           </div>
                         </div>
                       </HoverTip>
                       <HoverTip tipKey="carryFx" content={'USD/JPY-Wechselkurs. Hoch = schwacher Yen (überdehnt/Interventions-nah), tief = Yen wertet auf (Carry-Unwind).'} width={230}>
-                        <div onClick={() => window.open('https://de.tradingview.com/symbols/USDJPY/', '_blank')} style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '13px', cursor: 'pointer', height: '100%' }}>
-                          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>USD/JPY Wechselkurs</div>
-                          <div style={{ fontSize: '24px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>{usdjpy > 0 ? f(usdjpy, 2) : '—'}</div>
-                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: fxZone.c, border: `0.5px solid ${fxZone.c}66`, borderRadius: '7px', padding: '3px 10px' }}>{fxZone.t}</span>
+                        <div onClick={() => window.open('https://de.tradingview.com/symbols/USDJPY/', '_blank')} style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px', cursor: 'pointer', height: '100%' }}>
+                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>USD/JPY Wechselkurs</div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginTop: '3px' }}>
+                            <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{usdjpy > 0 ? f(usdjpy, 2) : '—'}</span>
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: fxZone.c, border: `0.5px solid ${fxZone.c}66`, borderRadius: '6px', padding: '2px 8px', whiteSpace: 'nowrap', flexShrink: 0 }}>{fxZone.t}</span>
                           </div>
                         </div>
                       </HoverTip>
