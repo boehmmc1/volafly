@@ -2943,25 +2943,27 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               gold: <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><rect x="4" y="14" width="16" height="5" rx="1"/><rect x="6" y="8" width="5" height="5" rx="1"/><rect x="13" y="8" width="5" height="5" rx="1"/></svg>,
               oil: <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2.7l5.7 5.7a8 8 0 1 1-11.4 0z"/></svg>,
               yen: <span style={{ fontSize: '20px', fontWeight: 700 }}>¥</span>,
+              carry: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>,
             };
             const hy = ri.hySpread, dxy = ri.dxy, ratio = goldSPRatio, wti = ri.wti;
             const usdjpy = ri.usdjpy, jp2 = ri.japan2Y, us2 = y.y2;
-            const carryOk = usdjpy > 0 && jp2 > 0 && us2 > 0;
+            const carryOk = jp2 > 0 && us2 > 0;
             const carryDiff = carryOk ? us2 - jp2 : null;                       // US-JP 2J-Differenz (pp)
-            const clC = (x, lo, hi) => Math.max(0, Math.min(1, (x - lo) / (hi - lo)));
-            const sDiff = carryOk ? clC(4.0 - carryDiff, 0, 2.0) : null;         // 4pp entspannt · 2pp max Stress
-            const sFx = carryOk ? clC(usdjpy - 140, 0, 25) : null;              // 140 entspannt · 165 max Stress
-            const carryStress = carryOk ? Math.round((0.7 * sDiff + 0.3 * sFx) * 100) : null;
-            const carryZone = carryStress == null ? { c: '#8E8E93', t: '—' }
-              : carryStress < 35 ? { c: '#30D158', t: 'niedrig' }
-              : carryStress <= 65 ? { c: '#FFCC00', t: 'erhöht' }
+            // Reine Zinsdifferenz: weit = Carry attraktiv/stabil · eng = Unwind-Risiko
+            const carryZone = carryDiff == null ? { c: '#8E8E93', t: '—' }
+              : carryDiff >= 3.0 ? { c: '#30D158', t: 'niedrig' }
+              : carryDiff >= 1.5 ? { c: '#FFCC00', t: 'erhöht' }
               : { c: '#FF453A', t: 'hoch' };
+            // USD/JPY als Referenz-Symbol: schwacher Yen (hoch) = Interventions-/Reversal-nah
+            const fxZone = usdjpy <= 0 ? { c: '#8E8E93', t: '—' }
+              : usdjpy > 158 ? { c: '#FF9F0A', t: 'schwach' }
+              : usdjpy < 142 ? { c: '#30D158', t: 'fest' }
+              : { c: '#8E8E93', t: 'Neutral' };
             const rows = [
               hy > 0 && { name: 'HY Credit Spread', val: f(hy, 2) + '%', ic: 'shield', icc: '#0A84FF', z: hy < 2.8 ? { c: '#30D158', t: 'Euphorie' } : hy <= 5 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF453A', t: 'Panik' }, url: 'https://de.tradingview.com/symbols/FRED-BAMLH0A0HYM2/?interval=D', tip: 'HY-Spread (ICE BofA OAS): eng = Euphorie/Komplacency, weit = Panik/Stress.' },
               dxy > 0 && { name: 'US Dollar Index', val: f(dxy, 1), ic: 'dollar', icc: '#0A84FF', z: dxy < 95 ? { c: '#30D158', t: 'Kauf US' } : dxy <= 103 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF9F0A', t: 'Verkauf US' }, url: TV_SYMBOLS['dxy'].tvUrl, tip: 'US Dollar Index (EU-Sicht): schwacher Dollar = US-Aktien günstig, starker Dollar = Rückumtausch vorteilhaft.' },
               ratio > 0 && { name: 'S&P 500 / Gold', val: f(ratio, 2), ic: 'gold', icc: '#FFD60A', z: ratio < 1.0 ? { c: '#FF9F0A', t: 'Gold verk.' } : ratio <= 2.0 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FFD60A', t: 'Gold kauf.' }, tip: 'S&P/Gold-Ratio: niedrig = Aktien günstig vs. Gold, hoch = Aktien teuer vs. Gold.' },
               wti > 0 && { name: 'WTI Crude Oil', val: '$' + f(wti, 1), ic: 'oil', icc: '#0A84FF', z: wti < 60 ? { c: '#30D158', t: 'Öl kaufen' } : wti <= 90 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF453A', t: 'Öl verk.' }, tip: 'WTI Rohöl: niedrig = Rezessionsangst, mittel = gesund, hoch = Inflationsangst.' },
-              { name: 'Yen Carry Stress Index', val: carryStress != null ? f(carryStress, 0) : '—', ic: 'yen', icc: '#BF5AF2', z: carryZone, tip: carryOk ? `Carry-Unwind-Stress 0–100. USD/JPY ${f(usdjpy, 1)} · US-JP 2J-Differenz ${f(carryDiff, 2)} pp. Enge Differenz + schwacher Yen = höheres Unwind-Risiko. Score = 0,7×Differenz + 0,3×USD/JPY-Niveau. Zonen: <35 niedrig · 35–65 erhöht · >65 hoch.` : 'Yen Carry Stress Index — wartet auf USDJPY + Japan_2Y aus dem Sheet.' },
             ].filter(Boolean);
             return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -2977,6 +2979,34 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     </div>
                   </HoverTip>
                 ))}
+                {(carryOk || usdjpy > 0) && (
+                  <div style={{ border: '0.5px solid rgba(191,90,242,0.25)', borderRadius: '12px', padding: '13px', background: 'rgba(191,90,242,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                      <div style={{ width: '38px', height: '38px', borderRadius: '11px', background: 'rgba(191,90,242,0.15)', border: '0.5px solid rgba(191,90,242,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#BF5AF2', flexShrink: 0, fontSize: '20px', fontWeight: 700 }}>¥</div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)' }}>Yen Carry Stress</div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
+                      <HoverTip tipKey="carryDiff" content={carryOk ? `US-2J − JP-2J = ${f(us2, 2)} − ${f(jp2, 2)} = ${f(carryDiff, 2)} pp. Enge Differenz = Carry unattraktiver, Unwind-Risiko steigt. Zonen: ≥ 3,0 niedrig · 1,5–3,0 erhöht · < 1,5 hoch.` : 'Wartet auf Japan_2Y aus dem Sheet.'} width={230}>
+                        <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '13px', cursor: 'help', height: '100%' }}>
+                          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>Yen Zinsdifferenz (2J)</div>
+                          <div style={{ fontSize: '24px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>{carryDiff != null ? f(carryDiff, 2) + ' pp' : '—'}</div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: carryZone.c, border: `0.5px solid ${carryZone.c}66`, borderRadius: '7px', padding: '3px 10px' }}>{carryZone.t}</span>
+                          </div>
+                        </div>
+                      </HoverTip>
+                      <HoverTip tipKey="carryFx" content={'USD/JPY-Wechselkurs. Hoch = schwacher Yen (überdehnt/Interventions-nah), tief = Yen wertet auf (Carry-Unwind).'} width={230}>
+                        <div onClick={() => window.open('https://de.tradingview.com/symbols/USDJPY/', '_blank')} style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '13px', cursor: 'pointer', height: '100%' }}>
+                          <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.6)' }}>USD/JPY Wechselkurs</div>
+                          <div style={{ fontSize: '24px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', marginTop: '4px' }}>{usdjpy > 0 ? f(usdjpy, 2) : '—'}</div>
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px' }}>
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: fxZone.c, border: `0.5px solid ${fxZone.c}66`, borderRadius: '7px', padding: '3px 10px' }}>{fxZone.t}</span>
+                          </div>
+                        </div>
+                      </HoverTip>
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })()}
