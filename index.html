@@ -2843,8 +2843,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             const yMin = Math.floor((rawMin - pad) / niceStep) * niceStep;
             const yMax = Math.ceil((rawMax + pad) / niceStep) * niceStep;
             const yRange = yMax - yMin;
-            const chartH = 230;
-            const yBase = 215;
+            const chartH = 300;
+            const yBase = 280;
             const toY = (val) => yBase - ((val - yMin) / yRange) * chartH;
             // nice grid lines: ~4-5 steps
             const step = niceStep;
@@ -2864,7 +2864,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             const curveCol = contango ? '#0A84FF' : '#FF453A';
             const curveCol2 = contango ? '#64D2FF' : '#FF9F0A';
             return (
-              <svg viewBox="0 0 620 260" style={{ width: '100%', height: 'auto' }}>
+              <svg viewBox="0 0 620 340" style={{ width: '100%', height: 'auto' }}>
                 {gridVals.map((val, i) => (
                   <g key={i}>
                     <line x1="42" y1={toY(val)} x2="590" y2={toY(val)} stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
@@ -2898,7 +2898,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     <circle cx={42 + i * 137} cy={toY(p.val)} r="4.5" fill="#F5F5F7" />
                     <circle cx={42 + i * 137} cy={toY(p.val)} r="4.5" fill="none" stroke={curveCol} strokeWidth="2" />
                     <text x={42 + i * 137} y={toY(p.val) - 13} fill="#F5F5F7" fontSize="13" fontWeight="700" textAnchor="middle">{f(p.val)}</text>
-                    <text x={42 + i * 137} y={238} fill="rgba(255,255,255,0.52)" fontSize="12" fontWeight="600" textAnchor="middle">{p.label}</text>
+                    <text x={42 + i * 137} y={310} fill="rgba(255,255,255,0.52)" fontSize="12" fontWeight="600" textAnchor="middle">{p.label}</text>
                   </g>
                 ))}
               </svg>
