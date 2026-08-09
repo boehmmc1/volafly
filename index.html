@@ -3051,16 +3051,16 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
       {etfRsi && etfRsi.length >= 4 && (() => {
         const sorted = [...etfRsi].sort((a, b) => b.rsi - a.rsi);
         const groups = [
-          { key: 'ok', label: 'Überkauft', c: '#FF453A', arrow: '▲', items: [sorted[0], sorted[1]] },
-          { key: 'ov', label: 'Überverkauft', c: '#30D158', arrow: '▼', items: [sorted[sorted.length - 1], sorted[sorted.length - 2]] },
+          { key: 'hi', arrow: '↑', label: 'Hohe RSI-Werte', hint: 'überkauft ab 70', items: [sorted[0], sorted[1]] },
+          { key: 'lo', arrow: '↓', label: 'Niedrige RSI-Werte', hint: 'überverkauft bis 30', items: [sorted[sorted.length - 1], sorted[sorted.length - 2]] },
         ];
+        // Variante A: Farbe nur bei echtem Signal — dazwischen komplett neutral
         const rsiZone = (x) => x >= 70 ? { c: '#FF453A', t: 'überkauft' }
           : x <= 30 ? { c: '#30D158', t: 'überverkauft' }
-          : { c: 'rgba(255,255,255,0.6)', t: 'neutral' };
-        const stand = (etfRsi[0].stand || '').replace(' UTC', '');
+          : { c: '#F5F5F7', t: null };
         return (
           <div style={{ ...glass, marginTop: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
               <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
               </div>
@@ -3068,37 +3068,35 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               <HoverTip tipKey="etfRsiInfo" content={'Tages-RSI(14) der 11 GICS-Sektor-ETFs und 9 Branchen-ETFs (TradingView). Gezeigt werden die zwei höchsten und zwei niedrigsten Werte. ≥ 70 überkauft, ≤ 30 überverkauft.'} width={250}>
                 <span style={{ width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.56)', cursor: 'help', flexShrink: 0 }}>i</span>
               </HoverTip>
-              {stand && !isMobile && <span style={{ marginLeft: 'auto', fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>Stand: {stand} UTC</span>}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '14px' : '20px' }}>
-              {groups.map((g) => (
-                <div key={g.key}>
-                  <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: g.c, marginBottom: '8px' }}>{g.arrow} {g.label}este</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                    {g.items.map((it, i) => {
-                      const z = rsiZone(it.rsi);
-                      return (
-                        <div key={i} style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px' }}>
-                          <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', minWidth: 0 }}>
-                            <span style={{ fontSize: '13px', fontWeight: 600, color: '#F5F5F7', flexShrink: 0 }}>{it.ticker}</span>
-                            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.48)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.name}</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginTop: '4px' }}>
-                            <span style={{ fontSize: '20px', fontWeight: 700, color: z.c, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{f(it.rsi, 1)}</span>
-                            <span style={{ fontSize: '10px', fontWeight: 600, color: z.c, border: `0.5px solid ${z.c}66`, borderRadius: '6px', padding: '2px 8px', whiteSpace: 'nowrap', flexShrink: 0 }}>{z.t}</span>
-                          </div>
-                          <div style={{ position: 'relative', height: '6px', marginTop: '8px' }}>
-                            <div style={{ height: '6px', borderRadius: '3px', overflow: 'hidden', display: 'flex' }}>
-                              <div style={{ width: '30%', background: 'rgba(48,209,88,0.5)' }} />
-                              <div style={{ width: '40%', background: 'rgba(255,255,255,0.12)' }} />
-                              <div style={{ width: '30%', background: 'rgba(255,69,58,0.5)' }} />
-                            </div>
-                            <div style={{ position: 'absolute', top: '-3px', left: `${Math.max(0, Math.min(100, it.rsi))}%`, width: '2px', height: '12px', borderRadius: '1px', background: '#F5F5F7', transform: 'translateX(-50%)' }} />
-                          </div>
-                        </div>
-                      );
-                    })}
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '4px' : '0' }}>
+              {groups.map((g, gi) => (
+                <div key={g.key} style={{
+                  padding: !isMobile && gi === 1 ? '0 0 0 24px' : gi === 0 ? '0 24px 0 0' : '0',
+                  borderLeft: !isMobile && gi === 1 ? '0.5px solid rgba(255,255,255,0.08)' : 'none',
+                  borderTop: isMobile && gi === 1 ? '0.5px solid rgba(255,255,255,0.08)' : 'none',
+                  marginTop: isMobile && gi === 1 ? '8px' : 0,
+                  paddingTop: isMobile && gi === 1 ? '12px' : undefined,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '10px', padding: '12px 0 10px', borderBottom: '0.5px solid rgba(255,255,255,0.08)' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.52)' }}>{g.arrow} {g.label}</span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>{g.hint}</span>
                   </div>
+                  {g.items.map((it, i) => {
+                    const z = rsiZone(it.rsi);
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '10px', padding: '13px 0', borderBottom: i === 0 ? '0.5px solid rgba(255,255,255,0.08)' : 'none' }}>
+                        <span style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                          <span style={{ fontSize: '14px', fontWeight: 600, color: '#F5F5F7', flexShrink: 0 }}>{it.ticker}</span>
+                          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.name}</span>
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexShrink: 0 }}>
+                          <span style={{ fontSize: '17px', fontWeight: 700, color: z.c, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>{f(it.rsi, 1)}</span>
+                          {z.t && <span style={{ fontSize: '12px', fontWeight: 600, color: z.c }}>{z.t}</span>}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               ))}
             </div>
