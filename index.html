@@ -1359,7 +1359,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     movingAverages: { breadth: { above5day: 0, above20day: 0, above50day: 0, above200day: 0 } },
     riskIndicators: { hySpread: 0, dxy: 0, goldSP: 0, gold: 0, silver: 0, wti: 0, usdjpy: 0, japan2Y: 0 },
     indices: { spx: 0, ndx: 0, rut: 0, spx200d: 0, ndx200d: 0, spxRsi: null, ndxRsi: null },
-    fed: { date: 0, bandLow: 0, bandHigh: 0, cut: null, hold: null, hike: null }
+    fed: { date: 0, bandLow: 0, bandHigh: 0, cut: null, hold: null, hike: null },
+    mom: { rel: null, status: null, t: 0, t5: 0, updated: 0 }
   });
   const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsmLGq2ejgt-yg-ER16AuBC2cjPmHJLa4voisbpgmo3qpNMo7LMNus01PLp6etdn2CJb9724Bp6y-d/pub?gid=0&single=true&output=csv';
 
@@ -1565,6 +1566,13 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         cut:      data.FED_Prob_Cut     ?? marketData.fed.cut,
         hold:     data.FED_Prob_Hold    ?? marketData.fed.hold,
         hike:     data.FED_Prob_Hike    ?? marketData.fed.hike,
+      },
+      mom: {
+        rel:     data.MOM_Rel_5D  ?? (marketData.mom || {}).rel ?? null,
+        status:  data.MOM_Status  ?? (marketData.mom || {}).status ?? null,
+        t:       data.MOM_Date_T  ?? (marketData.mom || {}).t ?? 0,
+        t5:      data.MOM_Date_T5 ?? (marketData.mom || {}).t5 ?? 0,
+        updated: data.MOM_Updated ?? (marketData.mom || {}).updated ?? 0,
       },
     });
   };
@@ -2092,6 +2100,13 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             hold:     data.FED_Prob_Hold    ?? marketData.fed.hold,
             hike:     data.FED_Prob_Hike    ?? marketData.fed.hike,
           },
+          mom: {
+            rel:     data.MOM_Rel_5D  ?? (marketData.mom || {}).rel ?? null,
+            status:  data.MOM_Status  ?? (marketData.mom || {}).status ?? null,
+            t:       data.MOM_Date_T  ?? (marketData.mom || {}).t ?? 0,
+            t5:      data.MOM_Date_T5 ?? (marketData.mom || {}).t5 ?? 0,
+            updated: data.MOM_Updated ?? (marketData.mom || {}).updated ?? 0,
+          },
         };
         setMarketData(newData);
         setLastImportDate(new Date());
@@ -2117,6 +2132,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
   const ri = marketData.riskIndicators;
   const idx = marketData.indices || { spx: null, ndx: null, rut: null, spx200d: null, ndx200d: null };
   const fed = marketData.fed || { date: 0, bandLow: 0, bandHigh: 0, cut: null, hold: null, hike: null };
+  const mom = marketData.mom || { rel: null, status: null, t: 0, t5: 0, updated: 0 };
 
   const fearColor = v.fearGreed < 25 ? '#FF3B30' : v.fearGreed < 45 ? '#FF9500' : v.fearGreed < 55 ? '#FFCC00' : v.fearGreed < 75 ? '#34C759' : '#30D158';
   const contango = v.vx5 > v.vx1;
@@ -3104,59 +3120,129 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
       </div>
 
-      {/* Sektor- & Branchen-RSI — die zwei höchsten und zwei niedrigsten (Tab ETF_RSI) */}
-      {etfRsi && etfRsi.length >= 4 && (() => {
-        const sorted = [...etfRsi].sort((a, b) => b.rsi - a.rsi);
-        const groups = [
-          { key: 'hi', arrow: '↑', label: 'Hohe RSI-Werte', hint: 'überkauft ab 70', items: [sorted[0], sorted[1]] },
-          { key: 'lo', arrow: '↓', label: 'Niedrige RSI-Werte', hint: 'überverkauft bis 30', items: [sorted[sorted.length - 1], sorted[sorted.length - 2]] },
-        ];
-        // Variante A: Farbe nur bei echtem Signal — dazwischen komplett neutral
-        const rsiZone = (x) => x >= 70 ? { c: '#FF453A', t: 'überkauft' }
-          : x <= 30 ? { c: '#30D158', t: 'überverkauft' }
-          : { c: '#F5F5F7', t: null };
-        return (
-          <div style={{ ...glass, marginTop: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-              </div>
-              <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)', whiteSpace: 'nowrap' }}>Sektor- & Branchen-RSI</div>
-              <HoverTip tipKey="etfRsiInfo" content={'Tages-RSI(14) der 11 GICS-Sektor-ETFs und 9 Branchen-ETFs (TradingView). Gezeigt werden die zwei höchsten und zwei niedrigsten Werte. ≥ 70 überkauft, ≤ 30 überverkauft.'} width={250}>
-                <span style={{ width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.56)', cursor: 'help', flexShrink: 0 }}>i</span>
-              </HoverTip>
+      {/* Sektor- & Branchen-RSI (≈70 %) + Momentum zum breiten Markt (≈30 %) — mobil untereinander */}
+      {(() => {
+        const showRsi = !!(etfRsi && etfRsi.length >= 4);
+        // Kopfzeile im Stil der übrigen Karten
+        const cardHead = (icon, title, tipKey, tip, tipWidth) => (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '4px' }}>
+            <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              {icon}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '4px' : '0' }}>
-              {groups.map((g, gi) => (
-                <div key={g.key} style={{
-                  padding: !isMobile && gi === 1 ? '0 0 0 24px' : gi === 0 ? '0 24px 0 0' : '0',
-                  borderLeft: !isMobile && gi === 1 ? '0.5px solid rgba(255,255,255,0.08)' : 'none',
-                  borderTop: isMobile && gi === 1 ? '0.5px solid rgba(255,255,255,0.08)' : 'none',
-                  marginTop: isMobile && gi === 1 ? '8px' : 0,
-                  paddingTop: isMobile && gi === 1 ? '12px' : undefined,
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '10px', padding: '12px 0 10px', borderBottom: '0.5px solid rgba(255,255,255,0.08)' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.52)' }}>{g.arrow} {g.label}</span>
-                    <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap' }}>{g.hint}</span>
+            <div style={{ fontSize: '14px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.62)', whiteSpace: 'nowrap' }}>{title}</div>
+            <HoverTip tipKey={tipKey} content={tip} width={tipWidth}>
+              <span style={{ width: '18px', height: '18px', borderRadius: '50%', border: '0.5px solid rgba(255,255,255,0.2)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontStyle: 'italic', color: 'rgba(255,255,255,0.56)', cursor: 'help', flexShrink: 0 }}>i</span>
+            </HoverTip>
+          </div>
+        );
+
+        // ── Sektor- & Branchen-RSI — die zwei höchsten und zwei niedrigsten (Tab ETF_RSI) ──
+        const rsiCard = showRsi && (() => {
+          const sorted = [...etfRsi].sort((a, b) => b.rsi - a.rsi);
+          const groups = [
+            { key: 'hi', arrow: '↑', label: 'Hohe RSI-Werte', hint: 'überkauft ab 70', items: [sorted[0], sorted[1]] },
+            { key: 'lo', arrow: '↓', label: 'Niedrige RSI-Werte', hint: 'überverkauft bis 30', items: [sorted[sorted.length - 1], sorted[sorted.length - 2]] },
+          ];
+          // Variante A: Farbe nur bei echtem Signal — dazwischen komplett neutral
+          const rsiZone = (x) => x >= 70 ? { c: '#FF453A', t: 'überkauft' }
+            : x <= 30 ? { c: '#30D158', t: 'überverkauft' }
+            : { c: '#F5F5F7', t: null };
+          // Lange Bezeichnungen sinnvoll umbrechen: "Verteidigung & Aerospace" → zwei Zeilen
+          const nameLines = (n) => String(n || '').split(/\s*(?:&|\/)\s*/).filter(Boolean);
+          return (
+            <div style={{ ...glass }}>
+              {cardHead(
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
+                'Sektor- & Branchen-RSI', 'etfRsiInfo',
+                'Tages-RSI(14) der 11 GICS-Sektor-ETFs und 9 Branchen-ETFs (TradingView). Gezeigt werden die zwei höchsten und zwei niedrigsten Werte. ≥ 70 überkauft, ≤ 30 überverkauft.', 250
+              )}
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? '4px' : '0' }}>
+                {groups.map((g, gi) => (
+                  <div key={g.key} style={{
+                    minWidth: 0,
+                    padding: !isMobile && gi === 1 ? '0 0 0 24px' : !isMobile && gi === 0 ? '0 24px 0 0' : '0',
+                    borderLeft: !isMobile && gi === 1 ? '0.5px solid rgba(255,255,255,0.08)' : 'none',
+                    borderTop: isMobile && gi === 1 ? '0.5px solid rgba(255,255,255,0.08)' : 'none',
+                    marginTop: isMobile && gi === 1 ? '8px' : 0,
+                    paddingTop: isMobile && gi === 1 ? '12px' : undefined,
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '10px', padding: '12px 0 10px', borderBottom: '0.5px solid rgba(255,255,255,0.08)' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.52)', whiteSpace: 'nowrap' }}>{g.arrow} {g.label}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>{g.hint}</span>
+                    </div>
+                    {g.items.map((it, i) => {
+                      const z = rsiZone(it.rsi);
+                      return (
+                        <div key={i} style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '10px', padding: '13px 0', borderBottom: i === 0 ? '0.5px solid rgba(255,255,255,0.08)' : 'none' }}>
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: '14px', fontWeight: 600, color: '#F5F5F7' }}>{it.ticker}</div>
+                            <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', marginTop: '3px', lineHeight: 1.35, overflowWrap: 'anywhere' }}>
+                              {nameLines(it.name).map((l, k) => <div key={k}>{l}</div>)}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                            <div style={{ fontSize: '17px', fontWeight: 700, color: z.c, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>{f(it.rsi, 1)}</div>
+                            {z.t && <div style={{ fontSize: '12px', fontWeight: 600, color: z.c, marginTop: '3px' }}>{z.t}</div>}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  {g.items.map((it, i) => {
-                    const z = rsiZone(it.rsi);
-                    return (
-                      <div key={i} style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '10px', padding: '13px 0', borderBottom: i === 0 ? '0.5px solid rgba(255,255,255,0.08)' : 'none' }}>
-                        <span style={{ minWidth: 0, display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                          <span style={{ fontSize: '14px', fontWeight: 600, color: '#F5F5F7', flexShrink: 0 }}>{it.ticker}</span>
-                          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.name}</span>
-                        </span>
-                        <span style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexShrink: 0 }}>
-                          <span style={{ fontSize: '17px', fontWeight: 700, color: z.c, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.01em' }}>{f(it.rsi, 1)}</span>
-                          {z.t && <span style={{ fontSize: '12px', fontWeight: 600, color: z.c }}>{z.t}</span>}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+          );
+        })();
+
+        // ── Momentum zum breiten Markt: MTUM vs. RSP, 5 Handelstage (Haupt-Sheet, MOM_*) ──
+        const momCard = (() => {
+          const st = mom.status;
+          const has = (st === 0 || st === 1) && mom.rel != null && isFinite(mom.rel);
+          const r = has ? Math.round(mom.rel * 10) / 10 : null;   // erst das Endergebnis runden
+          const valTxt = !has ? '–' : (r > 0 ? '+' : r < 0 ? '−' : '') + f(Math.abs(r), 1) + ' %';
+          const ymd = (n) => n > 19000000
+            ? `${String(n % 100).padStart(2, '0')}.${String(Math.floor(n / 100) % 100).padStart(2, '0')}.${Math.floor(n / 10000)}`
+            : null;
+          const upd = mom.updated > 190000000000 ? formatTime(new Date(Date.UTC(
+            Math.floor(mom.updated / 1e8), Math.floor(mom.updated / 1e6) % 100 - 1, Math.floor(mom.updated / 1e4) % 100,
+            Math.floor(mom.updated / 100) % 100, mom.updated % 100))) : null;
+          const reason = st === 1 ? 'Datenstand veraltet: Die Schlusskurse des letzten US-Handelstags liegen noch nicht vor oder der letzte Abruf ist fehlgeschlagen.'
+            : st === 2 ? `Kein Wert: Schlusskurs von MTUM oder RSP am ${ymd(mom.t5) || 'Vergleichstag'} fehlt. Das 5-Tage-Fenster wird nicht verlängert.`
+            : st === 3 ? 'Kein Wert: Keine gemeinsamen Schlusskurse von MTUM und RSP verfügbar.'
+            : st == null ? 'Kein Wert: Noch keine Daten vorhanden.' : null;
+          const tip = (
+            <>
+              <div>Relative Performance des Momentum-ETF MTUM gegenüber dem gleichgewichteten S&P 500 (RSP) über die letzten 5 US-Handelstage. Berechnet wird die Veränderung des Quotienten MTUM/RSP auf Basis split- und ausschüttungsbereinigter Schlusskurse (TradingView).</div>
+              <div style={{ marginTop: '6px' }}>Positiv: Momentum-Aktien stärker als der breite Markt. Negativ: schwächer.</div>
+              {(ymd(mom.t) || upd) && (
+                <div style={{ marginTop: '6px', color: 'rgba(255,255,255,0.55)' }}>
+                  {ymd(mom.t) && <>Datenstand: Schluss {ymd(mom.t)}{ymd(mom.t5) && <> (Vergleich {ymd(mom.t5)})</>}</>}
+                  {upd && <><br />Aktualisiert: {upd}</>}
+                </div>
+              )}
+              {reason && <div style={{ marginTop: '6px', color: '#FF9F0A' }}>{reason}</div>}
+            </>
+          );
+          return (
+            <div style={{ ...glass, display: 'flex', flexDirection: 'column' }}>
+              {cardHead(
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="5" cy="6" r="3"/><path d="M12 6h5a2 2 0 0 1 2 2v7"/><path d="m15 9-3-3 3-3"/><circle cx="19" cy="18" r="3"/><path d="M12 18H7a2 2 0 0 1-2-2V9"/><path d="m9 15 3 3-3 3"/></svg>,
+                'Momentum', 'momRelInfo', tip, 270
+              )}
+              <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)', padding: '12px 0 10px', borderBottom: '0.5px solid rgba(255,255,255,0.08)' }}>zum breiten Markt</div>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: isMobile ? '18px 0 8px' : '18px 0 6px', minHeight: isMobile ? '120px' : undefined }}>
+                <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>5 Handelstage</div>
+                <div style={{ fontSize: isMobile ? '40px' : '46px', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', color: has ? '#0A84FF' : 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' }}>{valTxt}</div>
+                {st === 1 && has && <div style={{ fontSize: '11px', fontWeight: 600, color: '#FF9F0A', border: '0.5px solid #FF9F0A66', borderRadius: '6px', padding: '2px 8px' }}>veraltet</div>}
+              </div>
+            </div>
+          );
+        })();
+
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile || !showRsi ? '1fr' : 'minmax(0, 7fr) minmax(0, 3fr)', gap: '8px', marginTop: '8px' }}>
+            {rsiCard}
+            {momCard}
           </div>
         );
       })()}
