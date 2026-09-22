@@ -1366,9 +1366,12 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
 
   const ETF_RSI_GID = '1647158809'; // gid des Tabs "ETF_RSI" — steht in der Sheet-URL, wenn das Tab angeklickt ist
   const ETF_RSI_URL = SHEETS_URL.replace('gid=0', 'gid=' + ETF_RSI_GID);
+  const STATUS_GID = '1280974101'; // gid des Tabs "SCRAPER_STATUS" (barchart_scraper.py: letzter erfolgreicher Abruf je Kennzahl)
+  const STATUS_URL = SHEETS_URL.replace('gid=0', 'gid=' + STATUS_GID);
 
   const [csvStatus, setCsvStatus] = useState(null);
   const [etfRsi, setEtfRsi] = useState(null); // [{ticker, typ, name, rsi, stand}]
+  const [scrapeStatus, setScrapeStatus] = useState(null); // { run: 'YYYYMMDDHHMM', last: { metric: 'YYYYMMDDHHMM' } } (UTC)
   const [showTemplate, setShowTemplate] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [lastImportDate, setLastImportDate] = useState(null);
@@ -1605,9 +1608,34 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     } catch (e) { /* Karte bleibt ausgeblendet — kein Fehler-UI nötig */ }
   };
 
+  // ── Tab "SCRAPER_STATUS" laden (letzter erfolgreicher Abruf je Kennzahl) ──
+  const fetchScraperStatus = async () => {
+    try {
+      const res = await fetch(STATUS_URL);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const lines = (await res.text()).split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) return;
+      const sep = lines[0].includes(';') ? ';' : ',';
+      const header = parseCsvLine(lines[0], sep).map(h => h.toLowerCase());
+      const iM = header.indexOf('metric'), iL = header.indexOf('last_ok');
+      if (iM < 0 || iL < 0) return;
+      const last = {};
+      let run = null;
+      lines.slice(1).forEach(l => {
+        const fl = parseCsvLine(l, sep);
+        const k = (fl[iM] || '').trim();
+        const ts = String(fl[iL] || '').replace(/[^\d]/g, '');
+        if (!k || ts.length !== 12) return;
+        if (k === '_RUN') run = ts; else last[k] = ts;
+      });
+      setScrapeStatus({ run, last });
+    } catch (e) { /* kein Status verfügbar — Hinweis bleibt ausgeblendet */ }
+  };
+
   const fetchFromSheets = async (isAutoLoad = false, retryCount = 0) => {
     setFetchLoading(true);
     fetchEtfRsi();
+    fetchScraperStatus();
     try {
       const res = await fetch(SHEETS_URL);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -2149,6 +2177,71 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
     return date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' · ' +
       date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
   };
+
+  // ── Veraltete Werte erkennen ──
+  // Scraper-Kennzahlen: veraltet, wenn letzter Erfolg > 2 h vor dem neuesten Lauf (≥ 4 verpasste Läufe à 30 min)
+  // Scraper steht:      neuester Lauf > 90 min alt
+  // ETF_RSI:            neuester "stand" > 90 min alt
+  const STALE_METRIC_MS = 2 * 3600e3, STALE_RUN_MS = 90 * 60e3;
+  const utc12 = (s) => s && s.length === 12
+    ? new Date(Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8), +s.slice(8, 10), +s.slice(10, 12))) : null;
+  const staleInfo = (() => {
+    const now = Date.now();
+    const items = [];
+    let scraperDown = null;
+    if (scrapeStatus && scrapeStatus.run) {
+      const run = utc12(scrapeStatus.run);
+      if (run && now - run > STALE_RUN_MS) scraperDown = run;
+      Object.entries(scrapeStatus.last).forEach(([k, ts]) => {
+        const d = utc12(ts);
+        if (d && run && run - d > STALE_METRIC_MS) items.push({ name: k.replace(/_/g, ' '), since: d });
+      });
+    }
+    if (etfRsi && etfRsi.length) {   // stand: "YYYY-MM-DD HH:MM UTC"
+      const st = etfRsi.map(r => {
+        const m = String(r.stand || '').match(/(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/);
+        return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5])) : null;
+      }).filter(Boolean).sort((a, b) => b - a)[0];
+      if (st && now - st > STALE_RUN_MS) items.push({ name: 'Sektor- & Branchen-RSI (ETF_RSI)', since: st });
+    }
+    items.sort((a, b) => a.since - b.since);
+    return { items, scraperDown };
+  })();
+  const staleWarn = (!!staleInfo.scraperDown || staleInfo.items.length > 0) && (
+    <div style={{ position: 'relative', display: 'flex' }}
+      onMouseEnter={() => setHoverTip('staleInfo')} onMouseLeave={() => setHoverTip(null)}
+      onClick={() => setHoverTip(hoverTip === 'staleInfo' ? null : 'staleInfo')}>
+      <span style={{ fontSize: '10px', fontWeight: 600, color: '#FF9F0A', border: '0.5px solid rgba(255,159,10,0.4)', background: 'rgba(255,159,10,0.08)', borderRadius: '10px', padding: '2px 8px', display: 'flex', alignItems: 'center', gap: '4px', whiteSpace: 'nowrap', cursor: 'help' }}>
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        {staleInfo.scraperDown ? 'Scraper steht' : `${staleInfo.items.length} ${staleInfo.items.length === 1 ? 'Wert' : 'Werte'} veraltet`}
+      </span>
+      {hoverTip === 'staleInfo' && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 8px)', ...(isMobile ? { left: '50%', transform: 'translateX(-50%)' } : { right: 0 }),
+          zIndex: 200, background: '#2C2C2E', border: '0.5px solid rgba(255,255,255,0.14)', borderRadius: '12px', padding: '10px 12px',
+          width: '270px', boxShadow: '0 4px 24px rgba(0,0,0,0.5)', fontSize: '11px', lineHeight: 1.5, color: 'rgba(255,255,255,0.7)', textAlign: 'left',
+        }}>
+          {staleInfo.scraperDown && (
+            <div style={{ color: '#FF9F0A', marginBottom: staleInfo.items.length ? '8px' : 0 }}>
+              Scraper läuft nicht. Letzter Lauf: {formatTime(staleInfo.scraperDown)}
+            </div>
+          )}
+          {staleInfo.items.length > 0 && (
+            <>
+              <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', marginBottom: '4px' }}>Nicht mehr aktualisiert</div>
+              {staleInfo.items.map((it, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', padding: '2px 0' }}>
+                  <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{it.name}</span>
+                  <span style={{ flexShrink: 0, color: 'rgba(255,255,255,0.5)', fontVariantNumeric: 'tabular-nums' }}>seit {formatTime(it.since)}</span>
+                </div>
+              ))}
+            </>
+          )}
+          <div style={{ marginTop: '8px', color: 'rgba(255,255,255,0.4)' }}>Angezeigt wird der Zeitpunkt des letzten erfolgreichen Abrufs. Die UI zeigt bis dahin den zuletzt bekannten Wert.</div>
+        </div>
+      )}
+    </div>
+  );
 
   const glass = {
     background: 'rgba(255,255,255,0.03)',
@@ -3615,7 +3708,12 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   }}>{tab.label}</button>
                 ))}
               </div>
-              {lastImportDate && <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontVariantNumeric: 'tabular-nums' }}>Stand: {formatTime(lastImportDate)}</span>}
+              {(lastImportDate || staleWarn) && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  {lastImportDate && <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontVariantNumeric: 'tabular-nums' }}>Stand: {formatTime(lastImportDate)}</span>}
+                  {staleWarn}
+                </div>
+              )}
             </div>
           </div>
         ) : (
@@ -3666,6 +3764,9 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
 
           {/* Rechte Seite — rechte Grid-Spalte */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'flex-end' }}>
+
+            {/* Hinweis auf veraltete Werte — nur im Problemfall sichtbar */}
+            {staleWarn}
 
             {/* Timestamp — beide Varianten immer gerendert, Breite bleibt konstant */}
             <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
