@@ -1266,11 +1266,16 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     setKiInput('');
     setKiLoading(true);
     try {
+      const { data: { session: kiSession } } = await sbClient.auth.getSession();
       const res = await fetch('https://api.volafly.net/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(kiSession?.access_token ? { 'Authorization': `Bearer ${kiSession.access_token}` } : {}) },
         body: JSON.stringify({ frage, verlauf }),
       });
+      if (res.status === 401) {
+        setKiMessages(prev => [...prev, { role: 'assistant', content: 'Deine Sitzung ist abgelaufen — bitte melde dich neu an und stelle die Frage danach erneut.' }]);
+        return;
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setKiMessages(prev => [...prev, { role: 'assistant', content: data.antwort || 'Leere Antwort erhalten.' }]);
