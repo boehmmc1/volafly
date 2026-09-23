@@ -1254,6 +1254,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [kiMessages, setKiMessages] = useState([]); // {role:'user'|'assistant', content}
   const [kiInput, setKiInput] = useState('');
   const [kiLoading, setKiLoading] = useState(false);
+  const kiFragenPool = ["Was sehe ich aktuell im Markt?", "Wie steht die Terminstruktur gerade?", "Welche Sektoren sind überkauft?", "Wie ist die Marktbreite einzuordnen?", "Gibt es gerade aktive Angst-Signale?", "Sollte ich aktuell hedgen?", "Was ist ein Poor Man's Covered Call?", "Was sagt ein hoher SKEW aus?", "Wann lohnt sich das Rollen eines Short Puts?", "Was bedeutet Backwardation für Stillhalter?", "Wie bestimme ich die richtige Positionsgröße?", "Was tun, wenn ein Short Put eingebucht wird?"];
+  const [kiChips] = useState(() => [...kiFragenPool].sort(() => Math.random() - 0.5));
   const kiScrollRef = React.useRef(null);
   React.useEffect(() => {
     if (kiScrollRef.current) kiScrollRef.current.scrollTop = kiScrollRef.current.scrollHeight;
@@ -5001,9 +5003,27 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               <div style={{ position: 'relative', flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '12px', padding: isMobile ? '16px 14px 14px' : '22px 24px 18px', width: '100%', maxWidth: '820px', margin: '0 auto', boxSizing: 'border-box', minHeight: 0 }}>
                 <div ref={kiScrollRef} style={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', minHeight: 0, paddingRight: '4px' }}>
                   {kiMessages.length === 0 && (
-                    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: isMobile ? '24px' : '56px' }}>
+                    <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: isMobile ? '24px' : '40px' }}>
                       <div style={{ fontSize: isMobile ? '20px' : '25px', fontWeight: 700, letterSpacing: '-0.01em' }}>Frag die Volafly KI</div>
                       <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.55)' }}>Antworten ausschließlich aus deinen Live-Marktdaten und 137 Ausgaben Stillhalter-Magazin</div>
+                      {!isMobile && (
+                        <div style={{ position: 'relative', height: '310px', marginTop: '14px' }}>
+                          <style>{`@keyframes kiFloat { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-9px); } }`}</style>
+                          {kiChips.slice(0, 6).map((chip, i) => {
+                            const kiPos = [
+                              { left: '3%', top: '8%' }, { right: '5%', top: '2%' },
+                              { left: '27%', top: '34%' }, { right: '9%', top: '50%' },
+                              { left: '7%', top: '64%' }, { left: '37%', top: '84%' },
+                            ][i];
+                            return (
+                              <button key={chip} onClick={() => kiSend(chip)}
+                                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(10,132,255,0.6)'; e.currentTarget.style.background = 'rgba(10,132,255,0.12)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(10,132,255,0.28)'; e.currentTarget.style.background = 'rgba(14,14,19,0.72)'; }}
+                                style={{ position: 'absolute', ...kiPos, animation: `kiFloat ${5 + (i % 3) * 1.4}s ease-in-out ${i * 0.7}s infinite`, background: 'rgba(14,14,19,0.72)', border: '0.5px solid rgba(10,132,255,0.28)', borderRadius: '20px', padding: '9px 15px', fontSize: '12px', color: 'rgba(255,255,255,0.78)', fontFamily: 'inherit', cursor: 'pointer', whiteSpace: 'nowrap', transition: 'border-color 0.15s ease, background 0.15s ease' }}>{chip}</button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
                   {kiMessages.map((m, i) => {
@@ -5028,9 +5048,9 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                   )}
                 </div>
 
-                {kiMessages.length === 0 && (
+                {kiMessages.length === 0 && isMobile && (
                   <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                    {['Was sehe ich aktuell im Markt?', 'Was bedeutet die Terminstruktur?', 'Was ist ein PMCC?'].map((chip) => (
+                    {kiChips.slice(0, 4).map((chip) => (
                       <button key={chip} onClick={() => kiSend(chip)} style={{ background: 'rgba(255,255,255,0.05)', border: '0.5px solid rgba(255,255,255,0.12)', borderRadius: '20px', padding: '8px 14px', fontSize: '12px', color: 'rgba(255,255,255,0.75)', fontFamily: 'inherit', cursor: 'pointer' }}>{chip}</button>
                     ))}
                   </div>
