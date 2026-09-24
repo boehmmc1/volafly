@@ -1254,21 +1254,12 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [kiMessages, setKiMessages] = useState([]); // {role:'user'|'assistant', content}
   const [kiInput, setKiInput] = useState('');
   const [kiLoading, setKiLoading] = useState(false);
-  const kiFragenPool = [
-    { t: 'Marktlage', q: 'Was sehe ich aktuell im Markt?', i: 'activity' },
-    { t: 'Terminkurve', q: 'Wie steht die Terminstruktur gerade?', i: 'curve' },
-    { t: 'Sektoren', q: 'Welche Sektoren sind überkauft?', i: 'grid' },
-    { t: 'Marktbreite', q: 'Wie ist die Marktbreite einzuordnen?', i: 'bars' },
-    { t: 'Angst-Signale', q: 'Gibt es gerade aktive Angst-Signale?', i: 'alert' },
-    { t: 'Hedging', q: 'Sollte ich aktuell hedgen?', i: 'shield' },
-    { t: 'Optionswissen', q: "Was ist ein Poor Man's Covered Call?", i: 'book' },
-    { t: 'SKEW', q: 'Was sagt ein hoher SKEW aus?', i: 'trend' },
-    { t: 'Rollen', q: 'Wann lohnt sich das Rollen eines Short Puts?', i: 'rotate' },
-    { t: 'Backwardation', q: 'Was bedeutet Backwardation für Stillhalter?', i: 'curve' },
-    { t: 'Positionsgröße', q: 'Wie bestimme ich die richtige Positionsgröße?', i: 'percent' },
-    { t: 'Einbuchung', q: 'Was tun, wenn ein Short Put eingebucht wird?', i: 'inbox' },
+  const kiKategorien = [
+    { label: 'MARKT VERSTEHEN', icon: 'activity', fragen: ['Wie ist die aktuelle Marktstimmung?', 'Was sehe ich aktuell im Markt?', 'Wie ist die Marktbreite einzuordnen?', 'Welche Sektoren sind gerade überkauft?'] },
+    { label: 'SIGNALE EINORDNEN', icon: 'bars', fragen: ['Was signalisiert die VIX-Terminkurve?', 'Was sagt ein hoher SKEW aus?', 'Gibt es gerade aktive Angst-Signale?', 'Sollte ich aktuell hedgen?'] },
+    { label: 'IM MAGAZIN FINDEN', icon: 'book', fragen: ["Was ist ein Poor Man's Covered Call?", 'Wann lohnt sich das Rollen eines Short Puts?', 'Was tun, wenn ein Short Put eingebucht wird?', 'Wie bestimme ich die richtige Positionsgröße?'] },
   ];
-  const [kiChips] = useState(() => [...kiFragenPool].sort(() => Math.random() - 0.5));
+  const [kiCards] = useState(() => kiKategorien.map(k => ({ label: k.label, icon: k.icon, q: k.fragen[Math.floor(Math.random() * k.fragen.length)] })));
   const kiInputRef = React.useRef(null);
   const kiCanvasRef = React.useRef(null);
   const kiScrollRef = React.useRef(null);
@@ -1288,7 +1279,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     const draw = () => {
       if (!w || !h) return;
       ctx.clearRect(0, 0, w, h);
-      const cx = w * 0.5, cy = h * 0.52, r = Math.min(w * 0.19, h * 0.42);
+      const cx = w * 0.5, cy = h * 0.44, r = Math.min(w * 0.19, h * 0.34);
       const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.65); glow.addColorStop(0, 'rgba(81,206,255,0.08)'); glow.addColorStop(0.65, 'rgba(29,85,112,0.04)'); glow.addColorStop(1, 'rgba(0,32,48,0)'); ctx.fillStyle = glow; ctx.fillRect(0, 0, w, h);
       const angle = time * 0.11;
       const ps = nodes.map(p => { const x = p.x * Math.cos(angle) + p.z * Math.sin(angle), z = -p.x * Math.sin(angle) + p.z * Math.cos(angle); const tilt = 0.2; const y = p.y * Math.cos(tilt) - z * Math.sin(tilt), zz = p.y * Math.sin(tilt) + z * Math.cos(tilt); const sc = 1 + zz * 0.12; return { x: cx + x * r * sc, y: cy + y * r * sc, z: zz }; });
@@ -1324,6 +1315,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       percent: <React.Fragment><line x1="19" y1="5" x2="5" y2="19" /><circle cx="6.5" cy="6.5" r="2.2" /><circle cx="17.5" cy="17.5" r="2.2" /></React.Fragment>,
       inbox: <React.Fragment><path d="M22 13h-5l-2 3h-6l-2-3H2" /><path d="M5 4h14l3 9v7H2v-7z" /></React.Fragment>,
       layers: <React.Fragment><path d="M12 2 2 7l10 5 10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></React.Fragment>,
+      arrowUpLeft: <React.Fragment><line x1="17" y1="17" x2="7" y2="7" /><polyline points="7 14 7 7 14 7" /></React.Fragment>,
     }[name] || null;
     return <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>{p}</svg>;
   };
@@ -5046,12 +5038,12 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 <div style={{ fontSize: '13px', lineHeight: 1.65, color: '#A7B2C0', maxWidth: '370px' }}>Die Volafly KI ist für angemeldete Nutzer verfügbar — melde dich oben rechts an, um Fragen zur Marktlage und zum Stillhalter-Wissen zu stellen.</div>
               </div>
             ) : (
-              <div style={{ position: 'relative', zIndex: 2, flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column', padding: isMobile ? '0 16px' : '0 52px', textAlign: 'center', width: '100%', maxWidth: '760px', margin: '0 auto', boxSizing: 'border-box' }}>
+              <div style={{ position: 'relative', zIndex: 2, flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: kiMessages.length === 0 ? 'auto' : 'visible', padding: isMobile ? '0 16px' : '0 52px', textAlign: 'center', width: '100%', maxWidth: '760px', margin: '0 auto', boxSizing: 'border-box' }}>
                 {kiMessages.length === 0 ? (
                   <div style={{ paddingTop: '2px' }}>
                     <div style={{ fontSize: '11px', letterSpacing: '2px', fontWeight: 550, color: '#7CE8FF' }}>DEIN MARKT. DEIN WISSENSVORSPRUNG.</div>
                     <div style={{ fontSize: isMobile ? '27px' : '35px', fontWeight: 550, letterSpacing: '-1.2px', lineHeight: 1.14, margin: '12px 0', color: '#F1F6FA' }}>Was bewegt dich<span style={{ color: '#92A9BF' }}> am Markt?</span></div>
-                    <div style={{ fontSize: isMobile ? '13px' : '14px', lineHeight: 1.65, color: '#A7B2C0' }}>Marktdaten und Stillhalter-Wissen.<br />Eine Frage. Die Zusammenhänge dahinter.</div>
+                    <div style={{ fontSize: isMobile ? '13px' : '14px', lineHeight: 1.65, color: '#A7B2C0' }}>Marktdaten und Stillhalter-Wissen. Direkt verbunden.</div>
                   </div>
                 ) : (
                   <div ref={kiScrollRef} style={{ flexGrow: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left', paddingRight: '4px', paddingTop: '4px' }}>
@@ -5086,18 +5078,25 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#09232E" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 19V5" /><path d="M5 12l7-7 7 7" /></svg>
                   </button>
                   <div style={{ position: 'absolute', left: '20px', right: '18px', bottom: '10px', display: 'flex', justifyContent: 'space-between', color: '#8D9CAC', fontSize: '11px', letterSpacing: '0.15px', pointerEvents: 'none' }}>
-                    <span style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>{kiIcon('layers')}Mit deinen Daten verknüpft</span>
+                    <span style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>{kiIcon('layers')}Marktdaten + Magazinwissen</span>
                     <span>↵ Enter</span>
                   </div>
                 </div>
                 {kiMessages.length === 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '14px' }}>
-                    {kiChips.slice(0, isMobile ? 4 : 6).map((c) => (
-                      <button key={c.t} onClick={() => { setKiInput(c.q); if (kiInputRef.current) kiInputRef.current.focus(); }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,232,255,0.45)'; e.currentTarget.style.background = 'rgba(124,232,255,0.05)'; e.currentTarget.style.color = '#EEF5FA'; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.color = '#B7C4D2'; }}
-                        style={{ padding: '8px 12px', display: 'flex', gap: '7px', alignItems: 'center', fontSize: '11px', border: '1px solid rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', color: '#B7C4D2', fontFamily: 'inherit', cursor: 'pointer', transition: 'border-color 0.15s ease, background 0.15s ease, color 0.15s ease' }}>{kiIcon(c.i)}{c.t}</button>
-                    ))}
+                  <div style={{ textAlign: 'left', marginTop: '16px' }}>
+                    <div style={{ fontSize: '12px', color: '#8D9CAC', margin: '0 2px 8px' }}>Womit möchtest du starten?</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '10px' }}>
+                      {kiCards.map((c) => (
+                        <button key={c.label} onClick={() => { setKiInput(c.q); if (kiInputRef.current) kiInputRef.current.focus(); }}
+                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,232,255,0.40)'; e.currentTarget.style.background = 'rgba(124,232,255,0.04)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                          style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '8px' : '12px', minHeight: isMobile ? '0' : '124px', padding: isMobile ? '12px 14px' : '15px 15px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '14px', color: '#EEF5FA', fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s ease, background 0.15s ease' }}>
+                          <span style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', letterSpacing: '1.3px', fontWeight: 550, color: '#9FB0C2' }}>{kiIcon(c.icon)}{c.label}</span>
+                          <span style={{ fontSize: isMobile ? '14px' : '16px', lineHeight: 1.45, fontWeight: 500 }}>{c.q}</span>
+                          {!isMobile && <span style={{ marginTop: 'auto', alignSelf: 'flex-end', color: '#7FA6BC' }}>{kiIcon('arrowUpLeft')}</span>}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', fontSize: '10px', color: '#8391A0', padding: '12px 2px 14px', marginTop: 'auto', flexShrink: 0 }}>
