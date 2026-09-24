@@ -2701,7 +2701,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         else { state = 'm'; verdict = 'Abwarten'; sub = 'Noch kein klares Signal — weder viel Bedarf noch besonders günstige Absicherung.'; }
         const COL = { g: '#30D158', m: '#FFCC00', b: '#FF453A' };
         const sc = COL[state];
-        const chipCol = n => n.ok === n.tot ? '#30D158' : n.ok === 0 ? '#FF453A' : '#FFCC00';
+        const chipCol = n => n.ok === n.tot ? '#30D158' : n.ok === 0 ? '#8E8E93' : '#FFCC00';
         return (
           <div style={{ ...glass, height: '100%' }}>
             <div style={sectionLabel}>Hedging-Ampel</div>
@@ -2755,8 +2755,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '9px 11px', cursor: 'help' }}>
                   <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.56)' }}>Überhitzung</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '5px' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: overheated ? '#30D158' : '#FF453A' }} />
-                    <span style={{ fontSize: '13px', fontWeight: 600, color: overheated ? '#30D158' : '#FF453A' }}>{overheated ? 'aktiv' : 'nein'}</span>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: overheated ? '#30D158' : '#8E8E93' }} />
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: overheated ? '#30D158' : '#8E8E93' }}>{overheated ? 'aktiv' : 'nein'}</span>
                   </div>
                 </div>
               </HoverTip>
@@ -2770,18 +2770,18 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
         const vvxv = v.vxv > 0 ? v.vix / v.vxv : null;
         const termSpread = (v.vx1 > 0 && v.vx5 > 0) ? (v.vx5 - v.vx1) : null;
         const sigs = [
-          { lab: 'Equity P/C', zone: v.equityPutCall > 0 ? cz(v.equityPutCall, 0.75, 0.95) : null, val: v.equityPutCall > 0 ? f(v.equityPutCall, 2) : '—', hint: 'Equity Put/Call · Rot < 0,75 · Gelb 0,75–0,95 · Grün ≥ 0,95 (viel Absicherung/Angst).' },
-          { lab: 'Total P/C', zone: v.totalPutCall > 0 ? cz(v.totalPutCall, 0.85, 1.0) : null, val: v.totalPutCall > 0 ? f(v.totalPutCall, 2) : '—', hint: 'Total Put/Call · Rot < 0,85 · Gelb 0,85–1,00 · Grün ≥ 1,00.' },
-          { lab: 'VIX/VXV', zone: vvxv != null ? cz(vvxv, 0.90, 1.0) : null, val: vvxv != null ? f(vvxv, 2) : '—', hint: 'VIX/VXV · Rot < 0,90 · Gelb 0,90–1,00 · Grün ≥ 1,00 (Backwardation).' },
-          { lab: 'VVIX', zone: v.vvix > 0 ? cz(v.vvix, 100, 120) : null, val: v.vvix > 0 ? f(v.vvix, 0) : '—', hint: 'VVIX · Rot < 100 · Gelb 100–120 · Grün ≥ 120 (Vol-Spike).' },
-          { lab: 'Nebenwerte', zone: v.rvx > 0 ? cz(v.rvx, 23, 30) : null, val: v.rvx > 0 ? f(v.rvx, 1) : '—', hint: 'RVX (Small Caps / Russell 2000) · Rot < 23 · Gelb 23–30 · Grün ≥ 30 (Stress). Schwellen aus dem Bewertungs-Tab.' },
-          { lab: 'Nasdaq 100', zone: v.vxn > 0 ? cz(v.vxn, 23, 33) : null, val: v.vxn > 0 ? f(v.vxn, 1) : '—', hint: 'VXN (Nasdaq 100) · Rot < 23 · Gelb 23–33 · Grün ≥ 33 (Stress). Schwellen aus dem Bewertungs-Tab.' },
-          { lab: 'Terminkurve', zone: termSpread == null ? null : (termSpread < 0 ? 'g' : termSpread <= 1.0 ? 'y' : 'r'), val: termSpread == null ? '—' : (termSpread < 0 ? 'Backwardation' : 'Contango'), hint: 'VX-Terminkurve · Rot steiles Contango (VX5–VX1 > 1) · Gelb flaches Contango (0–1) · Grün Backwardation.' },
+          { lab: 'Equity P/C', zone: v.equityPutCall > 0 ? cz(v.equityPutCall, 0.75, 0.95) : null, val: v.equityPutCall > 0 ? f(v.equityPutCall, 2) : '—', hint: 'Equity Put/Call · Neutral < 0,75 · Gelb 0,75–0,95 · Grün ≥ 0,95 (viel Absicherung/Angst).' },
+          { lab: 'Total P/C', zone: v.totalPutCall > 0 ? cz(v.totalPutCall, 0.85, 1.0) : null, val: v.totalPutCall > 0 ? f(v.totalPutCall, 2) : '—', hint: 'Total Put/Call · Neutral < 0,85 · Gelb 0,85–1,00 · Grün ≥ 1,00.' },
+          { lab: 'VIX/VXV', zone: vvxv != null ? cz(vvxv, 0.90, 1.0) : null, val: vvxv != null ? f(vvxv, 2) : '—', hint: 'VIX/VXV · Neutral < 0,90 · Gelb 0,90–1,00 · Grün ≥ 1,00 (Backwardation).' },
+          { lab: 'VVIX', zone: v.vvix > 0 ? cz(v.vvix, 100, 120) : null, val: v.vvix > 0 ? f(v.vvix, 0) : '—', hint: 'VVIX · Neutral < 100 · Gelb 100–120 · Grün ≥ 120 (Vol-Spike).' },
+          { lab: 'Nebenwerte', zone: v.rvx > 0 ? cz(v.rvx, 23, 30) : null, val: v.rvx > 0 ? f(v.rvx, 1) : '—', hint: 'RVX (Small Caps / Russell 2000) · Neutral < 23 · Gelb 23–30 · Grün ≥ 30 (Stress). Schwellen aus dem Bewertungs-Tab.' },
+          { lab: 'Nasdaq 100', zone: v.vxn > 0 ? cz(v.vxn, 23, 33) : null, val: v.vxn > 0 ? f(v.vxn, 1) : '—', hint: 'VXN (Nasdaq 100) · Neutral < 23 · Gelb 23–33 · Grün ≥ 33 (Stress). Schwellen aus dem Bewertungs-Tab.' },
+          { lab: 'Terminkurve', zone: termSpread == null ? null : (termSpread < 0 ? 'g' : termSpread <= 1.0 ? 'y' : 'r'), val: termSpread == null ? '—' : (termSpread < 0 ? 'Backwardation' : 'Contango'), hint: 'VX-Terminkurve · Neutral steiles Contango (VX5–VX1 > 1) · Gelb flaches Contango (0–1) · Grün Backwardation.' },
         ];
         const met = sigs.filter(s => s.zone === 'g').length;
-        const zCol = { g: '#30D158', y: '#FFCC00', r: '#FF453A' };
-        const zBg = { g: 'rgba(48,209,88,0.05)', y: 'rgba(255,204,0,0.05)', r: 'rgba(255,69,58,0.06)' };
-        const zBd = { g: 'rgba(48,209,88,0.35)', y: 'rgba(255,204,0,0.28)', r: 'rgba(255,69,58,0.26)' };
+        const zCol = { g: '#30D158', y: '#FFCC00', r: '#8E8E93' };
+        const zBg = { g: 'rgba(48,209,88,0.05)', y: 'rgba(255,204,0,0.05)', r: 'rgba(142,142,147,0.05)' };
+        const zBd = { g: 'rgba(48,209,88,0.35)', y: 'rgba(255,204,0,0.28)', r: 'rgba(142,142,147,0.25)' };
         const ausverkauf = idx.spxRsi != null && idx.ndxRsi != null && idx.spxRsi < 30 && idx.ndxRsi < 30;
         const green = met === 7;
         const red = met === 0;
@@ -3041,8 +3041,8 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           })}
           {v.moveIndex > 0 && (() => {
             const mv = v.moveIndex;
-            const mzc = mv <= 120 ? '#30D158' : '#FF453A';
-            const mzl = mv < 80 ? 'ruhig' : mv <= 120 ? 'normal' : 'Stress';
+            const mzc = mv < 95 ? '#30D158' : mv <= 120 ? '#FFCC00' : '#FF453A';
+            const mzl = mv < 80 ? 'ruhig' : mv < 95 ? 'normal' : mv <= 120 ? 'erhöht' : 'Stress';
             return (
               <HoverTip tipKey="moveT" content={'MOVE-Index — implizite Volatilität am US-Treasury-Markt (das „VIX der Anleihen"). Niedrig = ruhiger Zinsmarkt, hoch = Zins-Stress.'} width={230}>
                 <div style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '14px 16px', height: '100%', gridColumn: isMobile ? '1 / -1' : 'auto', background: 'rgba(255,255,255,0.03)', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', cursor: 'help' }}>
