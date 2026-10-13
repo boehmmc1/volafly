@@ -1254,12 +1254,74 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
   const [kiMessages, setKiMessages] = useState([]); // {role:'user'|'assistant', content}
   const [kiInput, setKiInput] = useState('');
   const [kiLoading, setKiLoading] = useState(false);
+  // Musterfragen = Katalog fragen_templates.json (q01–q36), Wortlaut exakt gleich halten: das Backend erkennt sie und spart Token.
   const kiKategorien = [
-    { label: 'MARKT VERSTEHEN', icon: 'activity', fragen: ['Wie ist die aktuelle Marktstimmung?', 'Was sehe ich aktuell im Markt?', 'Wie ist die Marktbreite einzuordnen?', 'Welche Sektoren sind gerade überkauft?'] },
-    { label: 'SIGNALE EINORDNEN', icon: 'bars', fragen: ['Was signalisiert die VIX-Terminkurve?', 'Was sagt ein hoher SKEW aus?', 'Gibt es gerade aktive Angst-Signale?', 'Sollte ich aktuell hedgen?'] },
-    { label: 'IM MAGAZIN FINDEN', icon: 'book', fragen: ["Was ist ein Poor Man's Covered Call?", 'Wann lohnt sich das Rollen eines Short Puts?', 'Was tun, wenn ein Short Put eingebucht wird?', 'Wie bestimme ich die richtige Positionsgröße?'] },
+    { label: 'MARKT VERSTEHEN', kurz: 'Markt', icon: 'activity', fragen: [
+      "Wie ist die aktuelle Marktlage in drei Sätzen?",
+      "Welche Volatilitätsklasse zeigt Volafly aktuell, und was bedeutet sie?",
+      "Was sagt der aktuelle VIX über die erwarteten Schwankungen aus?",
+      "Was zeigt die aktuelle VIX-Terminkurve?",
+      "Wie breit ist die aktuelle Marktbewegung im S&P 500?",
+      "Welche ETFs im Monitor haben die höchsten und niedrigsten RSI-Werte?",
+      "Was zeigt „Momentum zum breiten Markt“ aktuell?",
+      "Wie sind US-Anleiherenditen und MOVE aktuell einzuordnen?",
+      "Was zeigen die aktuellen Put/Call-Ratios?",
+      "Was zeigt der aktuelle Yen-Carry-Stress?",
+      "Wie unterscheiden sich Aktien- und Krypto-Stimmung aktuell?",
+      "Was zeigt Gold im Vergleich zum S&P 500?",
+    ] },
+    { label: 'SIGNALE EINORDNEN', kurz: 'Signale', icon: 'bars', fragen: [
+      "Was zeigt die Hedging-Ampel zu Absicherungsbedarf und Umsetzung?",
+      "Welche Kriterien der Markt-Ampel sind aktuell erfüllt?",
+      "Welche aktuellen Marktsignale widersprechen sich?",
+      "Welche Indikatoren ergänzen sich – und wo gibt es Überschneidungen?",
+      "Was zeigt VIX/VIX3M zusätzlich zum VIX?",
+      "Wann ist ein hoher VVIX trotz niedrigem VIX auffällig?",
+      "Wie lässt sich ein niedriger Fear-&-Greed-Wert antizyklisch einordnen?",
+      "Warum ist ein hoher VIX für Stillhalter zugleich Chance und Risiko?",
+      "Wie beeinflussen hohe Zinsen das Risiko von Short Puts?",
+      "Warum können Einzelaktien stark schwanken, obwohl der VIX niedrig ist?",
+      "Woran erkenne ich hohe Optionsprämien – und was sagt der VIX allein nicht aus?",
+      "Warum ist ein überverkaufter RSI allein noch kein Einstiegssignal?",
+    ] },
+    { label: 'IM MAGAZIN FINDEN', kurz: 'Magazin', icon: 'book', fragen: [
+      "Welche Bausteine gehören zum Risikomanagement eines Stillhalters?",
+      "Wie wird das gebundene Kapital im Worst Case berechnet?",
+      "Warum kann eine zu hohe Depotauslastung bei niedrigem VIX problematisch werden?",
+      "Welche Lehren liefern VIX-Spitzen über 40 aus dem Magazin?",
+      "Welche Kriterien sprechen für Rollen oder die Annahme einer Einbuchung?",
+      "Wie wählt das Magazin Laufzeit und Delta für Short Puts?",
+      "Wann prüft das Magazin vier statt zwei Wochen Laufzeit?",
+      "Wie begrenzt das Magazin Positionsgrößen und Klumpenrisiken?",
+      "Wie unterscheiden sich Cash Secured Put und Covered Call im Risiko?",
+      "Welche Risiken hat ein Short Strangle, besonders über Earnings?",
+      "Wie nutze ich den IV-Rank bei der Kontraktauswahl?",
+      "Welche Fehler machen Stillhalter in Crash-Phasen?",
+    ] },
   ];
-  const [kiCards] = useState(() => kiKategorien.map(k => ({ label: k.label, icon: k.icon, q: k.fragen[Math.floor(Math.random() * k.fragen.length)] })));
+  const KI_PRO_SEITE = 3;
+  const kiSeitenAnzahl = (k) => Math.ceil(k.fragen.length / KI_PRO_SEITE);
+  // Startseite je Karte zufällig, Würfeln blättert eine Seite weiter
+  const [kiSeiten, setKiSeiten] = useState(() => kiKategorien.map(k => Math.floor(Math.random() * kiSeitenAnzahl(k))));
+  const kiBlaettern = (i) => setKiSeiten(prev => prev.map((s, j) => j === i ? (s + 1) % kiSeitenAnzahl(kiKategorien[i]) : s));
+  const [kiMobilKat, setKiMobilKat] = useState(0);
+  // Autocomplete: ab 3 Zeichen, alle Suchwörter müssen vorkommen, max. 4 Treffer
+  const [kiAcIndex, setKiAcIndex] = useState(0);
+  const [kiAcZu, setKiAcZu] = useState(false);
+  const kiAlleFragen = React.useMemo(() => kiKategorien.flatMap(k => k.fragen.map(q => ({ q, kat: k.kurz.toUpperCase() }))), []);
+  const kiWoerter = kiInput.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+  const kiTreffer = (kiMessages.length === 0 && !kiAcZu && kiInput.trim().length >= 3 && kiWoerter.length)
+    ? kiAlleFragen.filter(f => kiWoerter.every(w => f.q.toLowerCase().includes(w))).slice(0, 4)
+    : [];
+  const kiAcOffen = kiTreffer.length > 0;
+  const kiUebernehmen = (q) => { setKiInput(q); setKiAcZu(true); if (kiInputRef.current) kiInputRef.current.focus(); };
+  const kiMarkieren = (text) => {
+    if (!kiWoerter.length) return text;
+    const re = new RegExp('(' + kiWoerter.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+    return text.split(re).map((teil, i) => (i % 2 === 1)
+      ? <strong key={i} style={{ color: '#7CE8FF', fontWeight: 650 }}>{teil}</strong>
+      : <React.Fragment key={i}>{teil}</React.Fragment>);
+  };
   const kiInputRef = React.useRef(null);
   const kiCanvasRef = React.useRef(null);
   const kiScrollRef = React.useRef(null);
@@ -5065,7 +5127,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             <div style={{ height: isMobile ? '54px' : '62px', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 3, flexShrink: 0 }}>
               <span style={{ fontSize: isMobile ? '20px' : '22px', fontWeight: 650, letterSpacing: '-1px', display: 'flex', alignItems: 'center' }}>volafly<span style={{ color: '#7CE8FF' }}>.</span><span style={{ fontSize: '11px', fontWeight: 500, letterSpacing: '1.6px', marginLeft: '10px', padding: '3px 6px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '4px', color: '#ACBBCE' }}>KI</span></span>
             </div>
-            <div style={{ position: 'relative', height: kiMessages.length === 0 ? (isMobile ? '185px' : '212px') : (isMobile ? '68px' : '112px'), transition: 'height 0.35s ease', flexShrink: 0 }}>
+            <div style={{ position: 'relative', height: kiMessages.length === 0 ? (isMobile ? '100px' : '112px') : (isMobile ? '68px' : '96px'), transition: 'height 0.35s ease', flexShrink: 0 }}>
               <canvas ref={kiCanvasRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} aria-hidden="true" />
               {kiMessages.length === 0 && (
                 <div style={{ position: 'absolute', bottom: '6px', width: '100%', display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center', fontSize: '10px', letterSpacing: '2px', color: '#98BDCD' }}>
@@ -5080,12 +5142,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                 <div style={{ fontSize: '13px', lineHeight: 1.65, color: '#A7B2C0', maxWidth: '370px' }}>Die Volafly KI ist für angemeldete Nutzer verfügbar — melde dich oben rechts an, um Fragen zur Marktlage und zum Stillhalter-Wissen zu stellen.</div>
               </div>
             ) : (
-              <div style={{ position: 'relative', zIndex: 2, flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: kiMessages.length === 0 ? 'auto' : 'visible', padding: isMobile ? '0 16px' : '0 52px', textAlign: 'center', width: '100%', maxWidth: '760px', margin: '0 auto', boxSizing: 'border-box' }}>
+              <div style={{ position: 'relative', zIndex: 2, flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflowY: kiMessages.length === 0 ? 'auto' : 'visible', padding: isMobile ? '0 16px' : '0 52px', textAlign: 'center', width: '100%', maxWidth: (kiMessages.length === 0 && !isMobile) ? '920px' : '760px', margin: '0 auto', boxSizing: 'border-box' }}>
                 {kiMessages.length === 0 ? (
                   <div style={{ paddingTop: '2px' }}>
                     <div style={{ fontSize: '11px', letterSpacing: '2px', fontWeight: 550, color: '#7CE8FF' }}>DEIN MARKT. DEIN WISSENSVORSPRUNG.</div>
-                    <div style={{ fontSize: isMobile ? '27px' : '35px', fontWeight: 550, letterSpacing: '-1.2px', lineHeight: 1.14, margin: '12px 0', color: '#F1F6FA' }}>Was bewegt dich<span style={{ color: '#92A9BF' }}> am Markt?</span></div>
-                    <div style={{ fontSize: isMobile ? '13px' : '14px', lineHeight: 1.65, color: '#A7B2C0' }}>Marktdaten und Stillhalter-Wissen. Direkt verbunden.</div>
+                    <div style={{ fontSize: isMobile ? '27px' : '33px', fontWeight: 550, letterSpacing: '-1.1px', lineHeight: 1.14, marginTop: '10px', color: '#F1F6FA' }}>Was bewegt dich<span style={{ color: '#92A9BF' }}> am Markt?</span></div>
                   </div>
                 ) : (
                   <div ref={kiScrollRef} style={{ flexGrow: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left', paddingRight: '4px', paddingTop: '4px' }}>
@@ -5110,9 +5171,20 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     )}
                   </div>
                 )}
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '9px', padding: '10px 12px 31px', background: '#111B29', border: '1px solid #466178', borderRadius: '16px', boxShadow: '0 5px 40px rgba(0,0,0,0.15)', textAlign: 'left', marginTop: kiMessages.length === 0 ? (isMobile ? '18px' : '25px') : '12px', flexShrink: 0 }}>
-                  <input ref={kiInputRef} type="text" value={kiInput} onChange={e => setKiInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') kiSend(kiInput); }}
+                <div style={{ position: 'relative', zIndex: 3, marginTop: kiMessages.length === 0 ? '18px' : '12px', marginLeft: (kiMessages.length === 0 && !isMobile) ? '40px' : 0, marginRight: (kiMessages.length === 0 && !isMobile) ? '40px' : 0, flexShrink: 0 }}>
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: '9px', padding: '10px 12px 31px', background: '#111B29', border: `1px solid ${kiAcOffen ? '#7CE8FF' : '#466178'}`, borderRadius: kiAcOffen ? '16px 16px 0 0' : '16px', boxShadow: '0 5px 40px rgba(0,0,0,0.15)', textAlign: 'left' }}>
+                  <input ref={kiInputRef} type="text" value={kiInput}
+                    onChange={e => { setKiInput(e.target.value); setKiAcZu(false); setKiAcIndex(0); }}
+                    onFocus={() => setKiAcZu(false)}
+                    onBlur={() => setTimeout(() => setKiAcZu(true), 150)}
+                    onKeyDown={e => {
+                      if (kiAcOffen && e.key === 'ArrowDown') { e.preventDefault(); setKiAcIndex(i => (i + 1) % kiTreffer.length); return; }
+                      if (kiAcOffen && e.key === 'ArrowUp') { e.preventDefault(); setKiAcIndex(i => (i - 1 + kiTreffer.length) % kiTreffer.length); return; }
+                      if (kiAcOffen && e.key === 'Tab') { e.preventDefault(); kiUebernehmen(kiTreffer[Math.min(kiAcIndex, kiTreffer.length - 1)].q); return; }
+                      if (kiAcOffen && e.key === 'Escape') { setKiAcZu(true); return; }
+                      if (e.key === 'Enter') kiSend(kiInput);
+                    }}
+                    role="combobox" aria-expanded={kiAcOffen} aria-controls="ki-ac-liste" aria-autocomplete="list"
                     placeholder="Frag die Volafly KI …" aria-label="Frage an die Volafly KI"
                     style={{ minWidth: 0, flex: 1, padding: '8px', background: 'transparent', color: '#EEF5FA', border: 'none', outline: 'none', fontSize: '16px', fontFamily: 'inherit' }} />
                   <button onClick={() => kiSend(kiInput)} disabled={kiLoading || !kiInput.trim()} aria-label="Frage senden"
@@ -5124,23 +5196,74 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
                     <span>↵ Enter</span>
                   </div>
                 </div>
-                {kiMessages.length === 0 && (
-                  <div style={{ textAlign: 'left', marginTop: '16px' }}>
-                    <div style={{ fontSize: '12px', color: '#8D9CAC', margin: '0 2px 8px' }}>Womit möchtest du starten?</div>
-                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)', gap: '10px' }}>
-                      {kiCards.map((c) => (
-                        <button key={c.label} onClick={() => { setKiInput(c.q); if (kiInputRef.current) kiInputRef.current.focus(); }}
-                          onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,232,255,0.40)'; e.currentTarget.style.background = 'rgba(124,232,255,0.04)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
-                          style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '8px' : '12px', minHeight: isMobile ? '0' : '124px', padding: isMobile ? '12px 14px' : '15px 15px 12px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '14px', color: '#EEF5FA', fontFamily: 'inherit', cursor: 'pointer', textAlign: 'left', transition: 'border-color 0.15s ease, background 0.15s ease' }}>
-                          <span style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', letterSpacing: '1.3px', fontWeight: 550, color: '#9FB0C2' }}>{kiIcon(c.icon)}{c.label}</span>
-                          <span style={{ fontSize: isMobile ? '14px' : '16px', lineHeight: 1.45, fontWeight: 500 }}>{c.q}</span>
-                          {!isMobile && <span style={{ marginTop: 'auto', alignSelf: 'flex-end', color: '#7FA6BC' }}>{kiIcon('arrowUpLeft')}</span>}
-                        </button>
-                      ))}
-                    </div>
+                {kiAcOffen && (
+                  <div id="ki-ac-liste" role="listbox" aria-label="Passende Fragen" style={{ position: 'absolute', left: 0, right: 0, top: '100%', background: '#0F1825', border: '1px solid #7CE8FF', borderTop: '1px solid rgba(124,232,255,0.2)', borderRadius: '0 0 16px 16px', padding: '6px', boxShadow: '0 18px 40px rgba(0,0,0,0.45)', textAlign: 'left' }}>
+                    {kiTreffer.map((t, i) => (
+                      <button key={t.q} role="option" aria-selected={i === kiAcIndex}
+                        onMouseDown={e => { e.preventDefault(); kiUebernehmen(t.q); }}
+                        onMouseEnter={() => setKiAcIndex(i)}
+                        style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', padding: '10px 12px', minHeight: '44px', background: i === kiAcIndex ? 'rgba(124,232,255,0.09)' : 'transparent', border: 'none', borderRadius: '10px', color: i === kiAcIndex ? '#EEF5FA' : '#D5E0EA', fontSize: isMobile ? '14px' : '15px', lineHeight: 1.4, fontFamily: 'inherit', textAlign: 'left', cursor: 'pointer' }}>
+                        <span>{kiMarkieren(t.q)}</span>
+                        <span style={{ fontSize: '10px', letterSpacing: '1.2px', color: '#7FA6BC', whiteSpace: 'nowrap' }}>{t.kat}</span>
+                      </button>
+                    ))}
+                    {!isMobile && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px 4px', marginTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: '11px', color: '#6F8296' }}>
+                        <span>↑ ↓ auswählen · Tab übernehmen · Esc schließen</span>
+                        <span>{kiTreffer.length} von {kiAlleFragen.length} Fragen</span>
+                      </div>
+                    )}
                   </div>
                 )}
+                </div>
+                {kiMessages.length === 0 && (() => {
+                  const karte = (k, i) => {
+                    const seite = kiSeiten[i];
+                    const fragen = k.fragen.slice(seite * KI_PRO_SEITE, seite * KI_PRO_SEITE + KI_PRO_SEITE);
+                    return (
+                      <div key={k.label} style={{ padding: '12px 12px 10px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left', minWidth: 0 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: '2px' }}>
+                          <span style={{ display: 'flex', gap: '8px', alignItems: 'center', fontSize: '11px', letterSpacing: '1.3px', fontWeight: 600, color: '#9FB0C2' }}>{kiIcon(k.icon)}{k.label}</span>
+                          <button onClick={() => kiBlaettern(i)} aria-label={`Andere Fragen zu ${k.kurz} zeigen`} title="Andere Fragen"
+                            style={{ width: '36px', height: '32px', border: 'none', background: 'transparent', color: '#8FA3B6', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', cursor: 'pointer', padding: 0 }}>{kiIcon('rotate')}</button>
+                        </div>
+                        {fragen.map(q => (
+                          <button key={q} onClick={() => kiUebernehmen(q)}
+                            onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(124,232,255,0.45)'; e.currentTarget.style.background = 'rgba(124,232,255,0.05)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)'; e.currentTarget.style.background = 'transparent'; }}
+                            style={{ textAlign: 'left', padding: '10px 13px', minHeight: '44px', background: 'transparent', border: '1px solid rgba(255,255,255,0.14)', borderRadius: '20px', color: '#EEF5FA', fontSize: isMobile ? '14px' : '13.5px', lineHeight: 1.36, fontFamily: 'inherit', cursor: 'pointer', transition: 'border-color 0.15s ease, background 0.15s ease' }}>{q}</button>
+                        ))}
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', paddingTop: '2px' }} aria-hidden="true">
+                          {Array.from({ length: kiSeitenAnzahl(k) }, (_, s) => (
+                            <span key={s} style={{ width: s === seite ? '14px' : '5px', height: '5px', borderRadius: '3px', background: s === seite ? '#7CE8FF' : '#3A4D60', transition: 'width 0.2s ease' }} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  };
+                  return (
+                    <div style={{ marginTop: '18px', opacity: kiAcOffen ? 0.22 : 1, transition: 'opacity 0.15s ease' }} aria-hidden={kiAcOffen}>
+                      {isMobile ? (
+                        <>
+                          <div role="tablist" aria-label="Kategorien" style={{ display: 'flex', gap: '6px', marginBottom: '10px' }}>
+                            {kiKategorien.map((k, i) => (
+                              <button key={k.label} role="tab" aria-selected={i === kiMobilKat} onClick={() => setKiMobilKat(i)}
+                                style={{ padding: '8px 12px', minHeight: '36px', background: i === kiMobilKat ? 'rgba(124,232,255,0.12)' : 'transparent', border: `1px solid ${i === kiMobilKat ? 'rgba(124,232,255,0.35)' : 'rgba(255,255,255,0.12)'}`, borderRadius: '18px', color: i === kiMobilKat ? '#EEF5FA' : '#9FB0C2', fontSize: '12px', fontWeight: 600, fontFamily: 'inherit', cursor: 'pointer' }}>{k.kurz}</button>
+                            ))}
+                          </div>
+                          <div onTouchStart={e => { e.currentTarget.dataset.x = e.touches[0].clientX; }}
+                            onTouchEnd={e => { const dx = e.changedTouches[0].clientX - Number(e.currentTarget.dataset.x || 0); if (Math.abs(dx) > 40) setKiMobilKat(i => (i + (dx < 0 ? 1 : kiKategorien.length - 1)) % kiKategorien.length); }}>
+                            {karte(kiKategorien[kiMobilKat], kiMobilKat)}
+                          </div>
+                        </>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '12px' }}>
+                          {kiKategorien.map(karte)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: '10px', fontSize: '10px', color: '#8391A0', padding: '12px 2px 14px', marginTop: 'auto', flexShrink: 0 }}>
                   <span>Volafly-Marktdaten <span style={{ color: '#445360' }}>/</span> Stillhalter-Magazin</span>
                   <span>Keine Anlageberatung</span>
