@@ -1531,7 +1531,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     },
     yieldCurve: { y2: 0, y10: 0, y30: 0, y10real: 0, y30real: 0 },
     movingAverages: { breadth: { above5day: 0, above20day: 0, above50day: 0, above200day: 0 } },
-    riskIndicators: { hySpread: 0, dxy: 0, goldSP: 0, gold: 0, silver: 0, wti: 0, usdjpy: 0, japan2Y: 0 },
+    riskIndicators: { hySpread: 0, hyCcc: 0, dxy: 0, goldSP: 0, gold: 0, silver: 0, wti: 0, usdjpy: 0, japan2Y: 0 },
     indices: { spx: 0, ndx: 0, rut: 0, spx200d: 0, ndx200d: 0, spxRsi: null, ndxRsi: null },
     fed: { date: 0, bandLow: 0, bandHigh: 0, cut: null, hold: null, hike: null },
     mom: { rel: null, status: null, t: 0, t5: 0, updated: 0 }
@@ -1721,6 +1721,7 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
       }},
       riskIndicators: {
         hySpread: data.HY_Spread      ?? marketData.riskIndicators.hySpread,
+        hyCcc:    data.HY_CCC_Yield   ?? marketData.riskIndicators.hyCcc,
         dxy:      data.DXY            ?? marketData.riskIndicators.dxy,
         goldSP:   data.Gold_SP_Ratio  ?? marketData.riskIndicators.goldSP,
         gold:     data.Gold           ?? marketData.riskIndicators.gold,
@@ -2281,6 +2282,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
           }},
           riskIndicators: {
             hySpread: data.HY_Spread ?? marketData.riskIndicators.hySpread,
+            hyCcc:    data.HY_CCC_Yield ?? marketData.riskIndicators.hyCcc,
             dxy:      data.DXY      ?? marketData.riskIndicators.dxy,
             goldSP:   data.Gold_SP_Ratio ?? marketData.riskIndicators.goldSP,
             gold:     data.Gold     ?? marketData.riskIndicators.gold,
@@ -3360,6 +3362,16 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               carry: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>,
             };
             const hy = ri.hySpread, dxy = ri.dxy, ratio = goldSPRatio, wti = ri.wti;
+            const ccc = ri.hyCcc || 0;
+            // Kredit- & Refinanzierungsstress: historische Einstufung (Untergrenze inklusive)
+            const credZone = (x, b) => !(x > 0) ? { c: '#8E8E93', t: '—' }
+              : x >= b[2] ? { c: '#FF453A', t: 'extrem' }
+              : x >= b[1] ? { c: '#FF9F0A', t: 'hoch' }
+              : x >= b[0] ? { c: '#FFCC00', t: 'erhöht' }
+              : { c: '#8E8E93', t: 'normal' };
+            const cccZone = credZone(ccc, [13.80, 16.00, 18.89]);
+            const hyZone = credZone(hy, [5.86, 7.52, 8.99]);
+            const credOk = ccc > 0 || hy > 0;
             const usdjpy = ri.usdjpy, jp2 = ri.japan2Y, us2 = y.y2;
             const carryOk = jp2 > 0 && us2 > 0;
             const carryDiff = carryOk ? us2 - jp2 : null;                       // US-JP 2J-Differenz (pp)
@@ -3374,13 +3386,42 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               : usdjpy < 142 ? { c: '#30D158', t: 'fest' }
               : { c: '#8E8E93', t: 'Neutral' };
             const rows = [
-              hy > 0 && { name: 'HY Credit Spread', val: f(hy, 2) + '%', ic: 'shield', icc: '#0A84FF', z: hy < 2.8 ? { c: '#30D158', t: 'Euphorie' } : hy <= 5 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF453A', t: 'Panik' }, url: 'https://de.tradingview.com/symbols/FRED-BAMLH0A0HYM2/?interval=D', tip: 'HY-Spread (ICE BofA OAS): eng = Euphorie/Komplacency, weit = Panik/Stress.' },
               dxy > 0 && { name: 'US Dollar Index', val: f(dxy, 1), ic: 'dollar', icc: '#0A84FF', z: dxy < 95 ? { c: '#30D158', t: 'Kauf US' } : dxy <= 103 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF9F0A', t: 'Verkauf US' }, url: TV_SYMBOLS['dxy'].tvUrl, tip: 'US Dollar Index (EU-Sicht): schwacher Dollar = US-Aktien günstig, starker Dollar = Rückumtausch vorteilhaft.' },
               ratio > 0 && { name: 'S&P 500 / Gold', val: f(ratio, 2), ic: 'gold', icc: '#FFD60A', z: ratio < 1.0 ? { c: '#FF9F0A', t: 'Gold verk.' } : ratio <= 2.0 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FFD60A', t: 'Gold kauf.' }, tip: 'S&P/Gold-Ratio: niedrig = Aktien günstig vs. Gold, hoch = Aktien teuer vs. Gold.' },
               wti > 0 && { name: 'WTI Crude Oil', val: '$' + f(wti, 1), ic: 'oil', icc: '#0A84FF', z: wti < 60 ? { c: '#30D158', t: 'Öl kaufen' } : wti <= 90 ? { c: '#8E8E93', t: 'Neutral' } : { c: '#FF453A', t: 'Öl verk.' }, tip: 'WTI Rohöl: niedrig = Rezessionsangst, mittel = gesund, hoch = Inflationsangst.' },
             ].filter(Boolean);
             return (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {credOk && (
+                  <div style={{ border: '0.5px solid rgba(10,132,255,0.25)', borderRadius: '12px', padding: '11px 12px', background: 'rgba(10,132,255,0.04)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '9px' }}>
+                      <div style={{ width: '26px', height: '26px', borderRadius: '8px', background: 'rgba(10,132,255,0.15)', border: '0.5px solid rgba(10,132,255,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A84FF', flexShrink: 0 }}>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)' }}>Kredit- &amp; Refinanzierungsstress</div>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '8px' }}>
+                      <HoverTip tipKey="credCcc" content={'Effektive Rendite der CCC-Anleihen und schlechter (ICE BofA). Steigt sie, wird Refinanzierung für die schwächsten Schuldner teuer. Zonen: < 13,80 % normal · 13,80–16,00 % erhöht · 16,00–18,89 % hoch · ab 18,89 % extrem.'} width={240}>
+                        <div onClick={() => window.open('https://de.tradingview.com/symbols/FRED-BAMLH0A3HYCEY/', '_blank')} style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px', cursor: 'pointer', height: '100%' }}>
+                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>CCC-Anleiherendite</div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginTop: '3px' }}>
+                            <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{ccc > 0 ? f(ccc, 2) + ' %' : '—'}</span>
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: cccZone.c, border: `0.5px solid ${cccZone.c}66`, borderRadius: '6px', padding: '2px 8px', whiteSpace: 'nowrap', flexShrink: 0 }}>{cccZone.t}</span>
+                          </div>
+                        </div>
+                      </HoverTip>
+                      <HoverTip tipKey="credHy" content={'HY-Risikoaufschlag (ICE BofA OAS) gegenüber Staatsanleihen. Frühindikator — weitet sich oft vor dem VIX aus. Zonen: < 5,86 pp normal · 5,86–7,52 pp erhöht · 7,52–8,99 pp hoch · ab 8,99 pp extrem.'} width={240}>
+                        <div onClick={() => window.open('https://de.tradingview.com/symbols/FRED-BAMLH0A0HYM2/?interval=D', '_blank')} style={{ border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '10px', padding: '10px 12px', cursor: 'pointer', height: '100%' }}>
+                          <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.55)' }}>HY-Risikoaufschlag</div>
+                          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px', marginTop: '3px' }}>
+                            <span style={{ fontSize: '20px', fontWeight: 700, color: '#F5F5F7', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' }}>{hy > 0 ? f(hy, 2) + ' pp' : '—'}</span>
+                            <span style={{ fontSize: '10px', fontWeight: 600, color: hyZone.c, border: `0.5px solid ${hyZone.c}66`, borderRadius: '6px', padding: '2px 8px', whiteSpace: 'nowrap', flexShrink: 0 }}>{hyZone.t}</span>
+                          </div>
+                        </div>
+                      </HoverTip>
+                    </div>
+                  </div>
+                )}
                 {rows.map((r, i) => (
                   <HoverTip key={i} tipKey={'mk' + i} content={r.tip} width={230}>
                     <div onClick={r.url ? () => window.open(r.url, '_blank') : undefined} style={{ display: 'flex', alignItems: 'center', gap: '12px', border: '0.5px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '11px 13px', cursor: r.url ? 'pointer' : 'help' }}>
