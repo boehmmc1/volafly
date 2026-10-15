@@ -1534,7 +1534,8 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
     riskIndicators: { hySpread: 0, hyCcc: 0, dxy: 0, goldSP: 0, gold: 0, silver: 0, wti: 0, usdjpy: 0, japan2Y: 0 },
     indices: { spx: 0, ndx: 0, rut: 0, spx200d: 0, ndx200d: 0, spxRsi: null, ndxRsi: null },
     fed: { date: 0, bandLow: 0, bandHigh: 0, cut: null, hold: null, hike: null },
-    mom: { rel: null, status: null, t: 0, t5: 0, updated: 0 }
+    mom: { rel: null, status: null, t: 0, t5: 0, updated: 0 },
+    cs: { val: 0, prev: 0, date: 0 }
   });
   const SHEETS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSsmLGq2ejgt-yg-ER16AuBC2cjPmHJLa4voisbpgmo3qpNMo7LMNus01PLp6etdn2CJb9724Bp6y-d/pub?gid=0&single=true&output=csv';
 
@@ -1753,6 +1754,11 @@ const MarketPivot = ({ user, supabase: sbClient }) => {
         t:       data.MOM_Date_T  ?? (marketData.mom || {}).t ?? 0,
         t5:      data.MOM_Date_T5 ?? (marketData.mom || {}).t5 ?? 0,
         updated: data.MOM_Updated ?? (marketData.mom || {}).updated ?? 0,
+      },
+      cs: {
+        val:  data.US_Consumer_Sentiment      ?? (marketData.cs || {}).val  ?? 0,
+        prev: data.US_Consumer_Sentiment_Prev ?? (marketData.cs || {}).prev ?? 0,
+        date: data.US_Consumer_Sentiment_Date ?? (marketData.cs || {}).date ?? 0,
       },
     });
   };
@@ -2315,6 +2321,11 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
             t5:      data.MOM_Date_T5 ?? (marketData.mom || {}).t5 ?? 0,
             updated: data.MOM_Updated ?? (marketData.mom || {}).updated ?? 0,
           },
+          cs: {
+            val:  data.US_Consumer_Sentiment      ?? (marketData.cs || {}).val  ?? 0,
+            prev: data.US_Consumer_Sentiment_Prev ?? (marketData.cs || {}).prev ?? 0,
+            date: data.US_Consumer_Sentiment_Date ?? (marketData.cs || {}).date ?? 0,
+          },
         };
         setMarketData(newData);
         setLastImportDate(new Date());
@@ -2341,6 +2352,7 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
   const idx = marketData.indices || { spx: null, ndx: null, rut: null, spx200d: null, ndx200d: null };
   const fed = marketData.fed || { date: 0, bandLow: 0, bandHigh: 0, cut: null, hold: null, hike: null };
   const mom = marketData.mom || { rel: null, status: null, t: 0, t5: 0, updated: 0 };
+  const cs = marketData.cs || { val: 0, prev: 0, date: 0 };
 
   const fearColor = v.fearGreed < 25 ? '#FF3B30' : v.fearGreed < 45 ? '#FF9500' : v.fearGreed < 55 ? '#FFCC00' : v.fearGreed < 75 ? '#34C759' : '#30D158';
   const contango = v.vx5 > v.vx1;
@@ -3572,18 +3584,46 @@ Crypto_Fear_Greed_Index;${marketData.volatilityMetrics.cryptoFearGreed}`;
               {reason && <div style={{ marginTop: '6px', color: '#FF9F0A' }}>{reason}</div>}
             </>
           );
+          // ── US-Konsumklima (University of Michigan Consumer Sentiment, monatlich) ──
+          const csHas = cs.val > 0;
+          const csDelta = csHas && cs.prev > 0 ? Math.round((cs.val - cs.prev) * 10) / 10 : null;
+          const csDeltaTxt = csDelta == null ? null
+            : csDelta === 0 ? 'unverändert zum Vormonat'
+            : (csDelta > 0 ? '+' : '−') + f(Math.abs(csDelta), 1) + ' Punkte zum Vormonat';
+          const csMonths = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+          const csStand = cs.date > 19000000 ? `${csMonths[Math.floor(cs.date / 100) % 100 - 1] || ''} ${Math.floor(cs.date / 10000)}`.trim() : null;
+          const csTip = (
+            <>
+              <div>Verbraucherstimmung der University of Michigan (Consumer Sentiment Index). Erscheint monatlich; der Wert bleibt bis zur nächsten Veröffentlichung unverändert.</div>
+              <div style={{ marginTop: '6px' }}>Steigend: Verbraucher werden zuversichtlicher. Fallend: wachsende Sorge um Einkommen, Preise und Konjunktur.</div>
+              {csStand && <div style={{ marginTop: '6px', color: 'rgba(255,255,255,0.55)' }}>Stand: {csStand}</div>}
+            </>
+          );
+          const consumerBlock = csHas && (
+            <div style={{ paddingTop: '14px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+              {cardHead(
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+                'US-Konsumklima', 'csInfo', csTip, 260
+              )}
+              <div style={{ fontSize: isMobile ? '40px' : '46px', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', color: '#F5F5F7', whiteSpace: 'nowrap', marginTop: '8px' }}>{f(cs.val, 1)}</div>
+              {csDeltaTxt && <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)', marginTop: '6px' }}>{csDeltaTxt}</div>}
+            </div>
+          );
           return (
             <div style={{ ...glass, display: 'flex', flexDirection: 'column' }}>
               {cardHead(
                 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="5" cy="6" r="3"/><path d="M12 6h5a2 2 0 0 1 2 2v7"/><path d="m15 9-3-3 3-3"/><circle cx="19" cy="18" r="3"/><path d="M12 18H7a2 2 0 0 1-2-2V9"/><path d="m9 15 3 3-3 3"/></svg>,
                 'Momentum', 'momRelInfo', tip, 270
               )}
-              <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)', padding: '12px 0 10px', borderBottom: '0.5px solid rgba(255,255,255,0.08)' }}>zum breiten Markt</div>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: isMobile ? '18px 0 8px' : '18px 0 6px', minHeight: isMobile ? '120px' : undefined }}>
-                <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>5 Handelstage</div>
-                <div style={{ fontSize: isMobile ? '40px' : '46px', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', color: has ? '#0A84FF' : 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' }}>{valTxt}</div>
-                {st === 1 && has && <div style={{ fontSize: '11px', fontWeight: 600, color: '#FF9F0A', border: '0.5px solid #FF9F0A66', borderRadius: '6px', padding: '2px 8px' }}>veraltet</div>}
+              <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.55)', padding: '8px 0 0' }}>zum breiten Markt</div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '8px 0 14px', borderBottom: '0.5px solid rgba(255,255,255,0.08)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                  <div style={{ fontSize: isMobile ? '40px' : '46px', fontWeight: 700, lineHeight: 1.05, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums', color: has ? '#0A84FF' : 'rgba(255,255,255,0.3)', whiteSpace: 'nowrap' }}>{valTxt}</div>
+                  {st === 1 && has && <div style={{ fontSize: '11px', fontWeight: 600, color: '#FF9F0A', border: '0.5px solid #FF9F0A66', borderRadius: '6px', padding: '2px 8px' }}>veraltet</div>}
+                </div>
+                <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)', whiteSpace: 'nowrap', flexShrink: 0 }}>5 Handelstage</div>
               </div>
+              {consumerBlock}
             </div>
           );
         })();
